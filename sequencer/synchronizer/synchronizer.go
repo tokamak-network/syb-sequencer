@@ -195,6 +195,17 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	fmt.Printf("event: %v, eventType: %s, err: %v \n", event, eventType, err)
 
+	tx := &historydb.Tx{
+		BatchNum:    0, // Initial batch number is 0
+		Position:    int(vLog.Index),
+		Type:        eventType,
+		FromIdx:     nil,           // Will be set based on event type
+		FromEthAddr: nil,           // Will be set based on event type
+		ToIdx:       0,             // Will be set based on event type
+		ToEthAddr:   nil,           // Will be set based on event type
+		Amount:      big.NewInt(0), // Will be set based on event type
+	}
+
 	// Format event data based on event type
 	//TODO: Add Different events
 	var eventData string
@@ -203,6 +214,10 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		l1UserTx := event.(L1UserTxEvent)
 		eventData = fmt.Sprintf("QueueIndex: %d, Position: %d",
 			l1UserTx.QueueIndex, l1UserTx.Position)
+		position := int64(l1UserTx.Position)
+		tx.FromIdx = &position
+		tx.ToIdx = position
+		tx.Type = "L1UserTx"
 
 	default:
 		eventData = "Unknown event data"
@@ -210,21 +225,12 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventData)
 
-	// // Save the event to the database
-	// tx := &historydb.Transaction{
-	// 	TxHash:      vLog.TxHash.Hex(),
-	// 	BlockNumber: int64(vLog.BlockNumber),
-	// 	EventName:   eventType,
-	// 	EventData:   eventData,
-	// 	CreatedAt:   time.Now(),
-	// }
+	err = s.db.SaveTx(tx)
+	if err != nil {
+		s.logger.Printf("Error saving transaction: %v", err)
+		return
+	}
 
-	// err = s.db.SaveTransaction(tx)
-	// if err != nil {
-	// 	s.logger.Printf("Error saving transaction: %v", err)
-	// 	return
-	// }
-
-	// s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
-	// 	vLog.TxHash.Hex(), eventType, eventData)
+	s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
+		vLog.TxHash.Hex(), eventType, eventData)
 }
