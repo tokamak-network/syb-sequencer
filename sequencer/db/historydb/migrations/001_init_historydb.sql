@@ -6,6 +6,9 @@
 -- at most 78 digits, so we use this value to specify the precision in the
 -- PostgreSQL DECIMAL guaranteeing that we will never lose precision.
 
+-- Create sequence for tx_item_id
+CREATE SEQUENCE IF NOT EXISTS tx_item_id;
+
 -- Create tx scheme
 CREATE TABLE IF NOT EXISTS tx (
     item_id INTEGER PRIMARY KEY DEFAULT nextval('tx_item_id'),
@@ -16,7 +19,7 @@ CREATE TABLE IF NOT EXISTS tx (
     from_eth_addr BYTEA,
     to_idx BIGINT NOT NULL,
     to_eth_addr BYTEA,
-    amount DECIMAL(78,0) NOT NULL,
+    amount DECIMAL(78,0) NOT NULL
 );
 
 -- Create batch scheme
@@ -24,15 +27,15 @@ CREATE TABLE IF NOT EXISTS batch (
     item_id SERIAL PRIMARY KEY,
     account_root DECIMAL(78,0) NOT NULL,
     vouch_root DECIMAL(78,0) NOT NULL,
-    score_root DECIMAL(78,0) NOT NULL,
+    score_root DECIMAL(78,0) NOT NULL
 );
 
 -- Create account scheme
 CREATE TABLE IF NOT EXISTS account (
     item_id SERIAL,
     idx BIGINT PRIMARY KEY,
-    eth_addr BYTEA NOT NULL
-    balance DECIMAL(78,0) NOT NULL
+    eth_addr BYTEA NOT NULL,
+    balance DECIMAL(78,0) NOT NULL,
     score DECIMAL(78,0) NOT NULL
 );
 

@@ -185,4 +185,46 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 // processLog processes a single log entry
 func (s *Synchronizer) processLog(vLog types.Log) {
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
+
+	// // Parse the event
+	event, eventType, err := ParseEvent(&vLog)
+	if err != nil {
+		s.logger.Printf("Error parsing event: %v", err)
+		return
+	}
+
+	fmt.Printf("event: %v, eventType: %s, err: %v \n", event, eventType, err)
+
+	// Format event data based on event type
+	//TODO: Add Different events
+	var eventData string
+	switch eventType {
+	case "L1UserTxEvent":
+		l1UserTx := event.(L1UserTxEvent)
+		eventData = fmt.Sprintf("QueueIndex: %d, Position: %d",
+			l1UserTx.QueueIndex, l1UserTx.Position)
+
+	default:
+		eventData = "Unknown event data"
+	}
+
+	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventData)
+
+	// // Save the event to the database
+	// tx := &historydb.Transaction{
+	// 	TxHash:      vLog.TxHash.Hex(),
+	// 	BlockNumber: int64(vLog.BlockNumber),
+	// 	EventName:   eventType,
+	// 	EventData:   eventData,
+	// 	CreatedAt:   time.Now(),
+	// }
+
+	// err = s.db.SaveTransaction(tx)
+	// if err != nil {
+	// 	s.logger.Printf("Error saving transaction: %v", err)
+	// 	return
+	// }
+
+	// s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
+	// 	vLog.TxHash.Hex(), eventType, eventData)
 }
