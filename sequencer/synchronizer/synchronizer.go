@@ -70,7 +70,7 @@ func (s *Synchronizer) Start(ctx context.Context) {
 	}
 
 	// Subscribe to logs
-	sub, err := s.client.SubscribeFilterLogs(ctx, query, s.logs)
+	sub, err := s.client.SubscribeFilterLogs(context.Background(), query, s.logs)
 	if err != nil {
 		s.logger.Fatalf("Failed to subscribe to logs: %v", err)
 	}
@@ -82,9 +82,11 @@ func (s *Synchronizer) Start(ctx context.Context) {
 
 // watchEvents continuously listens for contract events
 func (s *Synchronizer) watchEvents(ctx context.Context) {
-	// Create a ticker for periodic checks
-	ticker := time.NewTicker(15 * time.Second)
+	// Create a ticker for periodic safety checks
+	ticker := time.NewTicker(5 * time.Minute)
 	defer ticker.Stop()
+
+	s.logger.Println("Started watching for contract events")
 
 	for {
 		select {
@@ -98,39 +100,52 @@ func (s *Synchronizer) watchEvents(ctx context.Context) {
 			s.resubscribe(ctx)
 
 		case vLog := <-s.logs:
-			// Process the log
+			// Process the log event in real-time
+			s.logger.Printf("Received event in block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
 			s.processLog(vLog)
 
 		case <-ticker.C:
-			// Periodic check for new blocks
-			s.checkNewBlocks(ctx)
+			// Periodic safety check to ensure we haven't missed any events
+			// This is just a backup mechanism and not the primary way of getting events
+			s.logger.Println("Performing periodic safety check for missed events")
+			s.checkForMissedEvents(ctx)
 		}
 	}
 }
 
 // resubscribe attempts to reestablish the subscription
 func (s *Synchronizer) resubscribe(ctx context.Context) {
+	backoff := 1 * time.Second
+	maxBackoff := 2 * time.Minute
+
 	for {
-		s.logger.Println("Attempting to resubscribe...")
+		s.logger.Printf("Attempting to resubscribe in %v...", backoff)
+		time.Sleep(backoff)
+
 		query := ethereum.FilterQuery{
 			Addresses: []common.Address{s.contractAddress},
 		}
 
 		sub, err := s.client.SubscribeFilterLogs(ctx, query, s.logs)
 		if err != nil {
-			s.logger.Printf("Failed to resubscribe: %v, retrying in 10 seconds", err)
-			time.Sleep(10 * time.Second)
+			s.logger.Printf("Failed to resubscribe: %v", err)
+			// Exponential backoff with a maximum
+			backoff *= 2
+			if backoff > maxBackoff {
+				backoff = maxBackoff
+			}
 			continue
 		}
 
 		s.sub = sub
-		s.logger.Println("Successfully resubscribed")
+		s.logger.Println("Successfully resubscribed to contract events")
 		return
 	}
 }
 
-// checkNewBlocks checks for new blocks and processes any missed events
-func (s *Synchronizer) checkNewBlocks(ctx context.Context) {
+// checkForMissedEvents is a safety mechanism to check for any events we might have missed
+func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
+	// Get the latest block number
 	header, err := s.client.HeaderByNumber(ctx, nil)
 	if err != nil {
 		s.logger.Printf("Error getting latest block header: %v", err)
@@ -142,7 +157,7 @@ func (s *Synchronizer) checkNewBlocks(ctx context.Context) {
 		return // No new blocks
 	}
 
-	s.logger.Printf("Processing blocks from %d to %d", s.lastBlock+1, latestBlock)
+	s.logger.Printf("Checking for missed events from block %d to %d", s.lastBlock+1, latestBlock)
 
 	// Create a filter query for the contract events
 	query := ethereum.FilterQuery{
@@ -158,8 +173,9 @@ func (s *Synchronizer) checkNewBlocks(ctx context.Context) {
 		return
 	}
 
-	// Process each log
+	// Process any missed events
 	for _, vLog := range logs {
+		s.logger.Printf("Processing missed event from block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
 		s.processLog(vLog)
 	}
 
@@ -169,53 +185,4 @@ func (s *Synchronizer) checkNewBlocks(ctx context.Context) {
 // processLog processes a single log entry
 func (s *Synchronizer) processLog(vLog types.Log) {
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
-
-	// Try to identify the event type based on the topics
-	eventName := "Unknown"
-	var eventData string
-
-	// Check for ForgeBatch event
-	if len(vLog.Topics) > 0 && vLog.Topics[0] == common.HexToHash("0x5838115dee16474c1ff6e07c103e24fac5f63a1d9e7c3fd28c3e75c2b42f32a0") {
-		eventName = "ForgeBatch"
-		forgeBatch, err := s.sybilContract.ParseForgeBatch(vLog)
-		if err == nil {
-			eventData = fmt.Sprintf("BatchNum: %d, L1UserTxsLen: %d", forgeBatch.BatchNum, forgeBatch.L1UserTxsLen)
-		}
-	}
-
-	// Check for L1UserTxEvent
-	if len(vLog.Topics) > 0 && vLog.Topics[0] == common.HexToHash("0x8b2a1e1a3bda2e8fbd2af44c30f3a9e0e90d7af2a7a7b9c2c5e1c8ce2db047f3") {
-		eventName = "L1UserTxEvent"
-		l1UserTxEvent, err := s.sybilContract.ParseL1UserTxEvent(vLog)
-		if err == nil {
-			eventData = fmt.Sprintf("QueueIndex: %d, Position: %d", l1UserTxEvent.QueueIndex, l1UserTxEvent.Position)
-		}
-	}
-
-	// Check for WithdrawEvent
-	if len(vLog.Topics) > 0 && vLog.Topics[0] == common.HexToHash("0x8c1d8f1f64246a3a5f7bd7ddc070d0c8b98a8fec8fd11ee4e2a41bd3f1a5f865") {
-		eventName = "WithdrawEvent"
-		withdrawEvent, err := s.sybilContract.ParseWithdrawEvent(vLog)
-		if err == nil {
-			eventData = fmt.Sprintf("Idx: %d, NumExitRoot: %d", withdrawEvent.Idx, withdrawEvent.NumExitRoot)
-		}
-	}
-
-	// // Save the event to the database
-	// tx := &historydb.Transaction{
-	// 	TxHash:      vLog.TxHash.Hex(),
-	// 	BlockNumber: int64(vLog.BlockNumber),
-	// 	EventName:   eventName,
-	// 	EventData:   eventData,
-	// 	CreatedAt:   time.Now(),
-	// }
-
-	// err := s.db.SaveTransaction(tx)
-	// if err != nil {
-	// 	s.logger.Printf("Error saving transaction: %v", err)
-	// 	return
-	// }
-
-	s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
-		vLog.TxHash.Hex(), eventName, eventData)
 }
