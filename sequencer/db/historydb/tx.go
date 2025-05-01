@@ -39,3 +39,46 @@ func (db *HistoryDB) SaveTx(tx *Tx) error {
 
 	return err
 }
+
+// GetAllTxs retrieves all transactions from the database
+func (db *HistoryDB) GetAllTxs() ([]*Tx, error) {
+	rows, err := db.dbWrite.Query(`
+		SELECT 
+			item_id, batch_num, position, type, from_idx, from_eth_addr,
+			to_idx, to_eth_addr, amount
+		FROM tx
+		ORDER BY item_id DESC
+	`)
+
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var txs []*Tx
+	for rows.Next() {
+		var tx Tx
+		var amountStr string
+
+		err := rows.Scan(
+			&tx.ItemID, &tx.BatchNum, &tx.Position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
+			&tx.ToIdx, &tx.ToEthAddr, &amountStr,
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Convert amount string back to big.Int
+		tx.Amount = new(big.Int)
+		tx.Amount.SetString(amountStr, 10)
+
+		txs = append(txs, &tx)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return txs, nil
+}

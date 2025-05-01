@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 
+	"github.com/tokamak-network/syb-sequencer/sequencer/api"
 	"github.com/tokamak-network/syb-sequencer/sequencer/config"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/synchronizer"
@@ -39,7 +40,24 @@ func main() {
 	defer cancel()
 
 	// Start synchronizer
-	sync.Start(ctx)
+	go func() {
+		sync.Start(ctx)
+	}()
+
+	// Initialize and start API server
+	apiServer := api.NewAPI(database)
+	go func() {
+		// Use environment variable for API port or default to 8080
+		apiPort := os.Getenv("API_PORT")
+		if apiPort == "" {
+			apiPort = "8080"
+		}
+
+		logger.Printf("Starting API server on port %s...", apiPort)
+		if err := apiServer.Run(":" + apiPort); err != nil {
+			logger.Fatalf("API server failed: %v", err)
+		}
+	}()
 
 	// Wait for interrupt signal
 	sigCh := make(chan os.Signal, 1)
