@@ -176,7 +176,8 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 	// Process any missed events
 	for _, vLog := range logs {
 		s.logger.Printf("Processing missed event from block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
-		s.processLog(vLog)
+		// TODO: Logic to only update the missed events
+		// s.processLog(vLog)
 	}
 
 	s.lastBlock = latestBlock
@@ -217,7 +218,11 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		position := int64(l1UserTx.Position)
 		tx.FromIdx = &position
 		tx.ToIdx = position
-		tx.Type = "L1UserTx"
+		fmt.Println(tx)
+		err := SetType(tx)
+		if err != nil {
+			s.logger.Printf("Error setting transaction type: %v", err)
+		}
 
 	default:
 		eventData = "Unknown event data"
