@@ -53,7 +53,6 @@ func ParseEvent(log *types.Log) (interface{}, string, error) {
 		if err != nil {
 			return nil, "", fmt.Errorf("parseEvent: failed to unpack L1UserTxEvent: %w", err)
 		}
-		fmt.Println(log.Topics[0])
 		return l1UserTx, "L1UserTxEvent", nil
 	}
 
