@@ -201,9 +201,9 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		Position:    int(vLog.Index),
 		Type:        eventType,
 		FromIdx:     nil,           // Will be set based on event type
-		FromEthAddr: nil,           // Will be set based on event type
+		FromEthAddr: "",            // Will be set based on event type
 		ToIdx:       0,             // Will be set based on event type
-		ToEthAddr:   nil,           // Will be set based on event type
+		ToEthAddr:   "",            // Will be set based on event type
 		Amount:      big.NewInt(0), // Will be set based on event type
 	}
 
@@ -215,14 +215,17 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		l1UserTx := event.(L1UserTxEvent)
 		eventData = fmt.Sprintf("QueueIndex: %d, Position: %d",
 			l1UserTx.QueueIndex, l1UserTx.Position)
+		txType, fromEthAddr, toEthAddr, amount, err := ParseTxData(l1UserTx.L1UserTx)
+		if err != nil {
+			s.logger.Printf("Error parsing transaction data: %v", err)
+		}
 		position := int64(l1UserTx.Position)
 		tx.FromIdx = &position
 		tx.ToIdx = position
-		fmt.Println(tx)
-		err := SetType(tx)
-		if err != nil {
-			s.logger.Printf("Error setting transaction type: %v", err)
-		}
+		tx.FromEthAddr = fromEthAddr.Hex()
+		tx.ToEthAddr = toEthAddr.Hex()
+		tx.Amount = amount
+		tx.Type = txType
 
 	default:
 		eventData = "Unknown event data"

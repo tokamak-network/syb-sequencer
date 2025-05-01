@@ -1,7 +1,6 @@
 package api
 
 import (
-	"encoding/hex"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -40,12 +39,12 @@ func convertTxToResponse(tx *historydb.Tx) TxResponse {
 	}
 
 	// Convert Ethereum addresses to hex strings
-	if tx.FromEthAddr != nil && len(tx.FromEthAddr) > 0 {
-		resp.FromEthAddr = "0x" + hex.EncodeToString(tx.FromEthAddr)
+	if len(tx.FromEthAddr) > 0 {
+		resp.FromEthAddr = "0x" + tx.FromEthAddr
 	}
 
-	if tx.ToEthAddr != nil && len(tx.ToEthAddr) > 0 {
-		resp.ToEthAddr = "0x" + hex.EncodeToString(tx.ToEthAddr)
+	if len(tx.ToEthAddr) > 0 {
+		resp.ToEthAddr = "0x" + tx.ToEthAddr
 	}
 
 	return resp

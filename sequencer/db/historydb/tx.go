@@ -6,15 +6,15 @@ import (
 
 // Tx represents a transaction in the history database
 type Tx struct {
-	ItemID      int64
-	BatchNum    int64
-	Position    int
-	Type        string
-	FromIdx     *int64 // Nullable
-	FromEthAddr []byte // Nullable
-	ToIdx       int64
-	ToEthAddr   []byte // Nullable
-	Amount      *big.Int
+	ItemID      int64     `json:"item_id"`
+	BatchNum    int64     `json:"batch_num"`
+	Position    int       `json:"position"`
+	Type        string    `json:"type"`
+	FromIdx     *int64    `json:"from_idx,omitempty"`
+	FromEthAddr string    `json:"from_eth_addr,omitempty"`
+	ToIdx       int64     `json:"to_idx"`
+	ToEthAddr   string    `json:"to_eth_addr,omitempty"`
+	Amount      *big.Int  `json:"amount"`
 }
 
 // SaveTx saves a transaction to the database

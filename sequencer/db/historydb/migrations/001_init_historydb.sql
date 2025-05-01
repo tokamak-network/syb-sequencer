@@ -16,9 +16,9 @@ CREATE TABLE IF NOT EXISTS tx (
     position INT NOT NULL,
     type VARCHAR(40) NOT NULL,
     from_idx BIGINT,
-    from_eth_addr BYTEA,
+    from_eth_addr STRING,
     to_idx BIGINT NOT NULL,
-    to_eth_addr BYTEA,
+    to_eth_addr STRING,
     amount DECIMAL(78,0) NOT NULL
 );
 
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS batch (
 CREATE TABLE IF NOT EXISTS account (
     item_id SERIAL,
     idx BIGINT PRIMARY KEY,
-    eth_addr BYTEA NOT NULL,
+    eth_addr STRING NOT NULL,
     balance DECIMAL(78,0) NOT NULL,
     score DECIMAL(78,0) NOT NULL
 );
@@ -43,9 +43,9 @@ CREATE TABLE IF NOT EXISTS account (
 CREATE TABLE IF NOT EXISTS vouch (
     idx BIGINT PRIMARY KEY,
     from_idx BIGINT,
-    from_eth_addr BYTEA,
+    from_eth_addr STRING,
     to_idx BIGINT,
-    to_eth_addr BYTEA
+    to_eth_addr STRING
 );
 
 -- +migrate Down
