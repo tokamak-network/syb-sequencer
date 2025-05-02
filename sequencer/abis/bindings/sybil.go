@@ -31,7 +31,7 @@ var (
 
 // BindingsMetaData contains all meta data concerning the Bindings contract.
 var BindingsMetaData = &bind.MetaData{
-	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"AmountExceedsLimit\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"EthTransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidFromIdx\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"elementType\",\"type\":\"string\"}],\"name\":\"InvalidPoseidonAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidProof\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidToIdx\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidVerifierAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LoadAmountDoesNotMatch\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LoadAmountExceedsLimit\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SmtProofInvalid\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"WithdrawAlreadyDone\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"explodeAmount\",\"type\":\"uint256\"}],\"name\":\"ExplodeAmountUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"batchNum\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"l1UserTxsLen\",\"type\":\"uint16\"}],\"name\":\"ForgeBatch\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"queueIndex\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint8\",\"name\":\"position\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"l1UserTx\",\"type\":\"bytes\"}],\"name\":\"L1UserTxEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBalance\",\"type\":\"uint256\"}],\"name\":\"MinBalanceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint48\",\"name\":\"idx\",\"type\":\"uint48\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"numExitRoot\",\"type\":\"uint32\"}],\"name\":\"WithdrawEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"ethAddress\",\"type\":\"address\"},{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint40\",\"name\":\"loadAmountF\",\"type\":\"uint40\"},{\"internalType\":\"uint40\",\"name\":\"amountF\",\"type\":\"uint40\"},{\"internalType\":\"uint48\",\"name\":\"toIdx\",\"type\":\"uint48\"}],\"name\":\"_addTx\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"key\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"_hashFinalNode\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"left\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"right\",\"type\":\"uint256\"}],\"name\":\"_hashNode\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"accountRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint40\",\"name\":\"loadAmountF\",\"type\":\"uint40\"}],\"name\":\"createAccountDeposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentFillingBatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint40\",\"name\":\"loadAmountF\",\"type\":\"uint40\"}],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint40\",\"name\":\"amountF\",\"type\":\"uint40\"}],\"name\":\"exit\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint48\",\"name\":\"\",\"type\":\"uint48\"}],\"name\":\"exitNullifierMap\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"exitRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"explodeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint48[]\",\"name\":\"toIdxs\",\"type\":\"uint48[]\"}],\"name\":\"explodeMultiple\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"newLastIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint256\",\"name\":\"newAccountRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newVouchRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newScoreRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newExitRoot\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"txsData\",\"type\":\"bytes\"},{\"internalType\":\"uint256[2]\",\"name\":\"proofA\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"proofB\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"proofC\",\"type\":\"uint256[2]\"}],\"name\":\"forgeBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"queueIndex\",\"type\":\"uint32\"}],\"name\":\"getL1TransactionQueue\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getLastForgedBatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getQueueLength\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"batchNum\",\"type\":\"uint32\"}],\"name\":\"getStateRoot\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_verifier\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"maxTx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nLevel\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_poseidon2Elements\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_poseidon3Elements\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_adminRole\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastForgedBatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastIdx\",\"outputs\":[{\"internalType\":\"uint48\",\"name\":\"\",\"type\":\"uint48\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"scoreRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"txsDataHashMap\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"unprocessedBatchesMap\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"toIdx\",\"type\":\"uint48\"}],\"name\":\"unvouch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_explodeAmount\",\"type\":\"uint256\"}],\"name\":\"updateExplodeAmount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBalance\",\"type\":\"uint256\"}],\"name\":\"updateMinBalance\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"verifier\",\"outputs\":[{\"internalType\":\"contractIVerifier\",\"name\":\"verifierInterface\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"maxTx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nLevel\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint48\",\"name\":\"fromIdx\",\"type\":\"uint48\"},{\"internalType\":\"uint48\",\"name\":\"toIdx\",\"type\":\"uint48\"}],\"name\":\"vouch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"vouchRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint192\",\"name\":\"amount\",\"type\":\"uint192\"},{\"internalType\":\"uint32\",\"name\":\"numExitRoot\",\"type\":\"uint32\"},{\"internalType\":\"uint256[]\",\"name\":\"siblings\",\"type\":\"uint256[]\"},{\"internalType\":\"uint48\",\"name\":\"idx\",\"type\":\"uint48\"}],\"name\":\"withdrawMerkleProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
+	ABI: "[{\"inputs\":[],\"name\":\"AccessControlBadConfirmation\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"internalType\":\"bytes32\",\"name\":\"neededRole\",\"type\":\"bytes32\"}],\"name\":\"AccessControlUnauthorizedAccount\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"EthTransferFailed\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InsufficientETH\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidInitialization\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"string\",\"name\":\"elementType\",\"type\":\"string\"}],\"name\":\"InvalidPoseidonAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidProof\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"InvalidVerifierAddress\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"LimitAmountExceeded\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"NotInitializing\",\"type\":\"error\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"from\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"to\",\"type\":\"address\"}],\"name\":\"NotVouched\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"ReceiverHasZeroBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SenderHasZeroBalance\",\"type\":\"error\"},{\"inputs\":[],\"name\":\"SmtProofInvalid\",\"type\":\"error\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"explodeAmount\",\"type\":\"uint256\"}],\"name\":\"ExplodeAmountUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"batchNum\",\"type\":\"uint32\"},{\"indexed\":false,\"internalType\":\"uint16\",\"name\":\"l1UserTxsLen\",\"type\":\"uint16\"}],\"name\":\"ForgeBatch\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint64\",\"name\":\"version\",\"type\":\"uint64\"}],\"name\":\"Initialized\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"queueIndex\",\"type\":\"uint32\"},{\"indexed\":true,\"internalType\":\"uint8\",\"name\":\"position\",\"type\":\"uint8\"},{\"indexed\":false,\"internalType\":\"bytes\",\"name\":\"l1UserTx\",\"type\":\"bytes\"}],\"name\":\"L1UserTxEvent\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":false,\"internalType\":\"uint256\",\"name\":\"minBalance\",\"type\":\"uint256\"}],\"name\":\"MinBalanceUpdated\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"previousAdminRole\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"newAdminRole\",\"type\":\"bytes32\"}],\"name\":\"RoleAdminChanged\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleGranted\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"},{\"indexed\":true,\"internalType\":\"address\",\"name\":\"sender\",\"type\":\"address\"}],\"name\":\"RoleRevoked\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"internalType\":\"uint48\",\"name\":\"idx\",\"type\":\"uint48\"},{\"indexed\":true,\"internalType\":\"uint32\",\"name\":\"numExitRoot\",\"type\":\"uint32\"}],\"name\":\"WithdrawEvent\",\"type\":\"event\"},{\"inputs\":[],\"name\":\"ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"DEFAULT_ADMIN_ROLE\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"key\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"value\",\"type\":\"uint256\"}],\"name\":\"_hashFinalNode\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"left\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"right\",\"type\":\"uint256\"}],\"name\":\"_hashNode\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"accountRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"balances\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"currentFillingBatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"deposit\",\"outputs\":[],\"stateMutability\":\"payable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"},{\"internalType\":\"uint48\",\"name\":\"\",\"type\":\"uint48\"}],\"name\":\"exitNullifierMap\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"exitRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"explodeAmount\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address[]\",\"name\":\"toEthAddrs\",\"type\":\"address[]\"}],\"name\":\"explodeMultiple\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"newAccountRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newVouchRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"newScoreRoot\",\"type\":\"uint256\"},{\"internalType\":\"uint256[2]\",\"name\":\"proofA\",\"type\":\"uint256[2]\"},{\"internalType\":\"uint256[2][2]\",\"name\":\"proofB\",\"type\":\"uint256[2][2]\"},{\"internalType\":\"uint256[2]\",\"name\":\"proofC\",\"type\":\"uint256[2]\"}],\"name\":\"forgeBatch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"getQueueLength\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"}],\"name\":\"getRoleAdmin\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"grantRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"hasRole\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_verifier\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"maxTx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nLevel\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"_poseidon2Elements\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_poseidon3Elements\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_adminRole\",\"type\":\"address\"}],\"name\":\"initialize\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"lastForgedBatch\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"minBalance\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"numScoreRoot\",\"type\":\"uint32\"},{\"internalType\":\"uint24\",\"name\":\"idx\",\"type\":\"uint24\"},{\"internalType\":\"uint32\",\"name\":\"score\",\"type\":\"uint32\"},{\"internalType\":\"uint256[]\",\"name\":\"siblings\",\"type\":\"uint256[]\"}],\"name\":\"proveScoreMerkleProof\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"callerConfirmation\",\"type\":\"address\"}],\"name\":\"renounceRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes32\",\"name\":\"role\",\"type\":\"bytes32\"},{\"internalType\":\"address\",\"name\":\"account\",\"type\":\"address\"}],\"name\":\"revokeRole\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"scoreRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"scoreSnapshots\",\"outputs\":[{\"internalType\":\"uint32\",\"name\":\"score\",\"type\":\"uint32\"},{\"internalType\":\"uint32\",\"name\":\"batchNum\",\"type\":\"uint32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"bytes4\",\"name\":\"interfaceId\",\"type\":\"bytes4\"}],\"name\":\"supportsInterface\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"txsDataHashMap\",\"outputs\":[{\"internalType\":\"bytes32\",\"name\":\"\",\"type\":\"bytes32\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"unprocessedBatchesMap\",\"outputs\":[{\"internalType\":\"bytes\",\"name\":\"\",\"type\":\"bytes\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toEthAddr\",\"type\":\"address\"}],\"name\":\"unvouch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_explodeAmount\",\"type\":\"uint256\"}],\"name\":\"updateExplodeAmount\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"_minBalance\",\"type\":\"uint256\"}],\"name\":\"updateMinBalance\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[],\"name\":\"verifier\",\"outputs\":[{\"internalType\":\"contractIVerifier\",\"name\":\"verifierInterface\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"maxTx\",\"type\":\"uint256\"},{\"internalType\":\"uint256\",\"name\":\"nLevel\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"toEthAddr\",\"type\":\"address\"}],\"name\":\"vouch\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint32\",\"name\":\"\",\"type\":\"uint32\"}],\"name\":\"vouchRootMap\",\"outputs\":[{\"internalType\":\"uint256\",\"name\":\"\",\"type\":\"uint256\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"\",\"type\":\"address\"}],\"name\":\"vouches\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"uint256\",\"name\":\"amount\",\"type\":\"uint256\"}],\"name\":\"withdraw\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]",
 }
 
 // BindingsABI is the input ABI used to generate the binding from.
@@ -335,6 +335,37 @@ func (_Bindings *BindingsCallerSession) AccountRootMap(arg0 uint32) (*big.Int, e
 	return _Bindings.Contract.AccountRootMap(&_Bindings.CallOpts, arg0)
 }
 
+// Balances is a free data retrieval call binding the contract method 0x27e235e3.
+//
+// Solidity: function balances(address ) view returns(uint256)
+func (_Bindings *BindingsCaller) Balances(opts *bind.CallOpts, arg0 common.Address) (*big.Int, error) {
+	var out []interface{}
+	err := _Bindings.contract.Call(opts, &out, "balances", arg0)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// Balances is a free data retrieval call binding the contract method 0x27e235e3.
+//
+// Solidity: function balances(address ) view returns(uint256)
+func (_Bindings *BindingsSession) Balances(arg0 common.Address) (*big.Int, error) {
+	return _Bindings.Contract.Balances(&_Bindings.CallOpts, arg0)
+}
+
+// Balances is a free data retrieval call binding the contract method 0x27e235e3.
+//
+// Solidity: function balances(address ) view returns(uint256)
+func (_Bindings *BindingsCallerSession) Balances(arg0 common.Address) (*big.Int, error) {
+	return _Bindings.Contract.Balances(&_Bindings.CallOpts, arg0)
+}
+
 // CurrentFillingBatch is a free data retrieval call binding the contract method 0xc25d5789.
 //
 // Solidity: function currentFillingBatch() view returns(uint32)
@@ -459,68 +490,6 @@ func (_Bindings *BindingsCallerSession) ExplodeAmount() (*big.Int, error) {
 	return _Bindings.Contract.ExplodeAmount(&_Bindings.CallOpts)
 }
 
-// GetL1TransactionQueue is a free data retrieval call binding the contract method 0xba2506df.
-//
-// Solidity: function getL1TransactionQueue(uint32 queueIndex) view returns(bytes)
-func (_Bindings *BindingsCaller) GetL1TransactionQueue(opts *bind.CallOpts, queueIndex uint32) ([]byte, error) {
-	var out []interface{}
-	err := _Bindings.contract.Call(opts, &out, "getL1TransactionQueue", queueIndex)
-
-	if err != nil {
-		return *new([]byte), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new([]byte)).(*[]byte)
-
-	return out0, err
-
-}
-
-// GetL1TransactionQueue is a free data retrieval call binding the contract method 0xba2506df.
-//
-// Solidity: function getL1TransactionQueue(uint32 queueIndex) view returns(bytes)
-func (_Bindings *BindingsSession) GetL1TransactionQueue(queueIndex uint32) ([]byte, error) {
-	return _Bindings.Contract.GetL1TransactionQueue(&_Bindings.CallOpts, queueIndex)
-}
-
-// GetL1TransactionQueue is a free data retrieval call binding the contract method 0xba2506df.
-//
-// Solidity: function getL1TransactionQueue(uint32 queueIndex) view returns(bytes)
-func (_Bindings *BindingsCallerSession) GetL1TransactionQueue(queueIndex uint32) ([]byte, error) {
-	return _Bindings.Contract.GetL1TransactionQueue(&_Bindings.CallOpts, queueIndex)
-}
-
-// GetLastForgedBatch is a free data retrieval call binding the contract method 0x1b78164b.
-//
-// Solidity: function getLastForgedBatch() view returns(uint32)
-func (_Bindings *BindingsCaller) GetLastForgedBatch(opts *bind.CallOpts) (uint32, error) {
-	var out []interface{}
-	err := _Bindings.contract.Call(opts, &out, "getLastForgedBatch")
-
-	if err != nil {
-		return *new(uint32), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(uint32)).(*uint32)
-
-	return out0, err
-
-}
-
-// GetLastForgedBatch is a free data retrieval call binding the contract method 0x1b78164b.
-//
-// Solidity: function getLastForgedBatch() view returns(uint32)
-func (_Bindings *BindingsSession) GetLastForgedBatch() (uint32, error) {
-	return _Bindings.Contract.GetLastForgedBatch(&_Bindings.CallOpts)
-}
-
-// GetLastForgedBatch is a free data retrieval call binding the contract method 0x1b78164b.
-//
-// Solidity: function getLastForgedBatch() view returns(uint32)
-func (_Bindings *BindingsCallerSession) GetLastForgedBatch() (uint32, error) {
-	return _Bindings.Contract.GetLastForgedBatch(&_Bindings.CallOpts)
-}
-
 // GetQueueLength is a free data retrieval call binding the contract method 0xb8f77005.
 //
 // Solidity: function getQueueLength() view returns(uint32)
@@ -581,37 +550,6 @@ func (_Bindings *BindingsSession) GetRoleAdmin(role [32]byte) ([32]byte, error) 
 // Solidity: function getRoleAdmin(bytes32 role) view returns(bytes32)
 func (_Bindings *BindingsCallerSession) GetRoleAdmin(role [32]byte) ([32]byte, error) {
 	return _Bindings.Contract.GetRoleAdmin(&_Bindings.CallOpts, role)
-}
-
-// GetStateRoot is a free data retrieval call binding the contract method 0x3009c59f.
-//
-// Solidity: function getStateRoot(uint32 batchNum) view returns(uint256)
-func (_Bindings *BindingsCaller) GetStateRoot(opts *bind.CallOpts, batchNum uint32) (*big.Int, error) {
-	var out []interface{}
-	err := _Bindings.contract.Call(opts, &out, "getStateRoot", batchNum)
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// GetStateRoot is a free data retrieval call binding the contract method 0x3009c59f.
-//
-// Solidity: function getStateRoot(uint32 batchNum) view returns(uint256)
-func (_Bindings *BindingsSession) GetStateRoot(batchNum uint32) (*big.Int, error) {
-	return _Bindings.Contract.GetStateRoot(&_Bindings.CallOpts, batchNum)
-}
-
-// GetStateRoot is a free data retrieval call binding the contract method 0x3009c59f.
-//
-// Solidity: function getStateRoot(uint32 batchNum) view returns(uint256)
-func (_Bindings *BindingsCallerSession) GetStateRoot(batchNum uint32) (*big.Int, error) {
-	return _Bindings.Contract.GetStateRoot(&_Bindings.CallOpts, batchNum)
 }
 
 // HasRole is a free data retrieval call binding the contract method 0x91d14854.
@@ -676,37 +614,6 @@ func (_Bindings *BindingsCallerSession) LastForgedBatch() (uint32, error) {
 	return _Bindings.Contract.LastForgedBatch(&_Bindings.CallOpts)
 }
 
-// LastIdx is a free data retrieval call binding the contract method 0xd486645c.
-//
-// Solidity: function lastIdx() view returns(uint48)
-func (_Bindings *BindingsCaller) LastIdx(opts *bind.CallOpts) (*big.Int, error) {
-	var out []interface{}
-	err := _Bindings.contract.Call(opts, &out, "lastIdx")
-
-	if err != nil {
-		return *new(*big.Int), err
-	}
-
-	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
-
-	return out0, err
-
-}
-
-// LastIdx is a free data retrieval call binding the contract method 0xd486645c.
-//
-// Solidity: function lastIdx() view returns(uint48)
-func (_Bindings *BindingsSession) LastIdx() (*big.Int, error) {
-	return _Bindings.Contract.LastIdx(&_Bindings.CallOpts)
-}
-
-// LastIdx is a free data retrieval call binding the contract method 0xd486645c.
-//
-// Solidity: function lastIdx() view returns(uint48)
-func (_Bindings *BindingsCallerSession) LastIdx() (*big.Int, error) {
-	return _Bindings.Contract.LastIdx(&_Bindings.CallOpts)
-}
-
 // MinBalance is a free data retrieval call binding the contract method 0xc5bb8758.
 //
 // Solidity: function minBalance() view returns(uint256)
@@ -767,6 +674,51 @@ func (_Bindings *BindingsSession) ScoreRootMap(arg0 uint32) (*big.Int, error) {
 // Solidity: function scoreRootMap(uint32 ) view returns(uint256)
 func (_Bindings *BindingsCallerSession) ScoreRootMap(arg0 uint32) (*big.Int, error) {
 	return _Bindings.Contract.ScoreRootMap(&_Bindings.CallOpts, arg0)
+}
+
+// ScoreSnapshots is a free data retrieval call binding the contract method 0xdf4c5fe2.
+//
+// Solidity: function scoreSnapshots(address ) view returns(uint32 score, uint32 batchNum)
+func (_Bindings *BindingsCaller) ScoreSnapshots(opts *bind.CallOpts, arg0 common.Address) (struct {
+	Score    uint32
+	BatchNum uint32
+}, error) {
+	var out []interface{}
+	err := _Bindings.contract.Call(opts, &out, "scoreSnapshots", arg0)
+
+	outstruct := new(struct {
+		Score    uint32
+		BatchNum uint32
+	})
+	if err != nil {
+		return *outstruct, err
+	}
+
+	outstruct.Score = *abi.ConvertType(out[0], new(uint32)).(*uint32)
+	outstruct.BatchNum = *abi.ConvertType(out[1], new(uint32)).(*uint32)
+
+	return *outstruct, err
+
+}
+
+// ScoreSnapshots is a free data retrieval call binding the contract method 0xdf4c5fe2.
+//
+// Solidity: function scoreSnapshots(address ) view returns(uint32 score, uint32 batchNum)
+func (_Bindings *BindingsSession) ScoreSnapshots(arg0 common.Address) (struct {
+	Score    uint32
+	BatchNum uint32
+}, error) {
+	return _Bindings.Contract.ScoreSnapshots(&_Bindings.CallOpts, arg0)
+}
+
+// ScoreSnapshots is a free data retrieval call binding the contract method 0xdf4c5fe2.
+//
+// Solidity: function scoreSnapshots(address ) view returns(uint32 score, uint32 batchNum)
+func (_Bindings *BindingsCallerSession) ScoreSnapshots(arg0 common.Address) (struct {
+	Score    uint32
+	BatchNum uint32
+}, error) {
+	return _Bindings.Contract.ScoreSnapshots(&_Bindings.CallOpts, arg0)
 }
 
 // SupportsInterface is a free data retrieval call binding the contract method 0x01ffc9a7.
@@ -943,130 +895,98 @@ func (_Bindings *BindingsCallerSession) VouchRootMap(arg0 uint32) (*big.Int, err
 	return _Bindings.Contract.VouchRootMap(&_Bindings.CallOpts, arg0)
 }
 
-// AddTx is a paid mutator transaction binding the contract method 0x2f463f59.
+// Vouches is a free data retrieval call binding the contract method 0x0b337be6.
 //
-// Solidity: function _addTx(address ethAddress, uint48 fromIdx, uint40 loadAmountF, uint40 amountF, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactor) AddTx(opts *bind.TransactOpts, ethAddress common.Address, fromIdx *big.Int, loadAmountF *big.Int, amountF *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "_addTx", ethAddress, fromIdx, loadAmountF, amountF, toIdx)
+// Solidity: function vouches(address , address ) view returns(bool)
+func (_Bindings *BindingsCaller) Vouches(opts *bind.CallOpts, arg0 common.Address, arg1 common.Address) (bool, error) {
+	var out []interface{}
+	err := _Bindings.contract.Call(opts, &out, "vouches", arg0, arg1)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
 }
 
-// AddTx is a paid mutator transaction binding the contract method 0x2f463f59.
+// Vouches is a free data retrieval call binding the contract method 0x0b337be6.
 //
-// Solidity: function _addTx(address ethAddress, uint48 fromIdx, uint40 loadAmountF, uint40 amountF, uint48 toIdx) returns()
-func (_Bindings *BindingsSession) AddTx(ethAddress common.Address, fromIdx *big.Int, loadAmountF *big.Int, amountF *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.AddTx(&_Bindings.TransactOpts, ethAddress, fromIdx, loadAmountF, amountF, toIdx)
+// Solidity: function vouches(address , address ) view returns(bool)
+func (_Bindings *BindingsSession) Vouches(arg0 common.Address, arg1 common.Address) (bool, error) {
+	return _Bindings.Contract.Vouches(&_Bindings.CallOpts, arg0, arg1)
 }
 
-// AddTx is a paid mutator transaction binding the contract method 0x2f463f59.
+// Vouches is a free data retrieval call binding the contract method 0x0b337be6.
 //
-// Solidity: function _addTx(address ethAddress, uint48 fromIdx, uint40 loadAmountF, uint40 amountF, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactorSession) AddTx(ethAddress common.Address, fromIdx *big.Int, loadAmountF *big.Int, amountF *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.AddTx(&_Bindings.TransactOpts, ethAddress, fromIdx, loadAmountF, amountF, toIdx)
+// Solidity: function vouches(address , address ) view returns(bool)
+func (_Bindings *BindingsCallerSession) Vouches(arg0 common.Address, arg1 common.Address) (bool, error) {
+	return _Bindings.Contract.Vouches(&_Bindings.CallOpts, arg0, arg1)
 }
 
-// CreateAccountDeposit is a paid mutator transaction binding the contract method 0xfbb4a00f.
+// Deposit is a paid mutator transaction binding the contract method 0xd0e30db0.
 //
-// Solidity: function createAccountDeposit(uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsTransactor) CreateAccountDeposit(opts *bind.TransactOpts, loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "createAccountDeposit", loadAmountF)
+// Solidity: function deposit() payable returns()
+func (_Bindings *BindingsTransactor) Deposit(opts *bind.TransactOpts) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "deposit")
 }
 
-// CreateAccountDeposit is a paid mutator transaction binding the contract method 0xfbb4a00f.
+// Deposit is a paid mutator transaction binding the contract method 0xd0e30db0.
 //
-// Solidity: function createAccountDeposit(uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsSession) CreateAccountDeposit(loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.CreateAccountDeposit(&_Bindings.TransactOpts, loadAmountF)
+// Solidity: function deposit() payable returns()
+func (_Bindings *BindingsSession) Deposit() (*types.Transaction, error) {
+	return _Bindings.Contract.Deposit(&_Bindings.TransactOpts)
 }
 
-// CreateAccountDeposit is a paid mutator transaction binding the contract method 0xfbb4a00f.
+// Deposit is a paid mutator transaction binding the contract method 0xd0e30db0.
 //
-// Solidity: function createAccountDeposit(uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsTransactorSession) CreateAccountDeposit(loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.CreateAccountDeposit(&_Bindings.TransactOpts, loadAmountF)
+// Solidity: function deposit() payable returns()
+func (_Bindings *BindingsTransactorSession) Deposit() (*types.Transaction, error) {
+	return _Bindings.Contract.Deposit(&_Bindings.TransactOpts)
 }
 
-// Deposit is a paid mutator transaction binding the contract method 0x212bafd7.
+// ExplodeMultiple is a paid mutator transaction binding the contract method 0xd847d0ca.
 //
-// Solidity: function deposit(uint48 fromIdx, uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsTransactor) Deposit(opts *bind.TransactOpts, fromIdx *big.Int, loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "deposit", fromIdx, loadAmountF)
+// Solidity: function explodeMultiple(address[] toEthAddrs) returns()
+func (_Bindings *BindingsTransactor) ExplodeMultiple(opts *bind.TransactOpts, toEthAddrs []common.Address) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "explodeMultiple", toEthAddrs)
 }
 
-// Deposit is a paid mutator transaction binding the contract method 0x212bafd7.
+// ExplodeMultiple is a paid mutator transaction binding the contract method 0xd847d0ca.
 //
-// Solidity: function deposit(uint48 fromIdx, uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsSession) Deposit(fromIdx *big.Int, loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Deposit(&_Bindings.TransactOpts, fromIdx, loadAmountF)
+// Solidity: function explodeMultiple(address[] toEthAddrs) returns()
+func (_Bindings *BindingsSession) ExplodeMultiple(toEthAddrs []common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.ExplodeMultiple(&_Bindings.TransactOpts, toEthAddrs)
 }
 
-// Deposit is a paid mutator transaction binding the contract method 0x212bafd7.
+// ExplodeMultiple is a paid mutator transaction binding the contract method 0xd847d0ca.
 //
-// Solidity: function deposit(uint48 fromIdx, uint40 loadAmountF) payable returns()
-func (_Bindings *BindingsTransactorSession) Deposit(fromIdx *big.Int, loadAmountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Deposit(&_Bindings.TransactOpts, fromIdx, loadAmountF)
+// Solidity: function explodeMultiple(address[] toEthAddrs) returns()
+func (_Bindings *BindingsTransactorSession) ExplodeMultiple(toEthAddrs []common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.ExplodeMultiple(&_Bindings.TransactOpts, toEthAddrs)
 }
 
-// Exit is a paid mutator transaction binding the contract method 0x8195b790.
+// ForgeBatch is a paid mutator transaction binding the contract method 0xcc7e445e.
 //
-// Solidity: function exit(uint48 fromIdx, uint40 amountF) returns()
-func (_Bindings *BindingsTransactor) Exit(opts *bind.TransactOpts, fromIdx *big.Int, amountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "exit", fromIdx, amountF)
+// Solidity: function forgeBatch(uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
+func (_Bindings *BindingsTransactor) ForgeBatch(opts *bind.TransactOpts, newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "forgeBatch", newAccountRoot, newVouchRoot, newScoreRoot, proofA, proofB, proofC)
 }
 
-// Exit is a paid mutator transaction binding the contract method 0x8195b790.
+// ForgeBatch is a paid mutator transaction binding the contract method 0xcc7e445e.
 //
-// Solidity: function exit(uint48 fromIdx, uint40 amountF) returns()
-func (_Bindings *BindingsSession) Exit(fromIdx *big.Int, amountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Exit(&_Bindings.TransactOpts, fromIdx, amountF)
+// Solidity: function forgeBatch(uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
+func (_Bindings *BindingsSession) ForgeBatch(newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.ForgeBatch(&_Bindings.TransactOpts, newAccountRoot, newVouchRoot, newScoreRoot, proofA, proofB, proofC)
 }
 
-// Exit is a paid mutator transaction binding the contract method 0x8195b790.
+// ForgeBatch is a paid mutator transaction binding the contract method 0xcc7e445e.
 //
-// Solidity: function exit(uint48 fromIdx, uint40 amountF) returns()
-func (_Bindings *BindingsTransactorSession) Exit(fromIdx *big.Int, amountF *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Exit(&_Bindings.TransactOpts, fromIdx, amountF)
-}
-
-// ExplodeMultiple is a paid mutator transaction binding the contract method 0x894bc2b8.
-//
-// Solidity: function explodeMultiple(uint48 fromIdx, uint48[] toIdxs) returns()
-func (_Bindings *BindingsTransactor) ExplodeMultiple(opts *bind.TransactOpts, fromIdx *big.Int, toIdxs []*big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "explodeMultiple", fromIdx, toIdxs)
-}
-
-// ExplodeMultiple is a paid mutator transaction binding the contract method 0x894bc2b8.
-//
-// Solidity: function explodeMultiple(uint48 fromIdx, uint48[] toIdxs) returns()
-func (_Bindings *BindingsSession) ExplodeMultiple(fromIdx *big.Int, toIdxs []*big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.ExplodeMultiple(&_Bindings.TransactOpts, fromIdx, toIdxs)
-}
-
-// ExplodeMultiple is a paid mutator transaction binding the contract method 0x894bc2b8.
-//
-// Solidity: function explodeMultiple(uint48 fromIdx, uint48[] toIdxs) returns()
-func (_Bindings *BindingsTransactorSession) ExplodeMultiple(fromIdx *big.Int, toIdxs []*big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.ExplodeMultiple(&_Bindings.TransactOpts, fromIdx, toIdxs)
-}
-
-// ForgeBatch is a paid mutator transaction binding the contract method 0x83cd43e0.
-//
-// Solidity: function forgeBatch(uint48 newLastIdx, uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256 newExitRoot, bytes txsData, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
-func (_Bindings *BindingsTransactor) ForgeBatch(opts *bind.TransactOpts, newLastIdx *big.Int, newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, newExitRoot *big.Int, txsData []byte, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "forgeBatch", newLastIdx, newAccountRoot, newVouchRoot, newScoreRoot, newExitRoot, txsData, proofA, proofB, proofC)
-}
-
-// ForgeBatch is a paid mutator transaction binding the contract method 0x83cd43e0.
-//
-// Solidity: function forgeBatch(uint48 newLastIdx, uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256 newExitRoot, bytes txsData, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
-func (_Bindings *BindingsSession) ForgeBatch(newLastIdx *big.Int, newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, newExitRoot *big.Int, txsData []byte, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.ForgeBatch(&_Bindings.TransactOpts, newLastIdx, newAccountRoot, newVouchRoot, newScoreRoot, newExitRoot, txsData, proofA, proofB, proofC)
-}
-
-// ForgeBatch is a paid mutator transaction binding the contract method 0x83cd43e0.
-//
-// Solidity: function forgeBatch(uint48 newLastIdx, uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256 newExitRoot, bytes txsData, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
-func (_Bindings *BindingsTransactorSession) ForgeBatch(newLastIdx *big.Int, newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, newExitRoot *big.Int, txsData []byte, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.ForgeBatch(&_Bindings.TransactOpts, newLastIdx, newAccountRoot, newVouchRoot, newScoreRoot, newExitRoot, txsData, proofA, proofB, proofC)
+// Solidity: function forgeBatch(uint256 newAccountRoot, uint256 newVouchRoot, uint256 newScoreRoot, uint256[2] proofA, uint256[2][2] proofB, uint256[2] proofC) returns()
+func (_Bindings *BindingsTransactorSession) ForgeBatch(newAccountRoot *big.Int, newVouchRoot *big.Int, newScoreRoot *big.Int, proofA [2]*big.Int, proofB [2][2]*big.Int, proofC [2]*big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.ForgeBatch(&_Bindings.TransactOpts, newAccountRoot, newVouchRoot, newScoreRoot, proofA, proofB, proofC)
 }
 
 // GrantRole is a paid mutator transaction binding the contract method 0x2f2ff15d.
@@ -1111,6 +1031,27 @@ func (_Bindings *BindingsTransactorSession) Initialize(_verifier common.Address,
 	return _Bindings.Contract.Initialize(&_Bindings.TransactOpts, _verifier, maxTx, nLevel, _poseidon2Elements, _poseidon3Elements, _adminRole)
 }
 
+// ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
+//
+// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
+func (_Bindings *BindingsTransactor) ProveScoreMerkleProof(opts *bind.TransactOpts, numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "proveScoreMerkleProof", numScoreRoot, idx, score, siblings)
+}
+
+// ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
+//
+// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
+func (_Bindings *BindingsSession) ProveScoreMerkleProof(numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.ProveScoreMerkleProof(&_Bindings.TransactOpts, numScoreRoot, idx, score, siblings)
+}
+
+// ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
+//
+// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
+func (_Bindings *BindingsTransactorSession) ProveScoreMerkleProof(numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.ProveScoreMerkleProof(&_Bindings.TransactOpts, numScoreRoot, idx, score, siblings)
+}
+
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
 //
 // Solidity: function renounceRole(bytes32 role, address callerConfirmation) returns()
@@ -1153,25 +1094,25 @@ func (_Bindings *BindingsTransactorSession) RevokeRole(role [32]byte, account co
 	return _Bindings.Contract.RevokeRole(&_Bindings.TransactOpts, role, account)
 }
 
-// Unvouch is a paid mutator transaction binding the contract method 0xc1b190c0.
+// Unvouch is a paid mutator transaction binding the contract method 0xab43cc36.
 //
-// Solidity: function unvouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactor) Unvouch(opts *bind.TransactOpts, fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "unvouch", fromIdx, toIdx)
+// Solidity: function unvouch(address toEthAddr) returns()
+func (_Bindings *BindingsTransactor) Unvouch(opts *bind.TransactOpts, toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "unvouch", toEthAddr)
 }
 
-// Unvouch is a paid mutator transaction binding the contract method 0xc1b190c0.
+// Unvouch is a paid mutator transaction binding the contract method 0xab43cc36.
 //
-// Solidity: function unvouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsSession) Unvouch(fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Unvouch(&_Bindings.TransactOpts, fromIdx, toIdx)
+// Solidity: function unvouch(address toEthAddr) returns()
+func (_Bindings *BindingsSession) Unvouch(toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.Unvouch(&_Bindings.TransactOpts, toEthAddr)
 }
 
-// Unvouch is a paid mutator transaction binding the contract method 0xc1b190c0.
+// Unvouch is a paid mutator transaction binding the contract method 0xab43cc36.
 //
-// Solidity: function unvouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactorSession) Unvouch(fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Unvouch(&_Bindings.TransactOpts, fromIdx, toIdx)
+// Solidity: function unvouch(address toEthAddr) returns()
+func (_Bindings *BindingsTransactorSession) Unvouch(toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.Unvouch(&_Bindings.TransactOpts, toEthAddr)
 }
 
 // UpdateExplodeAmount is a paid mutator transaction binding the contract method 0xaa4f9116.
@@ -1216,46 +1157,46 @@ func (_Bindings *BindingsTransactorSession) UpdateMinBalance(_minBalance *big.In
 	return _Bindings.Contract.UpdateMinBalance(&_Bindings.TransactOpts, _minBalance)
 }
 
-// Vouch is a paid mutator transaction binding the contract method 0x11954d3c.
+// Vouch is a paid mutator transaction binding the contract method 0xdd66e16b.
 //
-// Solidity: function vouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactor) Vouch(opts *bind.TransactOpts, fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "vouch", fromIdx, toIdx)
+// Solidity: function vouch(address toEthAddr) returns()
+func (_Bindings *BindingsTransactor) Vouch(opts *bind.TransactOpts, toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "vouch", toEthAddr)
 }
 
-// Vouch is a paid mutator transaction binding the contract method 0x11954d3c.
+// Vouch is a paid mutator transaction binding the contract method 0xdd66e16b.
 //
-// Solidity: function vouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsSession) Vouch(fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Vouch(&_Bindings.TransactOpts, fromIdx, toIdx)
+// Solidity: function vouch(address toEthAddr) returns()
+func (_Bindings *BindingsSession) Vouch(toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.Vouch(&_Bindings.TransactOpts, toEthAddr)
 }
 
-// Vouch is a paid mutator transaction binding the contract method 0x11954d3c.
+// Vouch is a paid mutator transaction binding the contract method 0xdd66e16b.
 //
-// Solidity: function vouch(uint48 fromIdx, uint48 toIdx) returns()
-func (_Bindings *BindingsTransactorSession) Vouch(fromIdx *big.Int, toIdx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.Vouch(&_Bindings.TransactOpts, fromIdx, toIdx)
+// Solidity: function vouch(address toEthAddr) returns()
+func (_Bindings *BindingsTransactorSession) Vouch(toEthAddr common.Address) (*types.Transaction, error) {
+	return _Bindings.Contract.Vouch(&_Bindings.TransactOpts, toEthAddr)
 }
 
-// WithdrawMerkleProof is a paid mutator transaction binding the contract method 0x62332ee2.
+// Withdraw is a paid mutator transaction binding the contract method 0x2e1a7d4d.
 //
-// Solidity: function withdrawMerkleProof(uint192 amount, uint32 numExitRoot, uint256[] siblings, uint48 idx) returns()
-func (_Bindings *BindingsTransactor) WithdrawMerkleProof(opts *bind.TransactOpts, amount *big.Int, numExitRoot uint32, siblings []*big.Int, idx *big.Int) (*types.Transaction, error) {
-	return _Bindings.contract.Transact(opts, "withdrawMerkleProof", amount, numExitRoot, siblings, idx)
+// Solidity: function withdraw(uint256 amount) returns()
+func (_Bindings *BindingsTransactor) Withdraw(opts *bind.TransactOpts, amount *big.Int) (*types.Transaction, error) {
+	return _Bindings.contract.Transact(opts, "withdraw", amount)
 }
 
-// WithdrawMerkleProof is a paid mutator transaction binding the contract method 0x62332ee2.
+// Withdraw is a paid mutator transaction binding the contract method 0x2e1a7d4d.
 //
-// Solidity: function withdrawMerkleProof(uint192 amount, uint32 numExitRoot, uint256[] siblings, uint48 idx) returns()
-func (_Bindings *BindingsSession) WithdrawMerkleProof(amount *big.Int, numExitRoot uint32, siblings []*big.Int, idx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.WithdrawMerkleProof(&_Bindings.TransactOpts, amount, numExitRoot, siblings, idx)
+// Solidity: function withdraw(uint256 amount) returns()
+func (_Bindings *BindingsSession) Withdraw(amount *big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.Withdraw(&_Bindings.TransactOpts, amount)
 }
 
-// WithdrawMerkleProof is a paid mutator transaction binding the contract method 0x62332ee2.
+// Withdraw is a paid mutator transaction binding the contract method 0x2e1a7d4d.
 //
-// Solidity: function withdrawMerkleProof(uint192 amount, uint32 numExitRoot, uint256[] siblings, uint48 idx) returns()
-func (_Bindings *BindingsTransactorSession) WithdrawMerkleProof(amount *big.Int, numExitRoot uint32, siblings []*big.Int, idx *big.Int) (*types.Transaction, error) {
-	return _Bindings.Contract.WithdrawMerkleProof(&_Bindings.TransactOpts, amount, numExitRoot, siblings, idx)
+// Solidity: function withdraw(uint256 amount) returns()
+func (_Bindings *BindingsTransactorSession) Withdraw(amount *big.Int) (*types.Transaction, error) {
+	return _Bindings.Contract.Withdraw(&_Bindings.TransactOpts, amount)
 }
 
 // BindingsExplodeAmountUpdatedIterator is returned from FilterExplodeAmountUpdated and is used to iterate over the raw logs and unpacked data for ExplodeAmountUpdated events raised by the Bindings contract.
