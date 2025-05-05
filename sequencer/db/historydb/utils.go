@@ -10,6 +10,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	_ "github.com/lib/pq"
 	migrate "github.com/rubenv/sql-migrate"
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -35,11 +36,11 @@ func init() {
 
 // MigrationsUp runs the SQL migration up
 func MigrationsUp(db *sql.DB) error {
-	_, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
+	nMigrations, err := migrate.Exec(db, "postgres", migrations, migrate.Up)
 	if err != nil {
-		fmt.Println("failed to migrate up", err)
+		return common.Wrap(err)
 	}
-	fmt.Println("successfully ran migration up")
+	fmt.Printf("successfully ran migration up: %d \n", nMigrations)
 	return nil
 }
 
@@ -47,7 +48,7 @@ func MigrationsUp(db *sql.DB) error {
 func MigrationsDown(db *sql.DB) error {
 	_, err := migrate.Exec(db, "postgres", migrations, migrate.Down)
 	if err != nil {
-		fmt.Println("failed to migrate down", err)
+		return common.Wrap(err)
 	}
 	fmt.Println("successfully ran migration down")
 	return nil
