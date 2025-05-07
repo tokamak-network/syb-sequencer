@@ -16,7 +16,7 @@ import (
 // Event types
 type L1UserTxEvent struct {
 	QueueIndex uint32
-	Position   uint32
+	Position   uint8
 	L1UserTx   []byte
 }
 
@@ -37,7 +37,7 @@ var (
 )
 
 // ParseEvent parses data of events found on blockchain in required structure
-func ParseEvent(log *types.Log) (interface{}, string, error) {
+func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 	// Parse ABI
 	sybilABI, err := abi.JSON(strings.NewReader(bindings.BindingsMetaData.ABI))
 	if err != nil {
@@ -49,11 +49,32 @@ func ParseEvent(log *types.Log) (interface{}, string, error) {
 	// Check which event it is and unpack accordingly
 	switch log.Topics[0] {
 	case logSYBL1UserTxEvent:
-		err = sybilABI.UnpackIntoInterface(&l1UserTx, "L1UserTxEvent", log.Data)
-		if err != nil {
-			return nil, "", fmt.Errorf("parseEvent: failed to unpack L1UserTxEvent: %w", err)
+		// For indexed parameters, we need to get them from the topics
+		if len(log.Topics) < 3 {
+			return nil, "", fmt.Errorf("parseEvent: not enough topics for L1UserTxEvent")
 		}
-		return l1UserTx, "L1UserTxEvent", nil
+		
+		// Get queueIndex from topic 1
+		queueIndex := new(big.Int).SetBytes(log.Topics[1].Bytes()).Uint64()
+		l1UserTx.QueueIndex = uint32(queueIndex)
+		
+		// Get position from topic 2
+		position := new(big.Int).SetBytes(log.Topics[2].Bytes()).Uint64()
+		l1UserTx.Position = uint8(position)
+		
+		// Unpack the non-indexed parameter (l1UserTx bytes) from data
+		var unpacked struct {
+			L1UserTx []byte
+		}
+		
+		err = sybilABI.UnpackIntoInterface(&unpacked, "L1UserTxEvent", log.Data)
+		if err != nil {
+			return nil, "", fmt.Errorf("parseEvent: failed to unpack L1UserTxEvent data: %w", err)
+		}
+		
+		l1UserTx.L1UserTx = unpacked.L1UserTx
+		
+		return &l1UserTx, "L1UserTxEvent", nil
 	}
 
 	// If we get here, it's an unknown event

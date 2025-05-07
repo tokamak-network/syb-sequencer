@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
 )
 
 // Synchronizer listens to contract events and stores them in the database
@@ -24,11 +25,14 @@ type Synchronizer struct {
 	logs            chan types.Log
 	sub             ethereum.Subscription
 	logger          *log.Logger
+	forger          *forger.Forger
 	lastBlock       int64
 }
 
+var lastSyncBatch uint32
+
 // NewSynchronizer creates a new synchronizer
-func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB, logger *log.Logger) (*Synchronizer, error) {
+func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB, logger *log.Logger, forger *forger.Forger) (*Synchronizer, error) {
 	client, err := ethclient.Dial(ethRPC)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Ethereum client: %v", err)
@@ -49,6 +53,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB,
 		db:              db,
 		logs:            logs,
 		logger:          logger,
+		forger:          forger,
 		lastBlock:       0,
 	}, nil
 }
@@ -185,20 +190,21 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 
 // processLog processes a single log entry
 func (s *Synchronizer) processLog(vLog types.Log) {
+	lastForgedBatch := s.forger.GetLastForgedBatchNum()
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
 
 	// // Parse the event
-	event, eventType, err := ParseEvent(&vLog)
+	eventData, eventType, err := ParseEvent(&vLog)
 	if err != nil {
 		s.logger.Printf("Error parsing event: %v", err)
 		return
 	}
 
-	fmt.Printf("event: %v, eventType: %s, err: %v \n", event, eventType, err)
+	fmt.Printf("event: %v, eventType: %s, err: %v \n", eventData, eventType, err)
 
 	tx := &historydb.Tx{
-		BatchNum:    0, // Initial batch number is 0
-		Position:    int(vLog.Index),
+		BatchNum:    int64(eventData.QueueIndex), // Initial batch number is 0
+		Position:    int(eventData.Position),
 		Type:        eventType,
 		FromIdx:     nil,           // Will be set based on event type
 		FromEthAddr: "",            // Will be set based on event type
@@ -209,17 +215,16 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	// Format event data based on event type
 	//TODO: Add Different events
-	var eventData string
+	var eventDetails string
 	switch eventType {
 	case "L1UserTxEvent":
-		l1UserTx := event.(L1UserTxEvent)
-		eventData = fmt.Sprintf("QueueIndex: %d, Position: %d",
-			l1UserTx.QueueIndex, l1UserTx.Position)
-		txType, fromEthAddr, toEthAddr, amount, err := ParseTxData(l1UserTx.L1UserTx)
+		eventDetails = fmt.Sprintf("QueueIndex: %d, Position: %d",
+			eventData.QueueIndex, eventData.Position)
+		txType, fromEthAddr, toEthAddr, amount, err := ParseTxData(eventData.L1UserTx)
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
-		position := int64(l1UserTx.Position)
+		position := int64(eventData.Position)
 		tx.FromIdx = &position
 		tx.ToIdx = position
 		tx.FromEthAddr = fromEthAddr.Hex()
@@ -228,15 +233,23 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		tx.Type = txType
 
 	default:
-		eventData = "Unknown event data"
+		eventDetails = "Unknown event data"
 	}
 
-	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventData)
+	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventDetails)
 
 	err = s.db.SaveTx(tx)
 	if err != nil {
 		s.logger.Printf("Error saving transaction: %v", err)
 		return
+	}
+	// Check for current batch to be synced and update it's number
+	if lastSyncBatch == 0 || eventData.QueueIndex > lastSyncBatch {
+		lastSyncBatch = eventData.QueueIndex
+	}
+
+	if lastForgedBatch < (lastSyncBatch + 2) {
+		s.forger.ForgeBatch(lastForgedBatch + 1)
 	}
 
 	s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
