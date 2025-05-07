@@ -2,7 +2,6 @@ package kvdb
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"sort"
@@ -34,8 +33,6 @@ var (
 	KeyCurrentBatch = []byte("k:currentbatch")
 	// keyCurrentAccountIdx is used as key in the db to store the current AccountIdx
 	keyCurrentAccountIdx = []byte("k:accountidx")
-	// keyCurrentVouchIdx is used as key in the db to store the current VouchIdx
-	keyCurrentVouchIdx = []byte("k:vouchidx")
 	// ErrNoLast is returned when the KVDB has been configured to not have
 	// a Last checkpoint but a Last method is used
 	ErrNoLast = fmt.Errorf("no last checkpoint")
@@ -62,8 +59,6 @@ type KVDB struct {
 	db  *pebble.Storage
 	// CurrentAccountIdx holds the current AccountIdx that the BatchBuilder is using
 	CurrentAccountIdx common.AccountIdx
-	CurrentVouchIdx   common.VouchIdx
-	CurrentScoreIdx   common.ScoreIdx
 	CurrentBatch      common.BatchNum
 	mutexCheckpoint   sync.Mutex
 	mutexDelOld       sync.Mutex
@@ -260,13 +255,8 @@ func (k *KVDB) reset(batchNum common.BatchNum, closeCurrent bool) error {
 	if err != nil {
 		return common.Wrap(err)
 	}
-	// idx is obtained from the statedb reset
+	// accountIdx is obtained from the statedb reset
 	k.CurrentAccountIdx, err = k.GetCurrentAccountIdx()
-	if err != nil {
-		return common.Wrap(err)
-	}
-	// idx is obtained from the statedb reset
-	k.CurrentVouchIdx, err = k.GetCurrentVouchIdx()
 	if err != nil {
 		return common.Wrap(err)
 	}
@@ -412,20 +402,6 @@ func (k *KVDB) SetCurrentAccountIdx(idx common.AccountIdx) error {
 	return nil
 }
 
-// GetCurrentVouchIdx returns the stored Idx from the KVDB, which is the last Idx
-// used for an Vouch in the k.
-func (k *KVDB) GetCurrentVouchIdx() (common.VouchIdx, error) {
-	idxBytes, err := k.db.Get(keyCurrentVouchIdx)
-	if common.Unwrap(err) == db.ErrNotFound {
-		//TODO: Need to check and update this for VouchIDx
-		return common.RollupConstReservedIDx, nil // 255, nil
-	}
-	if err != nil {
-		return 0, common.Wrap(err)
-	}
-	return common.VouchIdxFromBytes(idxBytes[:])
-}
-
 // MakeCheckpoint does a checkpoint at the given batchNum in the defined path.
 // Internally this advances & stores the current BatchNum, and then stores a
 // Checkpoint of the current state of the k.
@@ -498,7 +474,7 @@ func (k *KVDB) DeleteCheckpoint(batchNum common.BatchNum) error {
 // ListCheckpoints returns the list of batchNums of the checkpoints, sorted.
 // If there's a gap between the list of checkpoints, an error is returned.
 func (k *KVDB) ListCheckpoints() ([]int, error) {
-	files, err := ioutil.ReadDir(k.cfg.Path)
+	files, err := os.ReadDir(k.cfg.Path)
 	if err != nil {
 		return nil, common.Wrap(err)
 	}
