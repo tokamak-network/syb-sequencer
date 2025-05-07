@@ -9,7 +9,13 @@ import (
 	ethCommon "github.com/ethereum/go-ethereum/common"
 )
 
-const VouchIdxBytesLen = 6
+const (
+	// VouchIdxBytesLen idx bytes
+	VouchIdxBytesLen = 6
+	// maxVouchIdxValue is the maximum value that Idx can have (48 bits:
+	// maxVouchIdxValue=2**48-1)
+	maxVouchIdxValue = 0xffffffffffff
+)
 
 type VouchIdx uint64
 
@@ -20,7 +26,7 @@ func (idx VouchIdx) String() string {
 
 // Bytes returns a byte array representing the vouch Idx
 func (idx VouchIdx) Bytes() ([6]byte, error) {
-	if idx > maxIdxValue {
+	if idx > maxVouchIdxValue {
 		return [6]byte{}, Wrap(ErrIdxOverflow)
 	}
 	var idxBytes [3]byte
@@ -35,7 +41,7 @@ func (idx VouchIdx) BigInt() *big.Int {
 	return big.NewInt(int64(idx))
 }
 
-// IdxFromBigInt converts a *big.Int to vouch Idx type
+// VouchIdxFromBigInt converts a *big.Int to vouch Idx type
 func VouchIdxFromBigInt(b *big.Int) (VouchIdx, error) {
 	if b.Int64() > maxIdxValue {
 		return 0, Wrap(ErrNumOverflow)
@@ -43,6 +49,7 @@ func VouchIdxFromBigInt(b *big.Int) (VouchIdx, error) {
 	return VouchIdx(uint64(b.Int64())), nil
 }
 
+// VouchIdxFromBytes returns vouchIdx from a byte array
 func VouchIdxFromBytes(b []byte) (VouchIdx, error) {
 	if len(b) != VouchIdxBytesLen {
 		return 0, Wrap(fmt.Errorf("can not parse Idx, bytes len %d, expected %d",

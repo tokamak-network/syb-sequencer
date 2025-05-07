@@ -19,7 +19,7 @@ var (
 	// ErrGetIdxNoCase is used when trying to get the Idx from EthAddr &
 	// BJJ with not compatible combination
 	ErrGetIdxNoCase = errors.New(
-		"cannot get Idx due unexpected combination of ethereum Address & BabyJubJub PublicKey")
+		"cannot get Idx due unexpected combination of ethereum Address")
 
 	// PrefixKeyMTAcc is the key prefix for account merkle tree in the db
 	PrefixKeyMTAcc = []byte("ma:")

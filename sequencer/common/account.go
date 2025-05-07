@@ -15,7 +15,7 @@ const (
 
 	// AccountIdxBytesLen idx bytes
 	AccountIdxBytesLen = 3
-	// maxIdxValue is the maximum value that Idx can have (48 bits:
+	// maxIdxValue is the maximum value that Idx can have (24 bits:
 	// maxIdxValue=2**24-1)
 	maxIdxValue = 0xffffff
 )
@@ -45,7 +45,7 @@ func (idx AccountIdx) BigInt() *big.Int {
 	return big.NewInt(int64(idx))
 }
 
-// IdxFromBigInt converts a *big.Int to account Idx type
+// AccountIdxFromBigInt converts a *big.Int to account Idx type
 func AccountIdxFromBigInt(b *big.Int) (AccountIdx, error) {
 	if b.Int64() > maxIdxValue {
 		return 0, Wrap(ErrNumOverflow)
@@ -53,7 +53,7 @@ func AccountIdxFromBigInt(b *big.Int) (AccountIdx, error) {
 	return AccountIdx(uint32(b.Int64())), nil
 }
 
-// AccountIdxFromBytes returns Idx from a byte array
+// AccountIdxFromBytes returns account Idx from a byte array
 func AccountIdxFromBytes(b []byte) (AccountIdx, error) {
 	if len(b) != AccountIdxBytesLen {
 		return 0, Wrap(fmt.Errorf("can not parse Idx, bytes len %d, expected %d",

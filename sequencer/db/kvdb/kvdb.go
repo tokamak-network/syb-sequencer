@@ -60,9 +60,10 @@ type Config struct {
 type KVDB struct {
 	cfg Config
 	db  *pebble.Storage
-	// CurrentIdx holds the current Idx that the BatchBuilder is using
+	// CurrentAccountIdx holds the current AccountIdx that the BatchBuilder is using
 	CurrentAccountIdx common.AccountIdx
 	CurrentVouchIdx   common.VouchIdx
+	CurrentScoreIdx   common.ScoreIdx
 	CurrentBatch      common.BatchNum
 	mutexCheckpoint   sync.Mutex
 	mutexDelOld       sync.Mutex
