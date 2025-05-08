@@ -24,20 +24,18 @@ var (
 	ErrGetIdxNoCase = errors.New(
 		"cannot get Idx due unexpected combination of ethereum Address")
 
-	// PrefixKeyMTAcc is the key prefix for account merkle tree in the db
-	PrefixKeyMTAcc = []byte("ma:")
-	// PrefixKeyMTVoc is the key prefix for vouch merkle tree in the db
-	PrefixKeyMTVoc = []byte("mv:")
-	// PrefixKeyMTSco is the key prefix for score merkle tree in the db
-	PrefixKeyMTSco = []byte("ms:")
+	// PrefixKeyAT is the key prefix for account merkle tree in the db
+	PrefixKeyAT = []byte("at:")
+	// PrefixKeyVT is the key prefix for vouch merkle tree in the db
+	PrefixKeyVT = []byte("vt:")
+	// PrefixKeyST is the key prefix for score merkle tree in the db
+	PrefixKeyST = []byte("st:")
 )
 
 const (
-	// TypeSynchronizer defines a StateDB used by the Synchronizer, that
-	// generates the ExitTree when processing the txs
+	// TypeSynchronizer defines a StateDB used by the Synchronizer
 	TypeSynchronizer = "synchronizer"
-	// TypeBatchBuilder defines a StateDB used by the BatchBuilder, that
-	// generates the ExitTree and the ZKInput when processing the txs
+	// TypeBatchBuilder defines a StateDB used by the BatchBuilder
 	TypeBatchBuilder = "batchbuilder"
 	// MaxNLevels is the maximum value of NLevels for the merkle tree,
 	// which comes from the fact that AccountIdx has 24 bits.
@@ -70,11 +68,11 @@ type Config struct {
 
 // StateDB represents the state database with an integrated Merkle tree.
 type StateDB struct {
-	cfg         Config
-	db          *kvdb.KVDB
-	AccountTree *merkletree.MerkleTree
-	VouchTree   *merkletree.MerkleTree
-	ScoreTree   *merkletree.MerkleTree
+	cfg Config
+	db  *kvdb.KVDB
+	AT  *merkletree.MerkleTree
+	VT  *merkletree.MerkleTree
+	ST  *merkletree.MerkleTree
 }
 
 // Last offers a subset of view methods of the StateDB that can be
@@ -122,15 +120,15 @@ func NewStateDB(cfg Config) (*StateDB, error) {
 		return nil, common.Wrap(err)
 	}
 
-	mtAccount, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyMTAcc), 24)
-	mtVouch, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyMTVoc), 24)
-	mtScore, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyMTSco), 24)
+	at, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyAT), 24)
+	vt, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyVT), 48)
+	st, _ := merkletree.NewMerkleTree(kv.StorageWithPrefix(PrefixKeyST), 24)
 	return &StateDB{
-		cfg:         cfg,
-		db:          kv,
-		AccountTree: mtAccount,
-		VouchTree:   mtVouch,
-		ScoreTree:   mtScore,
+		cfg: cfg,
+		db:  kv,
+		AT:  at,
+		VT:  vt,
+		ST:  st,
 	}, nil
 }
 
@@ -179,36 +177,36 @@ func (s *StateDB) Reset(batchNum common.BatchNum) error {
 	if err := s.db.Reset(batchNum); err != nil {
 		return common.Wrap(err)
 	}
-	if s.AccountTree != nil {
+	if s.AT != nil {
 		// open the AccountTree for the current s.db
-		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTAcc), s.AccountTree.MaxLevels())
+		at, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyAT), s.AT.MaxLevels())
 		if err != nil {
 			return common.Wrap(err)
 		}
-		s.AccountTree = mt
+		s.AT = at
 	}
-	if s.VouchTree != nil {
+	if s.VT != nil {
 		// open the VouchTree for the current s.db
-		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTVoc), s.VouchTree.MaxLevels())
+		vt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyVT), s.VT.MaxLevels())
 		if err != nil {
 			return common.Wrap(err)
 		}
-		s.VouchTree = mt
+		s.VT = vt
 	}
-	if s.ScoreTree != nil {
+	if s.ST != nil {
 		// open the ScoreTree for the current s.db
-		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTSco), s.ScoreTree.MaxLevels())
+		st, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyST), s.ST.MaxLevels())
 		if err != nil {
 			return common.Wrap(err)
 		}
-		s.ScoreTree = mt
+		s.ST = st
 	}
 	return nil
 }
 
 // LocalStateDB represents the local StateDB which allows to make copies from
-// the synchronizer StateDB, and is used by the tx-selector and the
-// batch-builder. LocalStateDB is an in-memory storage.
+// the synchronizer StateDB, and is used by the batch-builder.
+// LocalStateDB is an in-memory storage.
 type LocalStateDB struct {
 	*StateDB
 	synchronizerStateDB *StateDB
@@ -245,31 +243,31 @@ func (l *LocalStateDB) Reset(batchNum common.BatchNum, fromSynchronizer bool) er
 			return common.Wrap(err)
 		}
 		// open the AccountTree for the current s.db
-		if l.AccountTree != nil {
-			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTAcc),
-				l.AccountTree.MaxLevels())
+		if l.AT != nil {
+			at, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyAT),
+				l.AT.MaxLevels())
 			if err != nil {
 				return common.Wrap(err)
 			}
-			l.AccountTree = mt
+			l.AT = at
 		}
 		// open the MT for the current s.db
-		if l.VouchTree != nil {
-			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTVoc),
-				l.VouchTree.MaxLevels())
+		if l.VT != nil {
+			vt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyVT),
+				l.VT.MaxLevels())
 			if err != nil {
 				return common.Wrap(err)
 			}
-			l.VouchTree = mt
+			l.VT = vt
 		}
 		// open the MT for the current s.db
-		if l.ScoreTree != nil {
-			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTSco),
-				l.ScoreTree.MaxLevels())
+		if l.ST != nil {
+			st, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyST),
+				l.ST.MaxLevels())
 			if err != nil {
 				return common.Wrap(err)
 			}
-			l.ScoreTree = mt
+			l.ST = st
 		}
 		return nil
 	}

@@ -29,7 +29,7 @@ var (
 // MerkleTree, returning a CircomProcessorProof.
 func (s *StateDB) CreateAccount(idx common.AccountIdx, account *common.Account) (
 	*merkletree.CircomProcessorProof, error) {
-	cpp, err := CreateAccountInTreeDB(s.db.DB(), s.AccountTree, idx, account)
+	cpp, err := CreateAccountInTreeDB(s.db.DB(), s.AT, idx, account)
 	if err != nil {
 		return cpp, common.Wrap(err)
 	}
@@ -40,7 +40,7 @@ func (s *StateDB) CreateAccount(idx common.AccountIdx, account *common.Account) 
 
 // CreateAccountInTreeDB is abstracted from StateDB to be used from StateDB.
 // Creates a new Account in the StateDB for the given Idx.  If
-// StateDB.MT==nil, MerkleTree is not affected, otherwise updates the
+// StateDB.AT==nil, MerkleTree is not affected, otherwise updates the
 // MerkleTree, returning a CircomProcessorProof.
 func CreateAccountInTreeDB(sto db.Storage, mt *merkletree.MerkleTree, idx common.AccountIdx,
 	account *common.Account) (*merkletree.CircomProcessorProof, error) {
@@ -94,7 +94,7 @@ func CreateAccountInTreeDB(sto db.Storage, mt *merkletree.MerkleTree, idx common
 // MerkleTree, returning a CircomProcessorProof.
 func (s *StateDB) UpdateAccount(idx common.AccountIdx, account *common.Account) (
 	*merkletree.CircomProcessorProof, error) {
-	return UpdateAccountInTreeDB(s.db.DB(), s.AccountTree, idx, account)
+	return UpdateAccountInTreeDB(s.db.DB(), s.AT, idx, account)
 }
 
 // UpdateAccountInTreeDB is abstracted from StateDB to be used from StateDB.
@@ -143,10 +143,10 @@ func UpdateAccountInTreeDB(sto db.Storage, mt *merkletree.MerkleTree, idx common
 
 // ATGetProof returns the CircomVerifierProof for a given accountIdx
 func (s *StateDB) ATGetProof(idx common.AccountIdx) (*merkletree.CircomVerifierProof, error) {
-	if s.AccountTree == nil {
+	if s.AT == nil {
 		return nil, common.Wrap(ErrStateDBWithoutMT)
 	}
-	p, err := s.AccountTree.GenerateSCVerifierProof(idx.BigInt(), s.AccountTree.Root())
+	p, err := s.AT.GenerateSCVerifierProof(idx.BigInt(), s.AT.Root())
 	if err != nil {
 		return nil, common.Wrap(err)
 	}
@@ -167,12 +167,12 @@ func (s *StateDB) LastGetAccount(idx common.AccountIdx) (*common.Account, error)
 	return account, nil
 }
 
-// LastMTAccGetRoot returns the root of the underlying Merkle Tree in the last
+// LastATGetRoot returns the root of the underlying Merkle Tree in the last
 // checkpoint of the StateDB.
-func (s *StateDB) LastMTAccGetRoot() (*big.Int, error) {
+func (s *StateDB) LastATGetRoot() (*big.Int, error) {
 	var root *big.Int
 	if err := s.LastRead(func(sdb *Last) error {
-		mt, err := merkletree.NewMerkleTree(sdb.DB().WithPrefix(PrefixKeyMTAcc), s.cfg.NLevels)
+		mt, err := merkletree.NewMerkleTree(sdb.DB().WithPrefix(PrefixKeyAT), s.cfg.NLevels)
 		if err != nil {
 			return common.Wrap(err)
 		}
@@ -274,9 +274,9 @@ func (s *StateDB) GetCurrentAccountIdx() (common.AccountIdx, error) {
 	return s.db.GetCurrentAccountIdx()
 }
 
-// GetMTRootAccount returns the root of the Account Merkle Tree
-func (s *StateDB) GetMTRootAccount() *big.Int {
-	return s.AccountTree.Root().BigInt()
+// GetATRoot returns the root of the Account Merkle Tree
+func (s *StateDB) GetATRoot() *big.Int {
+	return s.AT.Root().BigInt()
 }
 
 // setAccountIdxByEthAddr stores the given Idx in the StateDB as follows:

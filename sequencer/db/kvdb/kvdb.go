@@ -538,8 +538,8 @@ func (k *KVDB) MakeCheckpointFromTo(fromBatchNum common.BatchNum, dest string) e
 	// By locking we allow calling MakeCheckpointFromTo from multiple
 	// places at the same time for the same stateDB.  This allows the
 	// synchronizer to do a reset to a batchNum at the same time as the
-	// pipeline is doing a txSelector.Reset and batchBuilder.Reset from
-	// synchronizer to the same batchNum
+	// pipeline is doing a batchBuilder.Reset from synchronizer to the
+	// same batchNum
 	k.mutexCheckpoint.Lock()
 	defer k.mutexCheckpoint.Unlock()
 	return PebbleMakeCheckpoint(source, dest)
