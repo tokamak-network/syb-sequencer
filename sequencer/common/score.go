@@ -95,7 +95,7 @@ func (s *Score) Bytes() ([32]byte, error) {
 	return b, nil
 }
 
-// BigInts returns the [2]*big.Int, where each *big.Int is inside the Finite Field
+// BigInts returns the [1]*big.Int, where each *big.Int is inside the Finite Field
 func (s *Score) BigInts() ([1]*big.Int, error) {
 	e := [1]*big.Int{}
 
@@ -119,7 +119,7 @@ func (s *Score) HashValue() (*big.Int, error) {
 	return poseidon.Hash(bi[:])
 }
 
-// ScoreFromBigInts returns a Account from a [5]*big.Int
+// ScoreFromBigInts returns a Account from a [1]*big.Int
 func ScoreFromBigInts(e [1]*big.Int) (*Score, error) {
 	if !cryptoUtils.CheckBigIntArrayInField(e[:]) {
 		return nil, Wrap(ErrNotInFF)

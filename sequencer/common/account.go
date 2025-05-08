@@ -135,7 +135,7 @@ func (a *Account) HashValue() (*big.Int, error) {
 	return poseidon.Hash(bi[:])
 }
 
-// AccountFromBigInts returns a Account from a [5]*big.Int
+// AccountFromBigInts returns a Account from a [2]*big.Int
 func AccountFromBigInts(e [NLeafElems]*big.Int) (*Account, error) {
 	if !cryptoUtils.CheckBigIntArrayInField(e[:]) {
 		return nil, Wrap(ErrNotInFF)
