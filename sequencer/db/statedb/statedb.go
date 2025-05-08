@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"github.com/iden3/go-merkletree"
+	"github.com/iden3/go-merkletree/db"
+	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/kvdb"
 )
@@ -74,6 +76,40 @@ type StateDB struct {
 	ScoreTree   *merkletree.MerkleTree
 }
 
+// Last offers a subset of view methods of the StateDB that can be
+// called via the LastRead method of StateDB in a thread-safe manner to obtain
+// a consistent view to the last batch of the StateDB.
+type Last struct {
+	db db.Storage
+}
+
+// GetAccount returns the account for the given Idx
+func (s *Last) GetAccount(idx common.AccountIdx) (*common.Account, error) {
+	return GetAccountInTreeDB(s.db, idx)
+}
+
+// GetCurrentBatch returns the current BatchNum stored in Last.db
+func (s *Last) GetCurrentBatch() (common.BatchNum, error) {
+	cbBytes, err := s.db.Get(kvdb.KeyCurrentBatch)
+	if common.Unwrap(err) == db.ErrNotFound {
+		return 0, nil
+	} else if err != nil {
+		return 0, common.Wrap(err)
+	}
+	return common.BatchNumFromBytes(cbBytes)
+}
+
+// DB returns the underlying storage of Last
+func (s *Last) DB() db.Storage {
+	return s.db
+}
+
+// GetAccounts returns all the accounts in the db.  Use for debugging pruposes
+// only.
+func (s *Last) GetAccounts() ([]common.Account, error) {
+	return getAccounts(s.db)
+}
+
 // NewStateDB initializes a new StateDB.
 func NewStateDB(cfg Config) (*StateDB, error) {
 	var kv *kvdb.KVDB
@@ -95,4 +131,16 @@ func NewStateDB(cfg Config) (*StateDB, error) {
 		VouchTree:   mtVouch,
 		ScoreTree:   mtScore,
 	}, nil
+}
+
+// LastRead is a thread-safe method to query the last checkpoint of the StateDB
+// via the Last type methods
+func (s *StateDB) LastRead(fn func(sdbLast *Last) error) error {
+	return s.db.LastRead(
+		func(db *pebble.Storage) error {
+			return fn(&Last{
+				db: db,
+			})
+		},
+	)
 }
