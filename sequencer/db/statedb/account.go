@@ -167,7 +167,7 @@ func (s *StateDB) LastGetAccount(idx common.AccountIdx) (*common.Account, error)
 	return account, nil
 }
 
-// LastATGetRoot returns the root of the underlying Merkle Tree in the last
+// LastATGetRoot returns the root of the underlying Account Tree in the last
 // checkpoint of the StateDB.
 func (s *StateDB) LastATGetRoot() (*big.Int, error) {
 	var root *big.Int

@@ -43,8 +43,8 @@ func (idx AccountIdx) Bytes() ([3]byte, error) {
 	if idx > maxIdxValue {
 		return [3]byte{}, Wrap(ErrIdxOverflow)
 	}
-	var idxBytes [3]byte
-	binary.BigEndian.PutUint64(idxBytes[:], uint64(idx))
+	var idxBytes [4]byte
+	binary.BigEndian.PutUint32(idxBytes[:], uint32(idx))
 	var b [3]byte
 	copy(b[:], idxBytes[1:])
 	return b, nil

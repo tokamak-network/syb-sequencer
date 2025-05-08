@@ -29,7 +29,7 @@ func (idx VouchIdx) Bytes() ([6]byte, error) {
 	if idx > maxVouchIdxValue {
 		return [6]byte{}, Wrap(ErrIdxOverflow)
 	}
-	var idxBytes [3]byte
+	var idxBytes [8]byte
 	binary.BigEndian.PutUint64(idxBytes[:], uint64(idx))
 	var b [6]byte
 	copy(b[:], idxBytes[2:])

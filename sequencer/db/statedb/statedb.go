@@ -251,7 +251,7 @@ func (l *LocalStateDB) Reset(batchNum common.BatchNum, fromSynchronizer bool) er
 			}
 			l.AT = at
 		}
-		// open the MT for the current s.db
+		// open the VouchTree for the current s.db
 		if l.VT != nil {
 			vt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyVT),
 				l.VT.MaxLevels())
@@ -260,7 +260,7 @@ func (l *LocalStateDB) Reset(batchNum common.BatchNum, fromSynchronizer bool) er
 			}
 			l.VT = vt
 		}
-		// open the MT for the current s.db
+		// open the ScoreTree for the current s.db
 		if l.ST != nil {
 			st, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyST),
 				l.ST.MaxLevels())
