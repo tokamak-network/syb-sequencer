@@ -8,6 +8,7 @@ import (
 	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/kvdb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/log"
 )
 
 var (
@@ -143,4 +144,135 @@ func (s *StateDB) LastRead(fn func(sdbLast *Last) error) error {
 			})
 		},
 	)
+}
+
+// MakeCheckpoint does a checkpoint at the given batchNum in the defined path.
+// Internally this advances & stores the current BatchNum, and then stores a
+// Checkpoint of the current state of the StateDB.
+func (s *StateDB) MakeCheckpoint() error {
+	log.Debugw("Making StateDB checkpoint", "batch", s.CurrentBatch()+1, "type", s.cfg.Type)
+	return s.db.MakeCheckpoint()
+}
+
+// DeleteOldCheckpoints deletes old checkpoints when there are more than
+// `cfg.keep` checkpoints
+func (s *StateDB) DeleteOldCheckpoints() error {
+	return s.db.DeleteOldCheckpoints()
+}
+
+// CurrentBatch returns the current in-memory CurrentBatch of the StateDB.db
+func (s *StateDB) CurrentBatch() common.BatchNum {
+	return s.db.CurrentBatch
+}
+
+// getCurrentBatch returns the current BatchNum stored in the StateDB.db
+func (s *StateDB) getCurrentBatch() (common.BatchNum, error) {
+	return s.db.GetCurrentBatch()
+}
+
+// Reset resets the StateDB to the checkpoint at the given batchNum. Reset
+// does not delete the checkpoints between old current and the new current,
+// those checkpoints will remain in the storage, and eventually will be
+// deleted when MakeCheckpoint overwrites them.
+func (s *StateDB) Reset(batchNum common.BatchNum) error {
+	log.Debugw("Making StateDB Reset", "batch", batchNum, "type", s.cfg.Type)
+	if err := s.db.Reset(batchNum); err != nil {
+		return common.Wrap(err)
+	}
+	if s.AccountTree != nil {
+		// open the AccountTree for the current s.db
+		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTAcc), s.AccountTree.MaxLevels())
+		if err != nil {
+			return common.Wrap(err)
+		}
+		s.AccountTree = mt
+	}
+	if s.VouchTree != nil {
+		// open the VouchTree for the current s.db
+		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTVoc), s.VouchTree.MaxLevels())
+		if err != nil {
+			return common.Wrap(err)
+		}
+		s.VouchTree = mt
+	}
+	if s.ScoreTree != nil {
+		// open the ScoreTree for the current s.db
+		mt, err := merkletree.NewMerkleTree(s.db.StorageWithPrefix(PrefixKeyMTSco), s.ScoreTree.MaxLevels())
+		if err != nil {
+			return common.Wrap(err)
+		}
+		s.ScoreTree = mt
+	}
+	return nil
+}
+
+// LocalStateDB represents the local StateDB which allows to make copies from
+// the synchronizer StateDB, and is used by the tx-selector and the
+// batch-builder. LocalStateDB is an in-memory storage.
+type LocalStateDB struct {
+	*StateDB
+	synchronizerStateDB *StateDB
+}
+
+// NewLocalStateDB returns a new LocalStateDB connected to the given
+// synchronizerDB.  Checkpoints older than the value defined by `keep` will be
+// deleted.
+func NewLocalStateDB(cfg Config, synchronizerDB *StateDB) (*LocalStateDB, error) {
+	cfg.noGapsCheck = true
+	cfg.NoLast = true
+	s, err := NewStateDB(cfg)
+	if err != nil {
+		return nil, common.Wrap(err)
+	}
+	return &LocalStateDB{
+		s,
+		synchronizerDB,
+	}, nil
+}
+
+// CheckpointExists returns true if the checkpoint exists
+func (l *LocalStateDB) CheckpointExists(batchNum common.BatchNum) (bool, error) {
+	return l.db.CheckpointExists(batchNum)
+}
+
+// Reset performs a reset in the LocalStateDB. If fromSynchronizer is true, it
+// gets the state from LocalStateDB.synchronizerStateDB for the given batchNum.
+// If fromSynchronizer is false, get the state from LocalStateDB checkpoints.
+func (l *LocalStateDB) Reset(batchNum common.BatchNum, fromSynchronizer bool) error {
+	if fromSynchronizer {
+		log.Debugw("Making StateDB ResetFromSynchronizer", "batch", batchNum, "type", l.cfg.Type)
+		if err := l.db.ResetFromSynchronizer(batchNum, l.synchronizerStateDB.db); err != nil {
+			return common.Wrap(err)
+		}
+		// open the AccountTree for the current s.db
+		if l.AccountTree != nil {
+			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTAcc),
+				l.AccountTree.MaxLevels())
+			if err != nil {
+				return common.Wrap(err)
+			}
+			l.AccountTree = mt
+		}
+		// open the MT for the current s.db
+		if l.VouchTree != nil {
+			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTVoc),
+				l.VouchTree.MaxLevels())
+			if err != nil {
+				return common.Wrap(err)
+			}
+			l.VouchTree = mt
+		}
+		// open the MT for the current s.db
+		if l.ScoreTree != nil {
+			mt, err := merkletree.NewMerkleTree(l.db.StorageWithPrefix(PrefixKeyMTSco),
+				l.ScoreTree.MaxLevels())
+			if err != nil {
+				return common.Wrap(err)
+			}
+			l.ScoreTree = mt
+		}
+		return nil
+	}
+	// use checkpoint from LocalStateDB
+	return l.StateDB.Reset(batchNum)
 }
