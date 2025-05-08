@@ -82,7 +82,6 @@ type Account struct {
 	Idx     AccountIdx        `json:"idx"`
 	EthAddr ethCommon.Address `json:"eth_addr"`
 	Balance *big.Int          `json:"balance,bigint"`
-	Score   *big.Int          `json:"score,bigint"`
 }
 
 func (a *Account) String() string {
@@ -90,7 +89,6 @@ func (a *Account) String() string {
 	fmt.Fprintf(buf, "Idx: %v, ", a.Idx)
 	fmt.Fprintf(buf, "EthAddr: %s..., ", a.EthAddr.String()[:10])
 	fmt.Fprintf(buf, "Balance: %s, ", a.Balance.String())
-	fmt.Fprintf(buf, "Score: %s, ", a.Score.String())
 	return buf.String()
 }
 
@@ -105,8 +103,7 @@ func (a *Account) Bytes() ([32 * NLeafElems]byte, error) {
 		return b, Wrap(fmt.Errorf("%s Balance", ErrNumOverflow))
 	}
 
-	copy(b[8:28], a.EthAddr.Bytes())
-	copy(b[28:32], a.Score.Bytes())
+	copy(b[12:32], a.EthAddr.Bytes())
 	balanceBytes := a.Balance.Bytes()
 	copy(b[64-len(balanceBytes):64], balanceBytes)
 
@@ -154,12 +151,7 @@ func AccountFromBigInts(e [NLeafElems]*big.Int) (*Account, error) {
 
 // AccountFromBytes returns a Account from a byte array
 func AccountFromBytes(b [32 * NLeafElems]byte) (*Account, error) {
-	// tokenID, err := TokenIDFromBytes(b[28:32])
-	// if err != nil {
-	// 	return nil, Wrap(err)
-	// }
-	ethAddr := ethCommon.BytesToAddress(b[8:28])
-	score := new(big.Int).SetBytes(b[28:32])
+	ethAddr := ethCommon.BytesToAddress(b[12:32])
 
 	balance := new(big.Int).SetBytes(b[40:64])
 	// Balance is max of 192 bits (24 bytes)
@@ -174,7 +166,6 @@ func AccountFromBytes(b [32 * NLeafElems]byte) (*Account, error) {
 	a := Account{
 		Balance: balance,
 		EthAddr: ethAddr,
-		Score:   score,
 	}
 	return &a, nil
 }
