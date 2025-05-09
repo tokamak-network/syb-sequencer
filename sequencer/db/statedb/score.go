@@ -151,28 +151,6 @@ func (s *StateDB) GetScore(idx common.ScoreIdx) (*common.Score, error) {
 	return GetScoreInTreeDB(s.db.DB(), idx)
 }
 
-func ScoresIter(db db.Storage, fn func(a *common.Score) (bool, error)) error {
-	idxDB := db.WithPrefix(PrefixKeyScoIdx)
-	if err := idxDB.Iterate(func(k []byte, v []byte) (bool, error) {
-		idx, err := common.ScoreIdxFromBytes(k)
-		if err != nil {
-			return false, common.Wrap(err)
-		}
-		acc, err := GetScoreInTreeDB(db, idx)
-		if err != nil {
-			return false, common.Wrap(err)
-		}
-		ok, err := fn(acc)
-		if err != nil {
-			return false, common.Wrap(err)
-		}
-		return ok, nil
-	}); err != nil {
-		return common.Wrap(err)
-	}
-	return nil
-}
-
 // GetScoreInTreeDB is abstracted from StateDB to be used from StateDB.
 // GetScore returns the Score for the given Idx
 func GetScoreInTreeDB(sto db.Storage, idx common.ScoreIdx) (*common.Score, error) {

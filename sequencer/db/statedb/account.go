@@ -9,7 +9,6 @@ import (
 	"github.com/iden3/go-merkletree"
 	"github.com/iden3/go-merkletree/db"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
-	"github.com/tokamak-network/syb-sequencer/sequencer/log"
 )
 
 var (
@@ -291,7 +290,7 @@ func (s *StateDB) setAccountIdxByEthAddr(idx common.AccountIdx, addr ethCommon.A
 		// if new idx is smaller, store the new one
 		// if new idx is bigger, don't store and return, as the used one will be the old
 		if idx >= oldIdx {
-			log.Debug("StateDB.setIdxByEthAddr: Idx not stored because there " +
+			fmt.Println("StateDB.setIdxByEthAddr: Idx not stored because there " +
 				"already exist a smaller Idx for the given EthAddr")
 			return nil
 		}

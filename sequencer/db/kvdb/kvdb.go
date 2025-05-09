@@ -11,7 +11,6 @@ import (
 	"github.com/iden3/go-merkletree/db"
 	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
-	"github.com/tokamak-network/syb-sequencer/sequencer/log"
 )
 
 const (
@@ -439,7 +438,7 @@ func (k *KVDB) MakeCheckpoint() error {
 	go func() {
 		delErr := k.DeleteOldCheckpoints()
 		if delErr != nil {
-			log.Errorw("delete old checkpoints failed", "err", delErr)
+			fmt.Println("delete old checkpoints failed", "err", delErr)
 		}
 		k.wg.Done()
 	}()
@@ -496,7 +495,7 @@ func (k *KVDB) ListCheckpoints() ([]int, error) {
 		for _, checkpoint := range checkpoints[1:] {
 			first++
 			if checkpoint != first {
-				log.Errorw("gap between checkpoints", "checkpoints", checkpoints)
+				fmt.Println("gap between checkpoints", "checkpoints", checkpoints)
 				return nil, common.Wrap(fmt.Errorf("checkpoint gap at %v", checkpoint))
 			}
 		}
