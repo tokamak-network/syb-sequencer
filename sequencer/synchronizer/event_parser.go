@@ -20,6 +20,10 @@ type L1UserTxEvent struct {
 	L1UserTx   []byte
 }
 
+type Transaction struct {
+	L1UserTx []byte
+}
+
 // Transaction types
 const (
 	TxTypeCreateAccountDeposit string = "CreateAccountDeposit"
@@ -46,34 +50,24 @@ func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 
 	var l1UserTx L1UserTxEvent
 
+	var tx Transaction
+
 	// Check which event it is and unpack accordingly
-	switch log.Topics[0] {
-	case logSYBL1UserTxEvent:
-		// For indexed parameters, we need to get them from the topics
-		if len(log.Topics) < 3 {
-			return nil, "", fmt.Errorf("parseEvent: not enough topics for L1UserTxEvent")
-		}
-		
+	switch log.Topics[0].Hex() {
+	case logSYBL1UserTxEvent.Hex():
 		// Get queueIndex from topic 1
 		queueIndex := new(big.Int).SetBytes(log.Topics[1].Bytes()).Uint64()
-		l1UserTx.QueueIndex = uint32(queueIndex)
-		
+
 		// Get position from topic 2
 		position := new(big.Int).SetBytes(log.Topics[2].Bytes()).Uint64()
-		l1UserTx.Position = uint8(position)
-		
-		// Unpack the non-indexed parameter (l1UserTx bytes) from data
-		var unpacked struct {
-			L1UserTx []byte
-		}
-		
-		err = sybilABI.UnpackIntoInterface(&unpacked, "L1UserTxEvent", log.Data)
+
+		err = sybilABI.UnpackIntoInterface(&tx, "L1UserTxEvent", log.Data)
 		if err != nil {
 			return nil, "", fmt.Errorf("parseEvent: failed to unpack L1UserTxEvent data: %w", err)
 		}
-		
-		l1UserTx.L1UserTx = unpacked.L1UserTx
-		
+		l1UserTx.L1UserTx = tx.L1UserTx
+		l1UserTx.QueueIndex = uint32(queueIndex)
+		l1UserTx.Position = uint8(position)
 		return &l1UserTx, "L1UserTxEvent", nil
 	}
 
@@ -93,18 +87,18 @@ func ParseTxData(txData []byte) (string, ethCommon.Address, ethCommon.Address, *
 		return "", ethCommon.Address{}, ethCommon.Address{}, nil, fmt.Errorf("transaction data too short: %d bytes, expected 73", len(txData))
 	}
 
+	//TODO: Update this once the contract is updated with encodePacked instead of encode
 	// Extract transaction type (first byte)
-	txType, _ := SetType(txData[0])
+	txType, _ := SetType(txData[31])
 
 	// Extract from Ethereum address (next 20 bytes)
-	fromEthAddr := ethCommon.BytesToAddress(txData[1:21])
+	fromEthAddr := ethCommon.BytesToAddress(txData[44:64])
 
 	// Extract to Ethereum address (next 20 bytes)
-	toEthAddr := ethCommon.BytesToAddress(txData[21:41])
+	toEthAddr := ethCommon.BytesToAddress(txData[76:96])
 
 	// Extract amount (next 32 bytes)
-	amount := new(big.Int).SetBytes(txData[41:73])
-
+	amount := new(big.Int).SetBytes(txData[96:128])
 	return txType, fromEthAddr, toEthAddr, amount, nil
 }
 

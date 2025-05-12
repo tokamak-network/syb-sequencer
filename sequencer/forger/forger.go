@@ -53,18 +53,8 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	//TODO: Add logic here to call the txprocessor to update the stateDB, pass the zki to the circuit.
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
 	for i, tx := range txs {
-		fromAddr := "nil"
-		if tx.FromEthAddr != "" {
-			fromAddr = tx.FromEthAddr
-		}
-
-		fromIdx := "nil"
-		if tx.FromIdx != nil {
-			fromIdx = fmt.Sprintf("%d", *tx.FromIdx)
-		}
-
 		f.logger.Printf("  [%d] Type: %s, FromIdx: %s, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
-			i, tx.Type, fromIdx, fromAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
+			i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
 	}
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.

@@ -203,14 +203,12 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	fmt.Printf("event: %v, eventType: %s, err: %v \n", eventData, eventType, err)
 
 	tx := &historydb.Tx{
-		BatchNum:    int64(eventData.QueueIndex), // Initial batch number is 0
-		Position:    int(eventData.Position),
-		Type:        eventType,
-		FromIdx:     nil,           // Will be set based on event type
-		FromEthAddr: "",            // Will be set based on event type
-		ToIdx:       0,             // Will be set based on event type
-		ToEthAddr:   "",            // Will be set based on event type
-		Amount:      big.NewInt(0), // Will be set based on event type
+		BatchNum: int64(eventData.QueueIndex), // Initial batch number is 0
+		Position: int(eventData.Position),
+		Type:     eventType,
+		FromIdx:  nil,           // Will be set based on event type
+		ToIdx:    0,             // Will be set based on event type
+		Amount:   big.NewInt(0), // Will be set based on event type
 	}
 
 	// Format event data based on event type
@@ -227,8 +225,8 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		position := int64(eventData.Position)
 		tx.FromIdx = &position
 		tx.ToIdx = position
-		tx.FromEthAddr = fromEthAddr.Hex()
-		tx.ToEthAddr = toEthAddr.Hex()
+		tx.FromEthAddr = fromEthAddr.Bytes()
+		tx.ToEthAddr = toEthAddr.Bytes()
 		tx.Amount = amount
 		tx.Type = txType
 
