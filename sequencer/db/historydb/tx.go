@@ -1,6 +1,7 @@
 package historydb
 
 import (
+	"fmt"
 	"math/big"
 )
 
@@ -11,9 +12,9 @@ type Tx struct {
 	Position    int      `json:"position"`
 	Type        string   `json:"type"`
 	FromIdx     *int64   `json:"from_idx,omitempty"`
-	FromEthAddr string   `json:"from_eth_addr,omitempty"`
+	FromEthAddr []byte   `json:"from_eth_addr,omitempty"`
 	ToIdx       int64    `json:"to_idx"`
-	ToEthAddr   string   `json:"to_eth_addr,omitempty"`
+	ToEthAddr   []byte   `json:"to_eth_addr,omitempty"`
 	Amount      *big.Int `json:"amount"`
 }
 
@@ -25,19 +26,33 @@ func (db *HistoryDB) SaveTx(tx *Tx) error {
 		amountStr = tx.Amount.String()
 	}
 
-	// Insert the transaction into the database
-	_, err := db.dbWrite.Exec(`
+	var err error // Declare error variable once
+
+	// Insert the transaction into the database, wrapping bytes with pq.Bytea
+	_, err = db.dbWrite.Exec(`
 		INSERT INTO tx (
 			batch_num, position, type, from_idx, from_eth_addr, 
 			to_idx, to_eth_addr, amount
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8
 		)`,
-		tx.BatchNum, tx.Position, tx.Type, tx.FromIdx, tx.FromEthAddr,
-		tx.ToIdx, tx.ToEthAddr, amountStr,
+		tx.BatchNum,
+		tx.Position,
+		tx.Type,
+		tx.FromIdx,
+		tx.FromEthAddr,
+		tx.ToIdx,
+		tx.ToEthAddr,
+		amountStr,
 	)
 
-	return err
+	// Return the error from the Exec call (if any)
+	if err != nil {
+		// Add more context to the error if it's from Exec
+		return fmt.Errorf("failed to execute insert transaction statement: %w", err)
+	}
+
+	return nil
 }
 
 // GetAllTxs retrieves all transactions from the database

@@ -12,13 +12,8 @@
   { "inputs": [], "name": "InsufficientBalance", "type": "error" },
   { "inputs": [], "name": "InsufficientETH", "type": "error" },
   { "inputs": [], "name": "InvalidInitialization", "type": "error" },
-  {
-    "inputs": [
-      { "internalType": "string", "name": "elementType", "type": "string" }
-    ],
-    "name": "InvalidPoseidonAddress",
-    "type": "error"
-  },
+  { "inputs": [], "name": "InvalidPoseidon2Address", "type": "error" },
+  { "inputs": [], "name": "InvalidPoseidon3Address", "type": "error" },
   { "inputs": [], "name": "InvalidProof", "type": "error" },
   { "inputs": [], "name": "InvalidVerifierAddress", "type": "error" },
   { "inputs": [], "name": "LimitAmountExceeded", "type": "error" },
@@ -32,6 +27,7 @@
     "type": "error"
   },
   { "inputs": [], "name": "ReceiverHasZeroBalance", "type": "error" },
+  { "inputs": [], "name": "SelfVouch", "type": "error" },
   { "inputs": [], "name": "SenderHasZeroBalance", "type": "error" },
   { "inputs": [], "name": "SmtProofInvalid", "type": "error" },
   {
@@ -274,16 +270,6 @@
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "uint32", "name": "", "type": "uint32" },
-      { "internalType": "uint48", "name": "", "type": "uint48" }
-    ],
-    "name": "exitNullifierMap",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
     "name": "exitRootMap",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -470,9 +456,17 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
+    "inputs": [
+      { "internalType": "uint32", "name": "", "type": "uint32" },
+      { "internalType": "uint256", "name": "", "type": "uint256" }
+    ],
     "name": "unprocessedBatchesMap",
-    "outputs": [{ "internalType": "bytes", "name": "", "type": "bytes" }],
+    "outputs": [
+      { "internalType": "uint8", "name": "identifier", "type": "uint8" },
+      { "internalType": "address", "name": "from", "type": "address" },
+      { "internalType": "address", "name": "to", "type": "address" },
+      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
     "stateMutability": "view",
     "type": "function"
   },
