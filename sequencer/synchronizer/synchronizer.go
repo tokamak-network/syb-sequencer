@@ -21,7 +21,7 @@ type Synchronizer struct {
 	client          *ethclient.Client
 	contractAddress common.Address
 	sybilContract   *bindings.Bindings
-	db              *historydb.HistoryDB
+	historydb       *historydb.HistoryDB
 	logs            chan types.Log
 	sub             ethereum.Subscription
 	logger          *log.Logger
@@ -50,7 +50,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB,
 		client:          client,
 		contractAddress: contractAddress,
 		sybilContract:   sybilContract,
-		db:              db,
+		historydb:       db,
 		logs:            logs,
 		logger:          logger,
 		forger:          forger,
@@ -236,7 +236,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventDetails)
 
-	err = s.db.SaveTx(tx)
+	err = s.historydb.SaveTx(tx)
 	if err != nil {
 		s.logger.Printf("Error saving transaction: %v", err)
 		return

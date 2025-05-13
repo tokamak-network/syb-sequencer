@@ -11,8 +11,8 @@ import (
 
 // Forger is responsible for creating batches from transactions
 type Forger struct {
-	db     *historydb.HistoryDB
-	logger *log.Logger
+	historydb *historydb.HistoryDB
+	logger    *log.Logger
 }
 
 var lastForgedBatch uint32
@@ -20,8 +20,8 @@ var lastForgedBatch uint32
 // NewForger creates a new Forger instance
 func NewForger(db *historydb.HistoryDB, logger *log.Logger) *Forger {
 	return &Forger{
-		db:     db,
-		logger: logger,
+		historydb: db,
+		logger:    logger,
 	}
 }
 
@@ -31,11 +31,10 @@ func (f *Forger) GetLastForgedBatchNum() uint32 {
 
 // ProcessBatch processes transactions for a specific batch number
 func (f *Forger) ForgeBatch(batchNum uint32) error {
-	lastForgedBatch = batchNum
 	f.logger.Printf("Processing batch %d", batchNum)
 
 	// Get all transactions for the batch
-	txs, err := f.db.GetTxsByBatchNum(int64(batchNum))
+	txs, err := f.historydb.GetTxsByBatchNum(int64(batchNum))
 	if err != nil {
 		return fmt.Errorf("failed to get transactions for batch %d: %w", batchNum, err)
 	}
@@ -65,11 +64,11 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 		ScoreRoot:   new(big.Int).SetInt64(1),
 	}
 
-	err = f.db.AddBatch(batch)
+	err = f.historydb.AddBatch(batch)
 
 	if err != nil {
 		return err
 	}
-
+	lastForgedBatch = batchNum
 	return nil
 }
