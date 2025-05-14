@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS account (
     idx BIGINT PRIMARY KEY,
     eth_addr BYTEA NOT NULL,
     balance DECIMAL(78,0) NOT NULL,
-    score DECIMAL(78,0) NOT NULL
+    score DECIMAL(78,0) NOT NULL,
+    score_siblings DECIMAL(78,0)[NLEVELS] NOT NULL
 );
 
 -- Create vouch scheme
