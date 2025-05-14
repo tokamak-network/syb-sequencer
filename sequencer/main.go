@@ -10,6 +10,7 @@ import (
 	"github.com/tokamak-network/syb-sequencer/sequencer/api"
 	"github.com/tokamak-network/syb-sequencer/sequencer/config"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
 	"github.com/tokamak-network/syb-sequencer/sequencer/synchronizer"
 )
 
@@ -29,8 +30,11 @@ func main() {
 	database := historydb.NewHistoryDB(db, db, nil)
 	logger.Println("Connected to database successfully")
 
+	// Create Forger
+	forger := forger.NewForger(database, logger)
+
 	// Create synchronizer
-	sync, err := synchronizer.NewSynchronizer(cfg.EthereumRPC, cfg.ContractAddress, database, logger)
+	sync, err := synchronizer.NewSynchronizer(cfg.EthereumRPC, cfg.ContractAddress, database, logger, forger)
 	if err != nil {
 		logger.Fatalf("Failed to create synchronizer: %v", err)
 	}

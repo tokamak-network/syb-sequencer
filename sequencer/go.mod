@@ -8,7 +8,6 @@ require (
 	github.com/iden3/go-merkletree v0.1.0
 	github.com/lib/pq v1.10.9
 	github.com/rubenv/sql-migrate v1.8.0
-	go.uber.org/zap v1.17.0
 	golang.org/x/sync v0.13.0
 )
 
@@ -55,8 +54,6 @@ require (
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	go.uber.org/atomic v1.7.0 // indirect
-	go.uber.org/multierr v1.6.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.36.0 // indirect
@@ -89,7 +86,7 @@ require (
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/holiman/uint256 v1.3.2 // indirect
-	github.com/iden3/go-iden3-crypto v0.0.17 // indirect
+	github.com/iden3/go-iden3-crypto v0.0.17
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/joho/godotenv v1.5.1
 	github.com/karrick/godirwalk v1.16.1 // indirect

@@ -3,6 +3,7 @@ package api
 import (
 	"net/http"
 
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 )
@@ -40,11 +41,12 @@ func convertTxToResponse(tx *historydb.Tx) TxResponse {
 
 	// Convert Ethereum addresses to hex strings
 	if len(tx.FromEthAddr) > 0 {
-		resp.FromEthAddr = "0x" + tx.FromEthAddr
+
+		resp.FromEthAddr = ethCommon.BytesToAddress(tx.FromEthAddr).Hex()
 	}
 
 	if len(tx.ToEthAddr) > 0 {
-		resp.ToEthAddr = "0x" + tx.ToEthAddr
+		resp.ToEthAddr = ethCommon.BytesToAddress(tx.ToEthAddr).Hex()
 	}
 
 	return resp
