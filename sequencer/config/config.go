@@ -10,13 +10,17 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	// Database configuration
+	// HistoryDB configuration
 	DBHost     string
 	DBPort     int
 	DBUser     string
 	DBPassword string
 	DBName     string
 	DBSSLMode  string
+
+	// StateDB configuration
+	Path string
+	Keep int
 
 	// Ethereum configuration
 	EthereumRPC     string
@@ -37,13 +41,17 @@ func LoadConfig() *Config {
 	}
 
 	config := &Config{
-		// Database configuration
+		// HistoryDB configuration
 		DBHost:     getEnv("DB_HOST", "localhost"),
 		DBPort:     getEnvInt("DB_PORT", 5432),
 		DBUser:     getEnv("DB_USER", "postgres"),
 		DBPassword: getEnv("DB_PASSWORD", "postgres"),
 		DBName:     getEnv("DB_NAME", "sybil"),
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+
+		// StateDB configuration
+		Path: getEnv("PATH", "/var/tokamak/statedb"),
+		Keep: getEnvInt("KEEP", 256),
 
 		// Ethereum configuration
 		EthereumRPC:     getEnv("ETHEREUM_RPC", "http://localhost:8545"),

@@ -6,21 +6,25 @@ import (
 	"math/big"
 	"sort"
 
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 )
 
 // Forger is responsible for creating batches from transactions
 type Forger struct {
 	historydb *historydb.HistoryDB
+	statedb   *statedb.LocalStateDB
 	logger    *log.Logger
 }
 
 var lastForgedBatch uint32
 
 // NewForger creates a new Forger instance
-func NewForger(db *historydb.HistoryDB, logger *log.Logger) *Forger {
+func NewForger(historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, logger *log.Logger) *Forger {
 	return &Forger{
-		historydb: db,
+		historydb: historydb,
+		statedb:   statedb,
 		logger:    logger,
 	}
 }
@@ -52,13 +56,13 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	//TODO: Add logic here to call the txprocessor to update the stateDB, pass the zki to the circuit.
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
 	for i, tx := range txs {
-		f.logger.Printf("  [%d] Type: %s, FromIdx: %s, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
+		f.logger.Printf("  [%d] Type: %s, FromIdx: %v, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
 			i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
 	}
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
-	batch := &historydb.Batch{
-		ItemID:      int64(batchNum),
+	batch := &common.Batch{
+		ItemID:      common.BatchNum(batchNum),
 		AccountRoot: new(big.Int).SetInt64(1),
 		VouchRoot:   new(big.Int).SetInt64(1),
 		ScoreRoot:   new(big.Int).SetInt64(1),

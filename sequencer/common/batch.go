@@ -10,7 +10,7 @@ const batchNumBytesLen = 8
 
 // Batch is a struct that represents SYB sequencer batch
 type Batch struct {
-	BatchNum    BatchNum `json:"item_id"`
+	ItemID      BatchNum `json:"item_id"`
 	AccountRoot *big.Int `json:"account_root,bigint"`
 	VouchRoot   *big.Int `json:"vouch_root,bigint"`
 	ScoreRoot   *big.Int `json:"score_root,bigint"`
@@ -18,7 +18,7 @@ type Batch struct {
 
 func NewEmptyBatch() *Batch {
 	return &Batch{
-		BatchNum:    0,
+		ItemID:      0,
 		AccountRoot: big.NewInt(0),
 		VouchRoot:   big.NewInt(0),
 		ScoreRoot:   big.NewInt(0),

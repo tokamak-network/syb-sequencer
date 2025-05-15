@@ -1,18 +1,9 @@
 package historydb
 
-import (
-	"math/big"
-)
-
-type Batch struct {
-	ItemID      int64    `meddler:"item_id,pk"`
-	AccountRoot *big.Int `meddler:"account_root,bigint"`
-	VouchRoot   *big.Int `meddler:"vouch_root,bigint"`
-	ScoreRoot   *big.Int `meddler:"score_root,bigint"`
-}
+import "github.com/tokamak-network/syb-sequencer/sequencer/common"
 
 // AddBatch inserts a new batch entry into the database
-func (h *HistoryDB) AddBatch(batch *Batch) error {
+func (h *HistoryDB) AddBatch(batch *common.Batch) error {
 
 	accountRootStr := batch.AccountRoot.String()
 	vouchRootStr := batch.VouchRoot.String()

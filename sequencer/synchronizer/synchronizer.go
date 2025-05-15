@@ -13,6 +13,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
 )
 
@@ -22,6 +23,7 @@ type Synchronizer struct {
 	contractAddress common.Address
 	sybilContract   *bindings.Bindings
 	historydb       *historydb.HistoryDB
+	statedb         *statedb.StateDB
 	logs            chan types.Log
 	sub             ethereum.Subscription
 	logger          *log.Logger
@@ -32,7 +34,7 @@ type Synchronizer struct {
 var lastSyncBatch uint32
 
 // NewSynchronizer creates a new synchronizer
-func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB, logger *log.Logger, forger *forger.Forger) (*Synchronizer, error) {
+func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.HistoryDB, statedb *statedb.StateDB, logger *log.Logger, forger *forger.Forger) (*Synchronizer, error) {
 	client, err := ethclient.Dial(ethRPC)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Ethereum client: %v", err)
@@ -50,7 +52,8 @@ func NewSynchronizer(ethRPC, contractAddressHex string, db *historydb.HistoryDB,
 		client:          client,
 		contractAddress: contractAddress,
 		sybilContract:   sybilContract,
-		historydb:       db,
+		historydb:       historydb,
+		statedb:         statedb,
 		logs:            logs,
 		logger:          logger,
 		forger:          forger,
