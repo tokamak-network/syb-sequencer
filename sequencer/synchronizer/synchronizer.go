@@ -8,10 +8,11 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
-	"github.com/ethereum/go-ethereum/common"
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
@@ -20,7 +21,7 @@ import (
 // Synchronizer listens to contract events and stores them in the database
 type Synchronizer struct {
 	client          *ethclient.Client
-	contractAddress common.Address
+	contractAddress ethCommon.Address
 	sybilContract   *bindings.Bindings
 	historydb       *historydb.HistoryDB
 	statedb         *statedb.StateDB
@@ -40,7 +41,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		return nil, fmt.Errorf("failed to connect to Ethereum client: %v", err)
 	}
 
-	contractAddress := common.HexToAddress(contractAddressHex)
+	contractAddress := ethCommon.HexToAddress(contractAddressHex)
 	sybilContract, err := bindings.NewBindings(contractAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate Sybil contract: %v", err)
@@ -74,7 +75,7 @@ func (s *Synchronizer) Start(ctx context.Context) {
 
 	// Create a filter query for the contract events
 	query := ethereum.FilterQuery{
-		Addresses: []common.Address{s.contractAddress},
+		Addresses: []ethCommon.Address{s.contractAddress},
 	}
 
 	// Subscribe to logs
@@ -131,7 +132,7 @@ func (s *Synchronizer) resubscribe(ctx context.Context) {
 		time.Sleep(backoff)
 
 		query := ethereum.FilterQuery{
-			Addresses: []common.Address{s.contractAddress},
+			Addresses: []ethCommon.Address{s.contractAddress},
 		}
 
 		sub, err := s.client.SubscribeFilterLogs(ctx, query, s.logs)
@@ -171,7 +172,7 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 	query := ethereum.FilterQuery{
 		FromBlock: big.NewInt(s.lastBlock + 1),
 		ToBlock:   big.NewInt(latestBlock),
-		Addresses: []common.Address{s.contractAddress},
+		Addresses: []ethCommon.Address{s.contractAddress},
 	}
 
 	// Get logs matching the filter
@@ -205,7 +206,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	fmt.Printf("event: %v, eventType: %s, err: %v \n", eventData, eventType, err)
 
-	tx := &historydb.Tx{
+	tx := &common.Tx{
 		BatchNum: int64(eventData.QueueIndex), // Initial batch number is 0
 		Position: int(eventData.Position),
 		Type:     eventType,

@@ -5,7 +5,7 @@ import (
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 
 // TxResponse represents the response format for transaction data
@@ -22,7 +22,7 @@ type TxResponse struct {
 }
 
 // convertTxToResponse converts a database Tx to a response format
-func convertTxToResponse(tx *historydb.Tx) TxResponse {
+func convertTxToResponse(tx *common.Tx) TxResponse {
 	resp := TxResponse{
 		ItemID:   tx.ItemID,
 		BatchNum: tx.BatchNum,
