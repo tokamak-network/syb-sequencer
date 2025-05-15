@@ -24,7 +24,7 @@ func main() {
 
 	db, err := historydb.InitSQLDB(cfg.DBPort, cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 	if err != nil {
-		log.Fatalf("Error initializing sql db: %w", err)
+		log.Fatalf("Error initializing sql db: %v", err)
 	}
 
 	// Connect to historyDB

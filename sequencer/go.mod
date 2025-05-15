@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	github.com/go-pg/pg/v10 v10.14.0
 	github.com/gobuffalo/packr/v2 v2.8.3
-	github.com/iden3/go-merkletree v0.1.0
+	github.com/iden3/go-merkletree v0.0.0-20210308143313-8b63ca866189
 	github.com/lib/pq v1.10.9
 	github.com/rubenv/sql-migrate v1.8.0
 	golang.org/x/sync v0.13.0
