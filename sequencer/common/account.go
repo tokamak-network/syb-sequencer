@@ -81,7 +81,7 @@ func AccountIdxFromBytes(b []byte) (AccountIdx, error) {
 type Account struct {
 	Idx     AccountIdx        `json:"idx"`
 	EthAddr ethCommon.Address `json:"eth_addr"`
-	Balance *big.Int          `json:"balance,bigint"`
+	Balance *big.Int          `json:"balance"`
 }
 
 func (a *Account) String() string {

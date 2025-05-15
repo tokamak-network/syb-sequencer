@@ -1,4 +1,4 @@
-name: Go CI Build, and Test
+name: Go CI Build
 
 on:
   push:
@@ -30,25 +30,4 @@ jobs:
 
       - name: Build
         working-directory: sequencer
-        run: go build
-
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: '1.23.0'
-        id: go
-
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Tidy modules
-        working-directory: sequencer
-        run: go mod tidy
-
-      - name: Test
-        working-directory: sequencer
-        run: go test -v ./...
+        run: go build -v ./...

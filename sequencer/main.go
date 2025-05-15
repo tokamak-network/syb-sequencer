@@ -39,10 +39,11 @@ func main() {
 		NLevels: statedb.MaxNLevels,
 	})
 	if err != nil {
-		log.Fatalf("Error initializing state db: %w", err)
+		log.Fatalf("Error initializing state db: %v", err)
 	}
 
 	// Create StateDB for forger
+	//TODO: Check this why it returns error
 	forgerStateDB, err := statedb.NewLocalStateDB(statedb.Config{
 		Path:    cfg.Path,
 		Keep:    cfg.Keep,
