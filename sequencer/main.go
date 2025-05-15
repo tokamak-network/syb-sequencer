@@ -10,6 +10,7 @@ import (
 	"github.com/tokamak-network/syb-sequencer/sequencer/api"
 	"github.com/tokamak-network/syb-sequencer/sequencer/config"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
+	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
 	"github.com/tokamak-network/syb-sequencer/sequencer/synchronizer"
 )
@@ -26,15 +27,34 @@ func main() {
 		log.Fatalf("Error initializing sql db: %w", err)
 	}
 
-	// Connect to database
-	database := historydb.NewHistoryDB(db, db, nil)
+	// Connect to historyDB
+	historyDB := historydb.NewHistoryDB(db, db, nil)
 	logger.Println("Connected to database successfully")
 
+	// Create StateDB for synchronizer
+	synchronizerStateDB, err := statedb.NewStateDB(statedb.Config{
+		Path:    cfg.Path,
+		Keep:    cfg.Keep,
+		Type:    statedb.TypeSynchronizer,
+		NLevels: statedb.MaxNLevels,
+	})
+	if err != nil {
+		log.Fatalf("Error initializing state db: %w", err)
+	}
+
+	// Create StateDB for forger
+	forgerStateDB, err := statedb.NewLocalStateDB(statedb.Config{
+		Path:    cfg.Path,
+		Keep:    cfg.Keep,
+		Type:    statedb.TypeSynchronizer,
+		NLevels: statedb.MaxNLevels,
+	}, synchronizerStateDB)
+
 	// Create Forger
-	forger := forger.NewForger(database, logger)
+	forger := forger.NewForger(historyDB, forgerStateDB, logger)
 
 	// Create synchronizer
-	sync, err := synchronizer.NewSynchronizer(cfg.EthereumRPC, cfg.ContractAddress, database, logger, forger)
+	sync, err := synchronizer.NewSynchronizer(cfg.EthereumRPC, cfg.ContractAddress, historyDB, synchronizerStateDB, logger, forger)
 	if err != nil {
 		logger.Fatalf("Failed to create synchronizer: %v", err)
 	}
@@ -49,7 +69,7 @@ func main() {
 	}()
 
 	// Initialize and start API server
-	apiServer := api.NewAPI(database)
+	apiServer := api.NewAPI(historyDB)
 	go func() {
 		// Use environment variable for API port or default to 8080
 		apiPort := os.Getenv("API_PORT")

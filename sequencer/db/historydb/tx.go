@@ -3,23 +3,12 @@ package historydb
 import (
 	"fmt"
 	"math/big"
+
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 
-// Tx represents a transaction in the history database
-type Tx struct {
-	ItemID      int64    `json:"item_id"`
-	BatchNum    int64    `json:"batch_num"`
-	Position    int      `json:"position"`
-	Type        string   `json:"type"`
-	FromIdx     *int64   `json:"from_idx,omitempty"`
-	FromEthAddr []byte   `json:"from_eth_addr,omitempty"`
-	ToIdx       int64    `json:"to_idx"`
-	ToEthAddr   []byte   `json:"to_eth_addr,omitempty"`
-	Amount      *big.Int `json:"amount"`
-}
-
 // SaveTx saves a transaction to the database
-func (db *HistoryDB) SaveTx(tx *Tx) error {
+func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 	// Convert big.Int to string for database storage
 	amountStr := "0"
 	if tx.Amount != nil {
@@ -56,7 +45,7 @@ func (db *HistoryDB) SaveTx(tx *Tx) error {
 }
 
 // GetAllTxs retrieves all transactions from the database
-func (db *HistoryDB) GetAllTxs() ([]*Tx, error) {
+func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 	rows, err := db.dbWrite.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
@@ -70,9 +59,9 @@ func (db *HistoryDB) GetAllTxs() ([]*Tx, error) {
 	}
 	defer rows.Close()
 
-	var txs []*Tx
+	var txs []*common.Tx
 	for rows.Next() {
-		var tx Tx
+		var tx common.Tx
 		var amountStr string
 
 		err := rows.Scan(
@@ -99,7 +88,7 @@ func (db *HistoryDB) GetAllTxs() ([]*Tx, error) {
 }
 
 // GetTxsByBatchNum retrieves all transactions for a specific batch
-func (db *HistoryDB) GetTxsByBatchNum(batchNum int64) ([]*Tx, error) {
+func (db *HistoryDB) GetTxsByBatchNum(batchNum int64) ([]*common.Tx, error) {
 	rows, err := db.dbWrite.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
@@ -114,9 +103,9 @@ func (db *HistoryDB) GetTxsByBatchNum(batchNum int64) ([]*Tx, error) {
 	}
 	defer rows.Close()
 
-	var txs []*Tx
+	var txs []*common.Tx
 	for rows.Next() {
-		var tx Tx
+		var tx common.Tx
 		var amountStr string
 
 		err := rows.Scan(
