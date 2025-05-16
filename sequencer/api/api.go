@@ -32,7 +32,11 @@ func (a *API) setupRoutes() {
 	{
 		// Transaction endpoint - simple version that returns all transactions
 		v1.GET("/transactions", a.GetAllTransactions)
-		
+		// Transaction endpoint for a specific account
+		v1.GET("/transactions/:accountAddress", a.GetTransactionsByAccount)
+		// Transaction endpoint for paginated and sorted list
+		v1.GET("/transactions/list", a.GetTransactionsPaginated)
+
 		// Add other endpoints as needed
 	}
 }
@@ -40,4 +44,4 @@ func (a *API) setupRoutes() {
 // Run starts the API server
 func (a *API) Run(addr string) error {
 	return a.router.Run(addr)
-} 
+}
