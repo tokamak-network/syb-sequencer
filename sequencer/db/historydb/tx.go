@@ -17,11 +17,13 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 	for rows.Next() {
 		var tx common.Tx
 		var amountStr string
+		var gasFeeStr string
 
 		// Ensure the order of scanned fields matches the SELECT statements in calling functions
 		err := rows.Scan(
 			&tx.ItemID, &tx.BatchNum, &tx.Position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
 			&tx.ToIdx, &tx.ToEthAddr, &amountStr,
+			&tx.BlockNumber, &tx.Timestamp, &gasFeeStr,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
@@ -34,6 +36,15 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 				return nil, fmt.Errorf("failed to parse amount string '%s' for transaction item_id %d: %w", amountStr, tx.ItemID, err)
 			}
 		}
+
+		tx.GasFee = new(big.Int)
+		if gasFeeStr != "" {
+			_, success := tx.GasFee.SetString(gasFeeStr, 10)
+			if !success {
+				return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction item_id %d: %w", gasFeeStr, tx.ItemID, err)
+			}
+		}
+
 		txs = append(txs, &tx)
 	}
 
@@ -51,15 +62,22 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 		amountStr = tx.Amount.String()
 	}
 
+	gasFeeStr := "0"
+	if tx.GasFee != nil {
+		gasFeeStr = tx.GasFee.String()
+	}
+
 	var err error // Declare error variable once
 
 	// Insert the transaction into the database, wrapping bytes with pq.Bytea
 	_, err = db.dbWrite.Exec(`
 		INSERT INTO tx (
 			batch_num, position, type, from_idx, from_eth_addr, 
-			to_idx, to_eth_addr, amount
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7, $8
+			$1, $2, $3, $4, $5, $6, $7, $8,
+			$9, $10, $11
 		)`,
 		tx.BatchNum,
 		tx.Position,
@@ -69,6 +87,9 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 		tx.ToIdx,
 		tx.ToEthAddr,
 		amountStr,
+		tx.BlockNumber,
+		tx.Timestamp,
+		gasFeeStr,
 	)
 
 	if err != nil {
@@ -83,7 +104,8 @@ func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 	rows, err := db.dbRead.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
-			to_idx, to_eth_addr, amount
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee
 		FROM tx
 		ORDER BY item_id DESC
 	`)
@@ -98,7 +120,8 @@ func (db *HistoryDB) GetTxsByBatchNum(batchNum int64) ([]*common.Tx, error) {
 	rows, err := db.dbRead.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
-			to_idx, to_eth_addr, amount
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee
 		FROM tx
 		WHERE batch_num = $1
 		ORDER BY position
@@ -119,7 +142,8 @@ func (db *HistoryDB) GetTxsByAccountAddress(accountAddress string) ([]*common.Tx
 	rows, err := db.dbRead.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
-			to_idx, to_eth_addr, amount
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee
 		FROM tx
 		WHERE from_eth_addr = $1
 		ORDER BY item_id DESC
@@ -137,9 +161,11 @@ func (db *HistoryDB) GetTxsByAccountAddress(accountAddress string) ([]*common.Tx
 func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string) ([]*common.Tx, int64, error) {
 	// Whitelist columns for sorting to prevent SQL injection
 	allowedSortColumns := map[string]string{
-		"item_id":   "item_id",
-		"batch_num": "batch_num",
-		"type":      "type",
+		"item_id":      "item_id",
+		"batch_num":    "batch_num",
+		"type":         "type",
+		"block_number": "block_number",
+		"tx_timestamp": "tx_timestamp",
 	}
 	dbSortBy, ok := allowedSortColumns[strings.ToLower(sortBy)]
 	if !ok {
@@ -154,7 +180,8 @@ func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string
 	query := fmt.Sprintf(`
 		SELECT
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
-			to_idx, to_eth_addr, amount
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee
 		FROM tx
 		ORDER BY %s %s
 		LIMIT $1 OFFSET $2

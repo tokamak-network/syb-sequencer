@@ -13,4 +13,7 @@ type Tx struct {
 	ToIdx       int64    `json:"to_idx"`
 	ToEthAddr   []byte   `json:"to_eth_addr,omitempty"`
 	Amount      *big.Int `json:"amount"`
+	BlockNumber uint64    `json:"block_number"`
+	Timestamp   uint64    `json:"timestamp"`
+	GasFee      *big.Int  `json:"gas_fee,omitempty"`
 }

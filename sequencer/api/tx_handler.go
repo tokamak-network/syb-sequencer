@@ -1,9 +1,9 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
@@ -20,9 +20,13 @@ type TxResponse struct {
 	ToIdx       int64  `json:"to_idx"`
 	ToEthAddr   string `json:"to_eth_addr,omitempty"`
 	Amount      string `json:"amount"`
+	BlockNumber uint64 `json:"block_number"`
+	Timestamp   uint64 `json:"timestamp"`
+	GasFee      string `json:"gas_fee"`
 }
 
 type PaginatedTxResponse struct {
+	Message      string       `json:"message"`
 	Transactions []TxResponse `json:"transactions"`
 	Pagination   Pagination   `json:"pagination"`
 }
@@ -34,20 +38,35 @@ type Pagination struct {
 	TotalPages   int   `json:"totalPages"`
 }
 
+const (
+	GetAllTransactionsResponseMessage       = "Retrieved all transactions"
+	GetTransactionsByAccountResponseMessage = "Retrieved transactions for account %s"
+	GetTransactionsPaginatedResponseMessage = "Retrieved transactions in paginated format"
+	NoTransactionsFoundResponseMessage      = "No transactions found for account %s"
+)
+
 func convertTxToResponse(tx *common.Tx) TxResponse {
 	resp := TxResponse{
-		ItemID:   tx.ItemID,
-		BatchNum: tx.BatchNum,
-		Position: tx.Position,
-		Type:     tx.Type,
-		FromIdx:  tx.FromIdx,
-		ToIdx:    tx.ToIdx,
+		ItemID:      tx.ItemID,
+		BatchNum:    tx.BatchNum,
+		Position:    tx.Position,
+		Type:        tx.Type,
+		FromIdx:     tx.FromIdx,
+		ToIdx:       tx.ToIdx,
+		BlockNumber: tx.BlockNumber,
+		Timestamp:   tx.Timestamp,
 	}
 
 	if tx.Amount != nil {
 		resp.Amount = tx.Amount.String()
 	} else {
 		resp.Amount = "0"
+	}
+
+	if tx.GasFee != nil {
+		resp.GasFee = tx.GasFee.String()
+	} else {
+		resp.GasFee = "0"
 	}
 
 	if len(tx.FromEthAddr) > 0 {
@@ -73,7 +92,7 @@ func (a *API) GetAllTransactions(c *gin.Context) {
 		txResponses[i] = convertTxToResponse(tx)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"transactions": txResponses})
+	c.JSON(http.StatusOK, gin.H{"transactions": txResponses, "message": GetAllTransactionsResponseMessage})
 }
 
 func (a *API) GetTransactionsByAccount(c *gin.Context) {
@@ -84,14 +103,14 @@ func (a *API) GetTransactionsByAccount(c *gin.Context) {
 		return
 	}
 
-	txs, err := a.db.GetTxsByAccountAddress(accountAddress) // Assumed DB method
+	txs, err := a.db.GetTxsByAccountAddress(accountAddress)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transactions for account: " + err.Error()})
 		return
 	}
 
 	if len(txs) == 0 {
-		c.JSON(http.StatusOK, gin.H{"transactions": []TxResponse{}}) // Return empty list if no txs found
+		c.JSON(http.StatusOK, gin.H{"transactions": []TxResponse{}, "message": fmt.Sprintf(NoTransactionsFoundResponseMessage, accountAddress)})
 		return
 	}
 
@@ -101,19 +120,17 @@ func (a *API) GetTransactionsByAccount(c *gin.Context) {
 		accTxResponses[i] = convertTxToResponse(tx)
 	}
 
-	c.JSON(http.StatusOK, gin.H{"transactions": accTxResponses})
+	c.JSON(http.StatusOK, gin.H{"transactions": accTxResponses, "message": fmt.Sprintf(GetTransactionsByAccountResponseMessage, accountAddress)})
 }
 
 func (a *API) GetTransactionsPaginated(c *gin.Context) {
 	defaultPage := 1
 	defaultLimit := 10
-	defaultSortBy := "item_id"
+	defaultSortBy := "tx_timestamp"
 	defaultSortOrder := "DESC"
 
-	// Parse query parameters
 	pageStr := c.DefaultQuery("page", strconv.Itoa(defaultPage))
 	limitStr := c.DefaultQuery("limit", strconv.Itoa(defaultLimit))
-	sortParam := c.DefaultQuery("sort", defaultSortBy+"_"+defaultSortOrder) // e.g., "item_id_desc"
 
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page <= 0 {
@@ -127,20 +144,6 @@ func (a *API) GetTransactionsPaginated(c *gin.Context) {
 
 	sortBy := defaultSortBy
 	sortOrder := defaultSortOrder
-	sortParts := strings.Split(sortParam, "_")
-	if len(sortParts) == 2 {
-		potentialSortBy := sortParts[0]
-		potentialSortOrder := strings.ToUpper(sortParts[1])
-
-		allowedSortBy := map[string]bool{"item_id": true, "batch_num": true, "type": true} // Add other sortable fields from your common.Tx
-		if allowedSortBy[potentialSortBy] {
-			sortBy = potentialSortBy
-		}
-
-		if potentialSortOrder == "ASC" || potentialSortOrder == "DESC" {
-			sortOrder = potentialSortOrder
-		}
-	}
 
 	offset := (page - 1) * limit
 
@@ -157,10 +160,11 @@ func (a *API) GetTransactionsPaginated(c *gin.Context) {
 
 	totalPages := 0
 	if totalItems > 0 {
-		totalPages = (int(totalItems) + limit - 1) / limit // Ceiling division
+		totalPages = (int(totalItems) + limit - 1) / limit
 	}
 
 	c.JSON(http.StatusOK, PaginatedTxResponse{
+		Message:      GetTransactionsPaginatedResponseMessage,
 		Transactions: txResponses,
 		Pagination: Pagination{
 			CurrentPage:  page,
