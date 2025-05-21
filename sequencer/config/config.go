@@ -50,7 +50,7 @@ func LoadConfig() *Config {
 		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 
 		// StateDB configuration
-		Path: getEnv("PATH", "/var/tokamak/statedb"),
+		Path: getEnv("STATEDB_DIR_PATH", "/var/tokamak/statedb"),
 		Keep: getEnvInt("KEEP", 256),
 
 		// Ethereum configuration
