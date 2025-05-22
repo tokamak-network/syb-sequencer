@@ -278,6 +278,10 @@ func (s *StateDB) GetATRoot() *big.Int {
 	return s.AT.Root().BigInt()
 }
 
+func (s *StateDB) GetATRootHash() *merkletree.Hash {
+	return s.AT.Root()
+}
+
 // setAccountIdxByEthAddr stores the given Idx in the StateDB as follows:
 // - key: Eth Address, value: idx
 // If Idx already exist for the given EthAddr, the remaining Idx will be

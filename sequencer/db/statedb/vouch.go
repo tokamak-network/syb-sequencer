@@ -167,3 +167,7 @@ func GetVouchInTreeDB(sto db.Storage, idx common.VouchIdx) (*common.Vouch, error
 func (s *StateDB) GetVTRoot() *big.Int {
 	return s.VT.Root().BigInt()
 }
+
+func (s *StateDB) GetVTRootHash() *merkletree.Hash {
+	return s.VT.Root()
+}

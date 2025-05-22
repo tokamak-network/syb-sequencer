@@ -2,6 +2,19 @@ package common
 
 import "math/big"
 
+const (
+	// TxTypeDeposit
+	TxTypeDeposit string = "Deposit"
+	// TxTypeCreateAccountDeposit represents creation of a new leaf in the state tree
+	TxTypeCreateAccountDeposit string = "CreateAccountDeposit"
+	// TxTypeForceExit TBD
+	TxTypeForceExit string = "ForceExit"
+	// TxTypeCreateVouch
+	TxTypeCreateVouch string = "CreateVouch"
+	// TxTypeDeleteVouch
+	TxTypeDeleteVouch string = "DeleteVouch"
+)
+
 // Tx represents a transaction
 type Tx struct {
 	ItemID      int64    `json:"item_id"`
@@ -13,7 +26,7 @@ type Tx struct {
 	ToIdx       int64    `json:"to_idx"`
 	ToEthAddr   []byte   `json:"to_eth_addr,omitempty"`
 	Amount      *big.Int `json:"amount"`
-	BlockNumber uint64    `json:"block_number"`
-	Timestamp   uint64    `json:"timestamp"`
-	GasFee      *big.Int  `json:"gas_fee,omitempty"`
+	BlockNumber uint64   `json:"block_number"`
+	Timestamp   uint64   `json:"timestamp"`
+	GasFee      *big.Int `json:"gas_fee,omitempty"`
 }

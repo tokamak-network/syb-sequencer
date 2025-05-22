@@ -14,7 +14,7 @@ import (
 // Forger is responsible for creating batches from transactions
 type Forger struct {
 	historydb *historydb.HistoryDB
-	statedb   *statedb.LocalStateDB
+	Statedb   *statedb.LocalStateDB
 	logger    *log.Logger
 }
 
@@ -24,7 +24,7 @@ var lastForgedBatch uint32
 func NewForger(historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, logger *log.Logger) *Forger {
 	return &Forger{
 		historydb: historydb,
-		statedb:   statedb,
+		Statedb:   statedb,
 		logger:    logger,
 	}
 }
