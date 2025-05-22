@@ -61,6 +61,25 @@ func VouchIdxFromBytes(b []byte) (VouchIdx, error) {
 	return VouchIdx(idx), nil
 }
 
+// VouchIdxFromAccountIdxs returns vouchIdx from from/to Idx
+func VouchIdxFromAccountIdxs(from, to AccountIdx) (VouchIdx, error) {
+	fromBytes, err := from.Bytes()
+	if err != nil {
+		return 0, err
+	}
+
+	toBytes, err := to.Bytes()
+	if err != nil {
+		return 0, err
+	}
+
+	var vouchIdxBytes [8]byte
+	copy(vouchIdxBytes[8-VouchIdxBytesLen:], fromBytes[:])
+	copy(vouchIdxBytes[8-VouchIdxBytesLen/2:], toBytes[:])
+	idx := binary.BigEndian.Uint64(vouchIdxBytes[:])
+	return VouchIdx(idx), nil
+}
+
 // Vouch is a struct that gives an information about vouch
 // between accounts. Each Idx is represented by fromIdx and toIdx
 // of each accounts.

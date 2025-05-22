@@ -3,22 +3,21 @@ package api
 import (
 	"net/http"
 
-	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 
 // TxResponse represents the response format for transaction data
 type TxResponse struct {
-	ItemID      int64  `json:"item_id"`
-	BatchNum    int64  `json:"batch_num"`
-	Position    int    `json:"position"`
-	Type        string `json:"type"`
-	FromIdx     *int64 `json:"from_idx,omitempty"`
-	FromEthAddr string `json:"from_eth_addr,omitempty"`
-	ToIdx       int64  `json:"to_idx"`
-	ToEthAddr   string `json:"to_eth_addr,omitempty"`
-	Amount      string `json:"amount"`
+	ItemID      int64             `json:"item_id"`
+	BatchNum    int64             `json:"batch_num"`
+	Position    int               `json:"position"`
+	Type        string            `json:"type"`
+	FromIdx     common.AccountIdx `json:"from_idx,omitempty"`
+	FromEthAddr string            `json:"from_eth_addr,omitempty"`
+	ToIdx       common.AccountIdx `json:"to_idx"`
+	ToEthAddr   string            `json:"to_eth_addr,omitempty"`
+	Amount      string            `json:"amount"`
 }
 
 // convertTxToResponse converts a database Tx to a response format
@@ -42,11 +41,11 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 	// Convert Ethereum addresses to hex strings
 	if len(tx.FromEthAddr) > 0 {
 
-		resp.FromEthAddr = ethCommon.BytesToAddress(tx.FromEthAddr).Hex()
+		resp.FromEthAddr = tx.FromEthAddr.Hex()
 	}
 
 	if len(tx.ToEthAddr) > 0 {
-		resp.ToEthAddr = ethCommon.BytesToAddress(tx.ToEthAddr).Hex()
+		resp.ToEthAddr = tx.ToEthAddr.Hex()
 	}
 
 	return resp

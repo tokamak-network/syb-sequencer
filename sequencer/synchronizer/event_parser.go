@@ -24,17 +24,6 @@ type Transaction struct {
 	L1UserTx []byte
 }
 
-// Transaction types
-const (
-	TxTypeCreateAccountDeposit string = "CreateAccountDeposit"
-	TxTypeDeposit              string = "Deposit"
-	TxTypeWithdraw             string = "Withdraw"
-	TxTypeCreateVouch          string = "CreateVouch"
-	TxTypeUnvouch              string = "Unvouch"
-	TxTypeExplode              string = "Explode"
-	TxTypeUnknown              string = "Unknown"
-)
-
 var (
 	logSYBL1UserTxEvent = crypto.Keccak256Hash([]byte(
 		"L1UserTxEvent(uint32,uint8,bytes)"))
@@ -106,19 +95,19 @@ func ParseTxData(txData []byte) (string, ethCommon.Address, ethCommon.Address, *
 func SetType(firstByte byte) (string, error) {
 	switch firstByte {
 	case 0:
-		return TxTypeCreateAccountDeposit, nil
+		return common.TxTypeCreateAccountDeposit, nil
 	case 1:
-		return TxTypeDeposit, nil
+		return common.TxTypeDeposit, nil
 	case 2:
-		return TxTypeWithdraw, nil
+		return common.TxTypeWithdraw, nil
 	case 3:
-		return TxTypeCreateVouch, nil
+		return common.TxTypeVouch, nil
 	case 4:
-		return TxTypeUnvouch, nil
+		return common.TxTypeUnvouch, nil
 	case 5:
-		return TxTypeExplode, nil
+		return common.TxTypeExplode, nil
 	default:
-		return TxTypeUnknown, common.Wrap(fmt.Errorf("Unknown transaction type with first byte: %d (hex: 0x%02x)",
+		return common.TxTypeUnknown, common.Wrap(fmt.Errorf("Unknown transaction type with first byte: %d (hex: 0x%02x)",
 			firstByte, firstByte))
 	}
 }
