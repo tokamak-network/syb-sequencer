@@ -275,9 +275,12 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	}
 
 	if lastForgedBatch < (lastSyncBatch + 2) {
-		s.forger.ForgeBatch(lastForgedBatch + 1)
+		err = s.forger.ForgeBatch(lastForgedBatch + 1)
+		if err != nil {
+			s.logger.Printf("Error forging batch: %v", err)
+		}
 	}
 
-	s.logger.Printf("Saved transaction: %s, event: %s, data: %s",
+	s.logger.Printf("Saved transaction: %v, event: %v, data: %v",
 		vLog.TxHash.Hex(), eventType, eventData)
 }
