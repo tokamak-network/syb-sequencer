@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 
 	"github.com/tokamak-network/syb-sequencer/sequencer/api"
@@ -22,6 +23,13 @@ func main() {
 	// Load configuration
 	cfg := config.LoadConfig()
 
+	if err := os.MkdirAll(cfg.Path, 0755); err != nil {
+		log.Fatalf("Error creating base statedb directory %s: %v", cfg.Path, err)
+	}
+
+	syncDbPath := filepath.Join(cfg.Path, "synchronizer")
+	forgerDbPath := filepath.Join(cfg.Path, "forger")
+
 	db, err := historydb.InitSQLDB(cfg.DBPort, cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 	if err != nil {
 		log.Fatalf("Error initializing sql db: %v", err)
@@ -33,23 +41,29 @@ func main() {
 
 	// Create StateDB for synchronizer
 	synchronizerStateDB, err := statedb.NewStateDB(statedb.Config{
-		Path:    cfg.Path,
+		Path:    syncDbPath,
 		Keep:    cfg.Keep,
 		Type:    statedb.TypeSynchronizer,
 		NLevels: statedb.MaxNLevels,
 	})
 	if err != nil {
-		log.Fatalf("Error initializing state db: %v", err)
+		log.Fatalf("Error initializing synchronizer state db: %v", err)
 	}
 
 	// Create StateDB for forger
 	//TODO: Check this why it returns error
 	forgerStateDB, err := statedb.NewLocalStateDB(statedb.Config{
-		Path:    cfg.Path,
+		Path:    forgerDbPath,
 		Keep:    cfg.Keep,
-		Type:    statedb.TypeSynchronizer,
+		Type:    statedb.TypeBatchBuilder,
 		NLevels: statedb.MaxNLevels,
 	}, synchronizerStateDB)
+
+	if err != nil {
+		log.Fatalf("Error initializing forger state db: %v", err)
+	}
+
+	log.Println("StateDBs initialized successfully.")
 
 	// Create Forger
 	forger := forger.NewForger(historyDB, forgerStateDB, logger)

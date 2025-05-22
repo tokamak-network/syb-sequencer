@@ -28,4 +28,7 @@ type Tx struct {
 	ToIdx       AccountIdx        `json:"to_idx"`
 	ToEthAddr   ethCommon.Address `json:"to_eth_addr,omitempty"`
 	Amount      *big.Int          `json:"amount"`
+	BlockNumber uint64            `json:"block_number"`
+	Timestamp   uint64            `json:"timestamp"`
+	GasFee      *big.Int          `json:"gas_fee,omitempty"`
 }

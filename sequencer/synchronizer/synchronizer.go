@@ -215,6 +215,30 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		Amount:   big.NewInt(0), // Will be set based on event type
 	}
 
+	// Fetch Block Timestamp
+	header, err := s.client.HeaderByNumber(context.Background(), new(big.Int).SetUint64(vLog.BlockNumber))
+	if err != nil {
+		s.logger.Printf("Error fetching block header for block %d: %v", vLog.BlockNumber, err)
+	} else {
+		tx.Timestamp = header.Time
+	}
+
+	tx.BlockNumber = vLog.BlockNumber
+
+	// Fetch Transaction Receipt for Gas Fee
+	receipt, err := s.client.TransactionReceipt(context.Background(), vLog.TxHash)
+	if err != nil {
+		s.logger.Printf("Error fetching transaction receipt for tx %s: %v", vLog.TxHash.Hex(), err)
+	} else {
+		if receipt.EffectiveGasPrice != nil && receipt.GasUsed > 0 {
+			gasFee := new(big.Int).Mul(new(big.Int).SetUint64(receipt.GasUsed), receipt.EffectiveGasPrice)
+			tx.GasFee = gasFee
+		} else {
+			s.logger.Printf("Could not calculate gas fee for tx %s: EffectiveGasPrice or GasUsed missing/zero. GasUsed: %d", vLog.TxHash.Hex(), receipt.GasUsed)
+			tx.GasFee = big.NewInt(0)
+		}
+	}
+
 	// Format event data based on event type
 	//TODO: Add Different events
 	var eventDetails string
