@@ -38,8 +38,11 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 	}()
 
+	txProcessor.updatedAccounts = make(map[common.AccountIdx]*common.Account)
+
 	switch tx.Type {
 	case common.TxTypeCreateAccountDeposit:
+		fmt.Printf("Creating account... EthAddr: %s \n", tx.FromEthAddr)
 		// Create Account
 		account := &common.Account{
 			EthAddr: tx.FromEthAddr,
@@ -64,6 +67,10 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		if err != nil {
 			return nil, common.Wrap(err)
 		}
+
+		txProcessor.state.SetCurrentAccountIdx(txProcessor.state.CurrentAccountIdx() + 1)
+
+		fmt.Printf("Created account %s succssfully \n", idx)
 	case common.TxTypeDeposit:
 		accSender, err := txProcessor.state.GetAccount(tx.FromIdx)
 		if err != nil {

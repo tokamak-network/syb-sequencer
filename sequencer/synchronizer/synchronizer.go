@@ -250,19 +250,51 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
-		position := common.AccountIdx(eventData.Position)
-		tx.FromIdx = position
-		tx.ToIdx = position
+
+		tx.Type = txType
+
+		fromIdx, err := s.statedb.GetAccountIdxByEthAddr(fromEthAddr)
+		if err != nil {
+			if fromIdx == common.AccountIdx(0) {
+				tx.Type = common.TxTypeCreateAccountDeposit
+			} else {
+				s.logger.Printf("Failed to get idx from ethAddr: %v", err)
+			}
+		}
+		tx.FromIdx = fromIdx
+
+		if tx.Type == common.TxTypeVouch ||
+			tx.Type == common.TxTypeUnvouch ||
+			tx.Type == common.TxTypeExplode {
+			toIdx, err := s.statedb.GetAccountIdxByEthAddr(tx.ToEthAddr)
+			if err != nil {
+				s.logger.Printf("Failed to get idx from ethAddr: %v", err)
+			}
+			tx.ToIdx = toIdx
+		}
+
 		tx.FromEthAddr = fromEthAddr
 		tx.ToEthAddr = toEthAddr
 		tx.Amount = amount
-		tx.Type = txType
+
+		s.logger.Println("Transaction", tx)
 
 	default:
 		eventDetails = "Unknown event data"
 	}
 
 	s.logger.Printf("Event identified: %s, Data: %s", eventType, eventDetails)
+
+	// Process tx
+	tp := NewTxProcessor(s.statedb)
+
+	pOut, err := tp.ProcessTxs(*tx)
+	if err != nil {
+		s.logger.Printf("Error processing transaction: %v", err)
+		return
+	}
+
+	s.logger.Printf("Transaction processed: %s", pOut)
 
 	err = s.historydb.SaveTx(tx)
 	if err != nil {
