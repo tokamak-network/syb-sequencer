@@ -31,7 +31,7 @@ const (
 )
 
 // AccountIdx represents the account Index in the MerkleTree
-type AccountIdx uint32
+type AccountIdx int64
 
 // String returns a string representation of the account Idx
 func (idx AccountIdx) String() string {

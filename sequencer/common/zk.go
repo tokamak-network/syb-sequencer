@@ -50,7 +50,7 @@ type ZKInputs struct {
 	MaxNumBatch []*uint32 `json:"maxNumBatch"` // [uint32], len: [maxTx]
 
 	// FromIdx
-	FromIdx []*uint32 `json:"fromIdx"` // uint32 (max nLevels bits), len: [maxTx] index sender
+	FromIdx []*int64 `json:"fromIdx"` // uint32 (max nLevels bits), len: [maxTx] index sender
 	// AuxFromIdx is the AccountIdx of the new created account which is
 	// consequence of a L1CreateAccountTx
 	AuxFromIdx []*uint32 `json:"auxFromIdx"` // uint32 (max nLevels bits), len: [maxTx] auxilary index to create account
@@ -193,7 +193,7 @@ func NewZKInputs(chainID uint64, maxTx, maxL1Tx, nLevels uint32,
 	// Txs
 	zki.TxCompressedData = newSlice(maxTx)
 	zki.MaxNumBatch = newSliceUint32(maxTx)
-	zki.FromIdx = newSliceUint32(maxTx)
+	zki.FromIdx = newSliceUint64(maxTx)
 	zki.AuxFromIdx = newSliceUint32(maxTx)
 	zki.ToIdx = newSliceUint32(maxTx)
 	zki.AuxToIdx = newSliceUint32(maxTx)
@@ -297,6 +297,14 @@ func newSliceUint32(n uint32) []*uint32 {
 	s := make([]*uint32, n)
 	for i := 0; i < len(s); i++ {
 		s[i] = new(uint32)
+	}
+	return s
+}
+
+func newSliceUint64(n uint32) []*int64 {
+	s := make([]*int64, n)
+	for i := 0; i < len(s); i++ {
+		s[i] = new(int64)
 	}
 	return s
 }

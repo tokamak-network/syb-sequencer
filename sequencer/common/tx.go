@@ -1,6 +1,10 @@
 package common
 
-import "math/big"
+import (
+	"math/big"
+
+	ethCommon "github.com/ethereum/go-ethereum/common"
+)
 
 const (
 	// TxTypeDeposit
@@ -12,7 +16,7 @@ const (
 	// TxTypeCreateVouch
 	TxTypeCreateVouch string = "CreateVouch"
 	// TxTypeDeleteVouch
-	TxTypeDeleteVouch string = "DeleteVouch"
+	TxTypeUnVouch string = "UnVouch"
 )
 
 // Tx represents a transaction
@@ -29,4 +33,9 @@ type Tx struct {
 	BlockNumber uint64   `json:"block_number"`
 	Timestamp   uint64   `json:"timestamp"`
 	GasFee      *big.Int `json:"gas_fee,omitempty"`
+}
+
+// EthAddrToBigInt returns a *big.Int from a given ethereum common.Address.
+func EthAddrToBigInt(a ethCommon.Address) *big.Int {
+	return new(big.Int).SetBytes(a.Bytes())
 }
