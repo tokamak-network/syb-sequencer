@@ -19,7 +19,10 @@ CREATE TABLE IF NOT EXISTS tx (
     from_eth_addr BYTEA,
     to_idx BIGINT NOT NULL,
     to_eth_addr BYTEA,
-    amount DECIMAL(78,0) NOT NULL
+    amount DECIMAL(78,0) NOT NULL,
+    block_number BIGINT,
+    tx_timestamp BIGINT,
+    gas_fee DECIMAL(78,0)
 );
 
 -- Create batch scheme
@@ -30,6 +33,7 @@ CREATE TABLE IF NOT EXISTS batch (
     score_root DECIMAL(78,0) NOT NULL
 );
 
+-- TODO: NLEVELS was giving error here on running the migration, So changed the same to DECIMAL(78,0)[]
 -- Create account scheme
 CREATE TABLE IF NOT EXISTS account (
     item_id SERIAL,
@@ -37,7 +41,7 @@ CREATE TABLE IF NOT EXISTS account (
     eth_addr BYTEA NOT NULL,
     balance DECIMAL(78,0) NOT NULL,
     score DECIMAL(78,0) NOT NULL,
-    score_siblings DECIMAL(78,0)[NLEVELS] NOT NULL
+    score_siblings DECIMAL(78,0)[] NOT NULL
 );
 
 -- Create vouch scheme
