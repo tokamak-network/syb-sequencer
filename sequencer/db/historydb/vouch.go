@@ -64,7 +64,7 @@ func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*comm
 	query := `
 		SELECT idx, from_idx, from_eth_addr, to_idx, to_eth_addr
 		FROM vouch
-		WHERE from_eth_addr = $1 OR to_eth_addr = $1;
+		WHERE from_eth_addr = $1;
 	`
 	rows, err := hdb.dbRead.Query(query, ethAddr.Bytes())
 	if err != nil {

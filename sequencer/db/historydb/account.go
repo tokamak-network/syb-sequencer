@@ -14,7 +14,6 @@ func (hdb *HistoryDB) AddAccount(acc *common.Account) error {
 	query := `
 		INSERT INTO account (idx, eth_addr, balance, score, score_siblings)
 		VALUES ($1, $2, $3, $4, $5)
-		RETURNING item_id;
 	`
 
 	scoreSiblingsStr := make([]string, len(acc.ScoreSiblings))
@@ -26,15 +25,14 @@ func (hdb *HistoryDB) AddAccount(acc *common.Account) error {
 		}
 	}
 
-	var itemID int64
-	err := hdb.dbWrite.QueryRow(
+	_, err := hdb.dbWrite.Exec(
 		query,
 		acc.Idx,
 		acc.EthAddr.Bytes(),
 		acc.Balance.String(),
 		acc.Score.String(),
 		pq.Array(scoreSiblingsStr),
-	).Scan(&itemID)
+	)
 
 	if err != nil {
 		return fmt.Errorf("AddAccount: failed to add account with idx %d: %w", acc.Idx, err)
@@ -44,7 +42,7 @@ func (hdb *HistoryDB) AddAccount(acc *common.Account) error {
 
 func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*common.Account, error) {
 	query := `
-		SELECT item_id, eth_addr, balance, score, score_siblings
+		SELECT eth_addr, balance, score, score_siblings
 		FROM account
 		WHERE idx = $1;
 	`
@@ -96,7 +94,7 @@ func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*common.Account, error) {
 
 func (hdb *HistoryDB) GetAccountByEthAddress(ethAddr ethCommon.Address) (*common.Account, error) {
 	query := `
-		SELECT item_id, idx, balance, score, score_siblings
+		SELECT idx, balance, score, score_siblings
 		FROM account
 		WHERE eth_addr = $1;
 	`
