@@ -7,18 +7,10 @@ import (
 
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/lib/pq"
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 
-type Account struct {
-	ItemID        int64
-	Idx           uint32
-	EthAddr       ethCommon.Address
-	Balance       *big.Int
-	Score         *big.Int
-	ScoreSiblings []*big.Int
-}
-
-func (hdb *HistoryDB) AddAccount(acc *Account) error {
+func (hdb *HistoryDB) AddAccount(acc *common.Account) error {
 	query := `
 		INSERT INTO account (idx, eth_addr, balance, score, score_siblings)
 		VALUES ($1, $2, $3, $4, $5)
@@ -47,11 +39,10 @@ func (hdb *HistoryDB) AddAccount(acc *Account) error {
 	if err != nil {
 		return fmt.Errorf("AddAccount: failed to add account with idx %d: %w", acc.Idx, err)
 	}
-	acc.ItemID = itemID
 	return nil
 }
 
-func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*Account, error) {
+func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*common.Account, error) {
 	query := `
 		SELECT item_id, eth_addr, balance, score, score_siblings
 		FROM account
@@ -59,13 +50,12 @@ func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*Account, error) {
 	`
 	row := hdb.dbRead.QueryRow(query, idx)
 
-	acc := &Account{Idx: idx}
+	acc := &common.Account{Idx: common.AccountIdx(idx)}
 	var ethAddrBytes []byte
 	var balanceStr, scoreStr string
 	var scoreSiblingsStr pq.StringArray
 
 	err := row.Scan(
-		&acc.ItemID,
 		&ethAddrBytes,
 		&balanceStr,
 		&scoreStr,
@@ -104,7 +94,7 @@ func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*Account, error) {
 	return acc, nil
 }
 
-func (hdb *HistoryDB) GetAccountByEthAddress(ethAddr ethCommon.Address) (*Account, error) {
+func (hdb *HistoryDB) GetAccountByEthAddress(ethAddr ethCommon.Address) (*common.Account, error) {
 	query := `
 		SELECT item_id, idx, balance, score, score_siblings
 		FROM account
@@ -112,12 +102,11 @@ func (hdb *HistoryDB) GetAccountByEthAddress(ethAddr ethCommon.Address) (*Accoun
 	`
 	row := hdb.dbRead.QueryRow(query, ethAddr.Bytes())
 
-	acc := &Account{EthAddr: ethAddr}
+	acc := &common.Account{EthAddr: ethAddr}
 	var balanceStr, scoreStr string
 	var scoreSiblingsStr pq.StringArray
 
 	err := row.Scan(
-		&acc.ItemID,
 		&acc.Idx,
 		&balanceStr,
 		&scoreStr,
@@ -153,7 +142,7 @@ func (hdb *HistoryDB) GetAccountByEthAddress(ethAddr ethCommon.Address) (*Accoun
 	return acc, nil
 }
 
-func (hdb *HistoryDB) UpdateAccountBalance(idx uint32, newBalance *big.Int) error {
+func (hdb *HistoryDB) UpdateAccountBalance(idx common.AccountIdx, newBalance *big.Int) error {
 	query := `UPDATE account SET balance = $1 WHERE idx = $2;`
 	result, err := hdb.dbWrite.Exec(query, newBalance.String(), idx)
 	if err != nil {

@@ -24,17 +24,6 @@ type Transaction struct {
 	L1UserTx []byte
 }
 
-// Transaction types
-const (
-	TxTypeCreateAccountDeposit string = "CreateAccountDeposit"
-	TxTypeDeposit              string = "Deposit"
-	TxTypeWithdraw             string = "Withdraw"
-	TxTypeCreateVouch          string = "CreateVouch"
-	TxTypeUnvouch              string = "Unvouch"
-	TxTypeExplode              string = "Explode"
-	TxTypeUnknown              string = "Unknown"
-)
-
 var (
 	logSYBL1UserTxEvent = crypto.Keccak256Hash([]byte(
 		"L1UserTxEvent(uint32,uint8,bytes)"))
@@ -81,44 +70,77 @@ func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 // - fromEthAddress (20 bytes)
 // - toEthAddress (20 bytes)
 // - amount (32 bytes)
-func ParseTxData(txData []byte) (string, ethCommon.Address, ethCommon.Address, *big.Int, error) {
+func (s *Synchronizer) ParseTxData(eventData *L1UserTxEvent) (string, ethCommon.Address, ethCommon.Address, *big.Int, common.AccountIdx, common.AccountIdx, error) {
 	// Check if we have enough data
-	if len(txData) < 73 {
-		return "", ethCommon.Address{}, ethCommon.Address{}, nil, fmt.Errorf("transaction data too short: %d bytes, expected 73", len(txData))
+	if len(eventData.L1UserTx) < 73 {
+		return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("transaction data too short: %d bytes, expected 73", len(eventData.L1UserTx))
 	}
+
+	var fromIdx common.AccountIdx
+	var toIdx common.AccountIdx
 
 	//TODO: Update this once the contract is updated with encodePacked instead of encode
 	// Extract transaction type (first byte)
-	txType, _ := SetType(txData[31])
+	txType, err := SetType(eventData.L1UserTx[31])
+	if err != nil {
+		return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("ParseTxData: failed to set transaction type: %w", err)
+	}
 
 	// Extract from Ethereum address (next 20 bytes)
-	fromEthAddr := ethCommon.BytesToAddress(txData[44:64])
+	fromEthAddr := ethCommon.BytesToAddress(eventData.L1UserTx[44:64])
 
 	// Extract to Ethereum address (next 20 bytes)
-	toEthAddr := ethCommon.BytesToAddress(txData[76:96])
+	toEthAddr := ethCommon.BytesToAddress(eventData.L1UserTx[76:96])
 
+	if txType == common.TxTypeCreateAccountDeposit {
+		fromIdx = common.AccountIdx(eventData.Position)
+		toIdx = 0
+	} else if txType == common.TxTypeDeposit || txType == common.TxTypeWithdraw {
+		fromIdx, err = s.GetAccountIdx(fromEthAddr)
+		if err != nil {
+			return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("ParseTxData: failed to get from account index for %s: %w", fromEthAddr.Hex(), err)
+		}
+		toIdx = 0
+	} else {
+		fromIdx, err = s.GetAccountIdx(fromEthAddr)
+		if err != nil {
+			return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("ParseTxData: failed to get from account index for %s: %w", fromEthAddr.Hex(), err)
+		}
+		toIdx, err = s.GetAccountIdx(toEthAddr)
+		if err != nil {
+			return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("ParseTxData: failed to get to account index for %s: %w", toEthAddr.Hex(), err)
+		}
+	}
 	// Extract amount (next 32 bytes)
-	amount := new(big.Int).SetBytes(txData[96:128])
-	return txType, fromEthAddr, toEthAddr, amount, nil
+	amount := new(big.Int).SetBytes(eventData.L1UserTx[96:128])
+	return txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, nil
 }
 
 // SetType determines the transaction type based on the first byte
 func SetType(firstByte byte) (string, error) {
 	switch firstByte {
 	case 0:
-		return TxTypeCreateAccountDeposit, nil
+		return common.TxTypeCreateAccountDeposit, nil
 	case 1:
-		return TxTypeDeposit, nil
+		return common.TxTypeDeposit, nil
 	case 2:
-		return TxTypeWithdraw, nil
+		return common.TxTypeWithdraw, nil
 	case 3:
-		return TxTypeCreateVouch, nil
+		return common.TxTypeCreateVouch, nil
 	case 4:
-		return TxTypeUnvouch, nil
+		return common.TxTypeUnvouch, nil
 	case 5:
-		return TxTypeExplode, nil
+		return common.TxTypeExplode, nil
 	default:
-		return TxTypeUnknown, common.Wrap(fmt.Errorf("Unknown transaction type with first byte: %d (hex: 0x%02x)",
+		return common.TxTypeUnknown, common.Wrap(fmt.Errorf("Unknown transaction type with first byte: %d (hex: 0x%02x)",
 			firstByte, firstByte))
 	}
+}
+
+func (s *Synchronizer) GetAccountIdx(address ethCommon.Address) (common.AccountIdx, error) {
+	account, err := s.historydb.GetAccountByEthAddress(address)
+	if err != nil {
+		return 0, err
+	}
+	return account.Idx, nil
 }

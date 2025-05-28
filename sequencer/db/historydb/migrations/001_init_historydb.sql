@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS batch (
 -- TODO: NLEVELS was giving error here on running the migration, So changed the same to DECIMAL(78,0)[]
 -- Create account scheme
 CREATE TABLE IF NOT EXISTS account (
-    item_id SERIAL,
     idx INTEGER PRIMARY KEY,
     eth_addr BYTEA NOT NULL,
     balance DECIMAL(78,0) NOT NULL,

@@ -4,18 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
+
 	ethCommon "github.com/ethereum/go-ethereum/common"
 )
 
-type Vouch struct {
-	Idx         uint64
-	FromIdx     uint32
-	FromEthAddr ethCommon.Address
-	ToIdx       uint32
-	ToEthAddr   ethCommon.Address
-}
-
-func (hdb *HistoryDB) AddVouch(vouch *Vouch) error {
+func (hdb *HistoryDB) AddVouch(vouch *common.Vouch) error {
 	query := `
 		INSERT INTO vouch (idx, from_idx, from_eth_addr, to_idx, to_eth_addr)
 		VALUES ($1, $2, $3, $4, $5);
@@ -35,7 +29,7 @@ func (hdb *HistoryDB) AddVouch(vouch *Vouch) error {
 	return nil
 }
 
-func (hdb *HistoryDB) GetVouchByIdx(idx uint64) (*Vouch, error) {
+func (hdb *HistoryDB) GetVouchByIdx(idx common.VouchIdx) (*common.Vouch, error) {
 	query := `
 		SELECT from_idx, from_eth_addr, to_idx, to_eth_addr
 		FROM vouch
@@ -43,7 +37,7 @@ func (hdb *HistoryDB) GetVouchByIdx(idx uint64) (*Vouch, error) {
 	`
 	row := hdb.dbRead.QueryRow(query, idx)
 
-	v := &Vouch{Idx: idx}
+	v := &common.Vouch{Idx: idx}
 	var fromEthAddrBytes, toEthAddrBytes []byte
 
 	err := row.Scan(
@@ -66,7 +60,7 @@ func (hdb *HistoryDB) GetVouchByIdx(idx uint64) (*Vouch, error) {
 	return v, nil
 }
 
-func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*Vouch, error) {
+func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*common.Vouch, error) {
 	query := `
 		SELECT idx, from_idx, from_eth_addr, to_idx, to_eth_addr
 		FROM vouch
@@ -78,9 +72,9 @@ func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*Vouc
 	}
 	defer rows.Close()
 
-	var vouches []*Vouch
+	var vouches []*common.Vouch
 	for rows.Next() {
-		v := &Vouch{}
+		v := &common.Vouch{}
 		var fromEthAddrBytes, toEthAddrBytes []byte
 		errScan := rows.Scan(
 			&v.Idx,
@@ -104,7 +98,7 @@ func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*Vouc
 	return vouches, nil
 }
 
-func (hdb *HistoryDB) DeleteVouchByIdx(idx uint64) error {
+func (hdb *HistoryDB) DeleteVouchByIdx(idx common.VouchIdx) error {
 	query := `DELETE FROM vouch WHERE idx = $1;`
 	result, err := hdb.dbWrite.Exec(query, idx)
 	if err != nil {

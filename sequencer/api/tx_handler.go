@@ -11,18 +11,18 @@ import (
 )
 
 type TxResponse struct {
-	ItemID      int64  `json:"item_id"`
-	BatchNum    int64  `json:"batch_num"`
-	Position    int    `json:"position"`
-	Type        string `json:"type"`
-	FromIdx     *int64 `json:"from_idx,omitempty"`
-	FromEthAddr string `json:"from_eth_addr,omitempty"`
-	ToIdx       int64  `json:"to_idx"`
-	ToEthAddr   string `json:"to_eth_addr,omitempty"`
-	Amount      string `json:"amount"`
-	BlockNumber uint64 `json:"block_number"`
-	Timestamp   uint64 `json:"timestamp"`
-	GasFee      string `json:"gas_fee"`
+	ItemID      int64              `json:"item_id"`
+	BatchNum    int64              `json:"batch_num"`
+	Position    int                `json:"position"`
+	Type        string             `json:"type"`
+	FromIdx     *common.AccountIdx `json:"from_idx,omitempty"`
+	FromEthAddr string             `json:"from_eth_addr,omitempty"`
+	ToIdx       common.AccountIdx  `json:"to_idx"`
+	ToEthAddr   string             `json:"to_eth_addr,omitempty"`
+	Amount      string             `json:"amount"`
+	BlockNumber uint64             `json:"block_number"`
+	Timestamp   uint64             `json:"timestamp"`
+	GasFee      string             `json:"gas_fee"`
 }
 
 type PaginatedTxResponse struct {

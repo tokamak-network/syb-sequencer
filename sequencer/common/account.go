@@ -79,9 +79,11 @@ func AccountIdxFromBytes(b []byte) (AccountIdx, error) {
 // Is the data structure that generates the Value stored in
 // the leaf of the MerkleTree
 type Account struct {
-	Idx     AccountIdx        `json:"idx"`
-	EthAddr ethCommon.Address `json:"eth_addr"`
-	Balance *big.Int          `json:"balance"`
+	Idx           AccountIdx
+	EthAddr       ethCommon.Address
+	Balance       *big.Int
+	Score         *big.Int
+	ScoreSiblings []*big.Int
 }
 
 func (a *Account) String() string {
