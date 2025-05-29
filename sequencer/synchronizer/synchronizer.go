@@ -210,7 +210,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		BatchNum: int64(eventData.QueueIndex), // Initial batch number is 0
 		Position: int(eventData.Position),
 		Type:     eventType,
-		FromIdx:  nil,           // Will be set based on event type
+		FromIdx:  0,             // Will be set based on event type
 		ToIdx:    0,             // Will be set based on event type
 		Amount:   big.NewInt(0), // Will be set based on event type
 	}
@@ -250,12 +250,14 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
-		tx.FromIdx = &fromIdx
+		tx.FromIdx = fromIdx
 		tx.ToIdx = toIdx
 		tx.FromEthAddr = fromEthAddr.Bytes()
 		tx.ToEthAddr = toEthAddr.Bytes()
 		tx.Amount = amount
 		tx.Type = txType
+
+		s.logger.Println("Transaction", tx)
 
 	default:
 		eventDetails = "Unknown event data"

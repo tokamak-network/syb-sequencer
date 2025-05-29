@@ -16,9 +16,9 @@ var (
 	// Account already exists
 	ErrAccountAlreadyExists = errors.New("cannot CreateAccount because Account already exists")
 	// PrefixKeyAccIdx is the key prefix for accountIdx in the db
-	PrefixKeyAccIdx = []byte("i:")
+	PrefixKeyAccIdx = []byte("ai:")
 	// PrefixKeyAccHash is the key prefix for account hash in the db
-	PrefixKeyAccHash = []byte("h:")
+	PrefixKeyAccHash = []byte("ah:")
 	// PrefixKeyAddr is the key prefix for address in the db
 	PrefixKeyAddr = []byte("a:")
 )

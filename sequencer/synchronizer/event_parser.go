@@ -126,7 +126,7 @@ func SetType(firstByte byte) (string, error) {
 	case 2:
 		return common.TxTypeWithdraw, nil
 	case 3:
-		return common.TxTypeCreateVouch, nil
+		return common.TxTypeVouch, nil
 	case 4:
 		return common.TxTypeUnvouch, nil
 	case 5:

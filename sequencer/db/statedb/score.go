@@ -14,9 +14,9 @@ var (
 	// Score already exists
 	ErrScoreAlreadyExists = errors.New("cannot CreateScore because Score already exists")
 	// PrefixKeyScoIdx is the key prefix for ScoreIdx in the db
-	PrefixKeyScoIdx = []byte("i:")
+	PrefixKeyScoIdx = []byte("si:")
 	// PrefixKeyScoHash is the key prefix for Score hash in the db
-	PrefixKeyScoHash = []byte("h:")
+	PrefixKeyScoHash = []byte("sh:")
 )
 
 // CreateScore creates a new Score in the StateDB for the given Idx.  If

@@ -29,7 +29,7 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 		return s.DepositWithdrawTx(tx)
 	case common.TxTypeWithdraw:
 		return s.DepositWithdrawTx(tx)
-	case common.TxTypeCreateVouch:
+	case common.TxTypeVouch:
 		return s.VouchTx(tx)
 	case common.TxTypeUnvouch:
 		return s.VouchTx(tx)
@@ -39,11 +39,11 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 }
 
 func (s *Synchronizer) AddAccountTx(tx *common.Tx) error {
-	if tx.FromIdx == nil {
+	if tx.FromIdx == 0 {
 		return fmt.Errorf("AddAccountTx: FromIdx is nil for CreateAccountDeposit transaction")
 	}
 	acc := &common.Account{
-		Idx:           *tx.FromIdx,
+		Idx:           tx.FromIdx,
 		EthAddr:       ethCommon.BytesToAddress(tx.FromEthAddr),
 		Balance:       tx.Amount,     // Initial deposit amount becomes the balance
 		Score:         big.NewInt(0), // Initial score
@@ -116,7 +116,7 @@ func (s *Synchronizer) VouchTx(tx *common.Tx) error {
 	}
 	vouchTableKeyValue := common.VouchIdx(vouchTableKeyBigInt.Uint64())
 
-	if tx.Type == common.TxTypeCreateVouch {
+	if tx.Type == common.TxTypeVouch {
 		vouchEntry := &common.Vouch{
 			Idx:         vouchTableKeyValue,
 			FromIdx:     vouchingAccount.Idx,
