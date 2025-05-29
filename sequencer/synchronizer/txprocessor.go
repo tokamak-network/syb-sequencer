@@ -45,21 +45,20 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		fmt.Printf("Creating account... EthAddr: %s \n", tx.FromEthAddr)
 		// Create Account
 		account := &common.Account{
+			Idx:     tx.FromIdx,
 			EthAddr: tx.FromEthAddr,
 			Balance: tx.Amount,
 		}
 
-		idx := common.AccountIdx(txProcessor.state.CurrentAccountIdx() + 1)
-		account.Idx = idx
-		txProcessor.updatedAccounts[idx] = account
-		_, err := txProcessor.state.CreateAccount(idx, account)
+		txProcessor.updatedAccounts[tx.FromIdx] = account
+		_, err := txProcessor.state.CreateAccount(tx.FromIdx, account)
 		if err != nil {
 			return nil, common.Wrap(err)
 		}
 
 		// Create Score for newly created account
 		score := &common.Score{
-			Idx:     common.ScoreIdx(idx),
+			Idx:     common.ScoreIdx(tx.FromIdx),
 			EthAddr: tx.FromEthAddr,
 			Score:   big.NewInt(0),
 		}
@@ -68,9 +67,9 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 			return nil, common.Wrap(err)
 		}
 
-		txProcessor.state.SetCurrentAccountIdx(txProcessor.state.CurrentAccountIdx() + 1)
+		txProcessor.state.SetCurrentAccountIdx(tx.FromIdx)
 
-		fmt.Printf("Created account %s succssfully \n", idx)
+		fmt.Printf("Created account %s succssfully \n", tx.FromIdx)
 	case common.TxTypeDeposit:
 		accSender, err := txProcessor.state.GetAccount(tx.FromIdx)
 		if err != nil {
