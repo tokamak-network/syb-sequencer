@@ -194,7 +194,7 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 
 // processLog processes a single log entry
 func (s *Synchronizer) processLog(vLog types.Log) {
-	lastForgedBatch := s.forger.GetLastForgedBatchNum()
+	// lastForgedBatch := s.forger.GetLastForgedBatchNum()
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
 
 	// // Parse the event
@@ -276,12 +276,14 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		lastSyncBatch = eventData.QueueIndex
 	}
 
-	if lastForgedBatch < (lastSyncBatch + 2) {
-		err = s.forger.ForgeBatch(lastForgedBatch + 1)
-		if err != nil {
-			s.logger.Fatalf("Error forging batch: %v", err)
-		}
-	}
+	//TODO: This will be updated with the new contract updates
+
+	// if lastForgedBatch < (lastSyncBatch + 2) {
+	// 	err = s.forger.ForgeBatch(lastForgedBatch + 1)
+	// 	if err != nil {
+	// 		s.logger.Fatalf("Error forging batch: %v", err)
+	// 	}
+	// }
 
 	s.logger.Printf("Saved transaction: %v, event: %v, data: %v",
 		vLog.TxHash.Hex(), eventType, eventData)

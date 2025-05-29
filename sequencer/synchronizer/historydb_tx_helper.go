@@ -39,9 +39,6 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 }
 
 func (s *Synchronizer) AddAccountTx(tx *common.Tx) error {
-	if tx.FromIdx == 0 {
-		return fmt.Errorf("AddAccountTx: FromIdx is nil for CreateAccountDeposit transaction")
-	}
 	acc := &common.Account{
 		Idx:           tx.FromIdx,
 		EthAddr:       ethCommon.BytesToAddress(tx.FromEthAddr),
