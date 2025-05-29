@@ -65,9 +65,9 @@ func VouchIdxFromBytes(b []byte) (VouchIdx, error) {
 // between accounts. Each Idx is represented by fromIdx and toIdx
 // of each accounts.
 type Vouch struct {
-	Idx         VouchIdx
-	FromIdx     AccountIdx
-	FromEthAddr ethCommon.Address
-	ToIdx       AccountIdx
-	ToEthAddr   ethCommon.Address
+	Idx         VouchIdx          `json:"idx"`
+	FromIdx     AccountIdx        `json:"from_idx"`
+	FromEthAddr ethCommon.Address `json:"from_eth_addr"`
+	ToIdx       AccountIdx        `json:"to_idx"`
+	ToEthAddr   ethCommon.Address `json:"to_eth_addr"`
 }
