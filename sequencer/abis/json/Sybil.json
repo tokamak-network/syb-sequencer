@@ -8,6 +8,7 @@
     "name": "AccessControlUnauthorizedAccount",
     "type": "error"
   },
+  { "inputs": [], "name": "BatchNotFull", "type": "error" },
   { "inputs": [], "name": "EthTransferFailed", "type": "error" },
   { "inputs": [], "name": "InsufficientBalance", "type": "error" },
   { "inputs": [], "name": "InsufficientETH", "type": "error" },
@@ -49,14 +50,20 @@
       {
         "indexed": true,
         "internalType": "uint32",
-        "name": "batchNum",
+        "name": "lastForgedBatch",
         "type": "uint32"
       },
       {
         "indexed": false,
-        "internalType": "uint16",
-        "name": "l1UserTxsLen",
-        "type": "uint16"
+        "internalType": "uint256",
+        "name": "lastForgedTxn",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "batchSize",
+        "type": "uint256"
       }
     ],
     "name": "ForgeBatch",
@@ -73,44 +80,6 @@
       }
     ],
     "name": "Initialized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint32",
-        "name": "queueIndex",
-        "type": "uint32"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint8",
-        "name": "position",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "l1UserTx",
-        "type": "bytes"
-      }
-    ],
-    "name": "L1UserTxEvent",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "minBalance",
-        "type": "uint256"
-      }
-    ],
-    "name": "MinBalanceUpdated",
     "type": "event"
   },
   {
@@ -192,19 +161,50 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "newBalance",
+        "type": "uint256"
+      }
+    ],
+    "name": "ScoringRequiredBalanceUpdated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
-        "internalType": "uint48",
-        "name": "idx",
-        "type": "uint48"
+        "internalType": "uint256",
+        "name": "lastAddedTxn",
+        "type": "uint256"
       },
       {
         "indexed": true,
-        "internalType": "uint32",
-        "name": "numExitRoot",
-        "type": "uint32"
+        "internalType": "uint8",
+        "name": "identifier",
+        "type": "uint8"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "from",
+        "type": "uint24"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint24",
+        "name": "to",
+        "type": "uint24"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "amount",
+        "type": "uint256"
       }
     ],
-    "name": "WithdrawEvent",
+    "name": "TxEvent",
     "type": "event"
   },
   {
@@ -218,6 +218,13 @@
     "inputs": [],
     "name": "DEFAULT_ADMIN_ROLE",
     "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "_MIN_BALANCE",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -242,6 +249,16 @@
     "type": "function"
   },
   {
+    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
+    "name": "accountInfo",
+    "outputs": [
+      { "internalType": "uint192", "name": "balance", "type": "uint192" },
+      { "internalType": "uint24", "name": "idx", "type": "uint24" }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
     "name": "accountRootMap",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
@@ -249,16 +266,9 @@
     "type": "function"
   },
   {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "balances",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
     "inputs": [],
-    "name": "currentFillingBatch",
-    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
+    "name": "batchSize",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -317,7 +327,7 @@
   {
     "inputs": [],
     "name": "getQueueLength",
-    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -374,6 +384,13 @@
   },
   {
     "inputs": [],
+    "name": "lastAddedTxn",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "lastForgedBatch",
     "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
     "stateMutability": "view",
@@ -381,8 +398,15 @@
   },
   {
     "inputs": [],
-    "name": "minBalance",
+    "name": "lastForgedTxn",
     "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "lastIdx",
+    "outputs": [{ "internalType": "uint24", "name": "", "type": "uint24" }],
     "stateMutability": "view",
     "type": "function"
   },
@@ -440,6 +464,13 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "scoringRequiredBalance",
+    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
     ],
@@ -456,16 +487,13 @@
     "type": "function"
   },
   {
-    "inputs": [
-      { "internalType": "uint32", "name": "", "type": "uint32" },
-      { "internalType": "uint256", "name": "", "type": "uint256" }
-    ],
+    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
     "name": "unprocessedBatchesMap",
     "outputs": [
       { "internalType": "uint8", "name": "identifier", "type": "uint8" },
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" },
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
+      { "internalType": "uint24", "name": "from", "type": "uint24" },
+      { "internalType": "uint24", "name": "to", "type": "uint24" },
+      { "internalType": "uint128", "name": "amount", "type": "uint128" }
     ],
     "stateMutability": "view",
     "type": "function"
@@ -490,9 +518,13 @@
   },
   {
     "inputs": [
-      { "internalType": "uint256", "name": "_minBalance", "type": "uint256" }
+      {
+        "internalType": "uint256",
+        "name": "_scoringRequiredBalance",
+        "type": "uint256"
+      }
     ],
-    "name": "updateMinBalance",
+    "name": "updateScoringRequiredBalance",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

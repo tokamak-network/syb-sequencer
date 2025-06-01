@@ -22,7 +22,7 @@ import (
 type Synchronizer struct {
 	client          *ethclient.Client
 	contractAddress ethCommon.Address
-	sybilContract   *bindings.Bindings
+	sybilContract   *bindings.Sybil
 	historydb       *historydb.HistoryDB
 	statedb         *statedb.StateDB
 	logs            chan types.Log
@@ -42,7 +42,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 	}
 
 	contractAddress := ethCommon.HexToAddress(contractAddressHex)
-	sybilContract, err := bindings.NewBindings(contractAddress, client)
+	sybilContract, err := bindings.NewSybil(contractAddress, client)
 	if err != nil {
 		return nil, fmt.Errorf("failed to instantiate Sybil contract: %v", err)
 	}

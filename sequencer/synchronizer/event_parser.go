@@ -32,7 +32,7 @@ var (
 // ParseEvent parses data of events found on blockchain in required structure
 func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 	// Parse ABI
-	sybilABI, err := abi.JSON(strings.NewReader(bindings.BindingsMetaData.ABI))
+	sybilABI, err := abi.JSON(strings.NewReader(bindings.SybilMetaData.ABI))
 	if err != nil {
 		return nil, "", fmt.Errorf("parseEvent: failed to parse ABI: %w", err)
 	}
