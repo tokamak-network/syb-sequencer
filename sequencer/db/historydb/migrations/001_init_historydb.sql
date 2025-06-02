@@ -12,8 +12,8 @@ CREATE SEQUENCE IF NOT EXISTS tx_item_id;
 -- Create tx scheme
 CREATE TABLE IF NOT EXISTS tx (
     item_id INTEGER PRIMARY KEY DEFAULT nextval('tx_item_id'),
-    batch_num BIGINT NOT NULL,
-    position INT NOT NULL,
+    batch_num INTEGER NOT NULL,
+    position DECIMAL(78,0) NOT NULL,
     type VARCHAR(40) NOT NULL,
     from_idx INTEGER,
     from_eth_addr BYTEA,

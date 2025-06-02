@@ -1,582 +1,602 @@
 [
-  { "inputs": [], "name": "AccessControlBadConfirmation", "type": "error" },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "account", "type": "address" },
-      { "internalType": "bytes32", "name": "neededRole", "type": "bytes32" }
-    ],
-    "name": "AccessControlUnauthorizedAccount",
-    "type": "error"
-  },
-  { "inputs": [], "name": "BatchNotFull", "type": "error" },
-  { "inputs": [], "name": "EthTransferFailed", "type": "error" },
-  { "inputs": [], "name": "InsufficientBalance", "type": "error" },
-  { "inputs": [], "name": "InsufficientETH", "type": "error" },
-  { "inputs": [], "name": "InvalidInitialization", "type": "error" },
-  { "inputs": [], "name": "InvalidPoseidon2Address", "type": "error" },
-  { "inputs": [], "name": "InvalidPoseidon3Address", "type": "error" },
-  { "inputs": [], "name": "InvalidProof", "type": "error" },
-  { "inputs": [], "name": "InvalidVerifierAddress", "type": "error" },
-  { "inputs": [], "name": "LimitAmountExceeded", "type": "error" },
-  { "inputs": [], "name": "NotInitializing", "type": "error" },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "from", "type": "address" },
-      { "internalType": "address", "name": "to", "type": "address" }
-    ],
-    "name": "NotVouched",
-    "type": "error"
-  },
-  { "inputs": [], "name": "ReceiverHasZeroBalance", "type": "error" },
-  { "inputs": [], "name": "SelfVouch", "type": "error" },
-  { "inputs": [], "name": "SenderHasZeroBalance", "type": "error" },
-  { "inputs": [], "name": "SmtProofInvalid", "type": "error" },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "explodeAmount",
-        "type": "uint256"
-      }
-    ],
-    "name": "ExplodeAmountUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint32",
-        "name": "lastForgedBatch",
-        "type": "uint32"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "lastForgedTxn",
-        "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "batchSize",
-        "type": "uint256"
-      }
-    ],
-    "name": "ForgeBatch",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint64",
-        "name": "version",
-        "type": "uint64"
-      }
-    ],
-    "name": "Initialized",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "previousAdminRole",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "newAdminRole",
-        "type": "bytes32"
-      }
-    ],
-    "name": "RoleAdminChanged",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleGranted",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      },
-      {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
-    ],
-    "name": "RoleRevoked",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "newBalance",
-        "type": "uint256"
-      }
-    ],
-    "name": "ScoringRequiredBalanceUpdated",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "lastAddedTxn",
-        "type": "uint256"
-      },
-      {
-        "indexed": true,
-        "internalType": "uint8",
-        "name": "identifier",
-        "type": "uint8"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint24",
-        "name": "from",
-        "type": "uint24"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint24",
-        "name": "to",
-        "type": "uint24"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
-    ],
-    "name": "TxEvent",
-    "type": "event"
-  },
-  {
-    "inputs": [],
-    "name": "ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "_MIN_BALANCE",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "key", "type": "uint256" },
-      { "internalType": "uint256", "name": "value", "type": "uint256" }
-    ],
-    "name": "_hashFinalNode",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "left", "type": "uint256" },
-      { "internalType": "uint256", "name": "right", "type": "uint256" }
-    ],
-    "name": "_hashNode",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "accountInfo",
-    "outputs": [
-      { "internalType": "uint192", "name": "balance", "type": "uint192" },
-      { "internalType": "uint24", "name": "idx", "type": "uint24" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "name": "accountRootMap",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "batchSize",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "deposit",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "name": "exitRootMap",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "explodeAmount",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address[]", "name": "toEthAddrs", "type": "address[]" }
-    ],
-    "name": "explodeMultiple",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "newAccountRoot",
-        "type": "uint256"
-      },
-      { "internalType": "uint256", "name": "newVouchRoot", "type": "uint256" },
-      { "internalType": "uint256", "name": "newScoreRoot", "type": "uint256" },
-      { "internalType": "uint256[2]", "name": "proofA", "type": "uint256[2]" },
-      {
-        "internalType": "uint256[2][2]",
-        "name": "proofB",
-        "type": "uint256[2][2]"
-      },
-      { "internalType": "uint256[2]", "name": "proofC", "type": "uint256[2]" }
-    ],
-    "name": "forgeBatch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "getQueueLength",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" }
-    ],
-    "name": "getRoleAdmin",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "hasRole",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "_verifier", "type": "address" },
-      { "internalType": "uint256", "name": "maxTx", "type": "uint256" },
-      { "internalType": "uint256", "name": "nLevel", "type": "uint256" },
-      {
-        "internalType": "address",
-        "name": "_poseidon2Elements",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_poseidon3Elements",
-        "type": "address"
-      },
-      { "internalType": "address", "name": "_adminRole", "type": "address" }
-    ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastAddedTxn",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastForgedBatch",
-    "outputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastForgedTxn",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "lastIdx",
-    "outputs": [{ "internalType": "uint24", "name": "", "type": "uint24" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint32", "name": "numScoreRoot", "type": "uint32" },
-      { "internalType": "uint24", "name": "idx", "type": "uint24" },
-      { "internalType": "uint32", "name": "score", "type": "uint32" },
-      { "internalType": "uint256[]", "name": "siblings", "type": "uint256[]" }
-    ],
-    "name": "proveScoreMerkleProof",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      {
-        "internalType": "address",
-        "name": "callerConfirmation",
-        "type": "address"
-      }
-    ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes32", "name": "role", "type": "bytes32" },
-      { "internalType": "address", "name": "account", "type": "address" }
-    ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "name": "scoreRootMap",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "address", "name": "", "type": "address" }],
-    "name": "scoreSnapshots",
-    "outputs": [
-      { "internalType": "uint32", "name": "score", "type": "uint32" },
-      { "internalType": "uint32", "name": "batchNum", "type": "uint32" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "scoringRequiredBalance",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "bytes4", "name": "interfaceId", "type": "bytes4" }
-    ],
-    "name": "supportsInterface",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "name": "txsDataHashMap",
-    "outputs": [{ "internalType": "bytes32", "name": "", "type": "bytes32" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "name": "unprocessedBatchesMap",
-    "outputs": [
-      { "internalType": "uint8", "name": "identifier", "type": "uint8" },
-      { "internalType": "uint24", "name": "from", "type": "uint24" },
-      { "internalType": "uint24", "name": "to", "type": "uint24" },
-      { "internalType": "uint128", "name": "amount", "type": "uint128" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "toEthAddr", "type": "address" }
-    ],
-    "name": "unvouch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "_explodeAmount", "type": "uint256" }
-    ],
-    "name": "updateExplodeAmount",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_scoringRequiredBalance",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateScoringRequiredBalance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "verifier",
-    "outputs": [
-      {
-        "internalType": "contract IVerifier",
-        "name": "verifierInterface",
-        "type": "address"
-      },
-      { "internalType": "uint256", "name": "maxTx", "type": "uint256" },
-      { "internalType": "uint256", "name": "nLevel", "type": "uint256" }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "toEthAddr", "type": "address" }
-    ],
-    "name": "vouch",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [{ "internalType": "uint32", "name": "", "type": "uint32" }],
-    "name": "vouchRootMap",
-    "outputs": [{ "internalType": "uint256", "name": "", "type": "uint256" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "address", "name": "", "type": "address" },
-      { "internalType": "address", "name": "", "type": "address" }
-    ],
-    "name": "vouches",
-    "outputs": [{ "internalType": "bool", "name": "", "type": "bool" }],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      { "internalType": "uint256", "name": "amount", "type": "uint256" }
-    ],
-    "name": "withdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  }
-]
+    {
+      "type": "function",
+      "name": "ADMIN_ROLE",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "DEFAULT_ADMIN_ROLE",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_MIN_BALANCE",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_hashFinalNode",
+      "inputs": [
+        { "name": "key", "type": "uint256", "internalType": "uint256" },
+        { "name": "value", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "_hashNode",
+      "inputs": [
+        { "name": "left", "type": "uint256", "internalType": "uint256" },
+        { "name": "right", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "accountInfo",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [
+        { "name": "balance", "type": "uint192", "internalType": "uint192" },
+        { "name": "idx", "type": "uint24", "internalType": "uint24" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "accountRootMap",
+      "inputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "batchSize",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "deposit",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "exitRootMap",
+      "inputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "explodeAmount",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "explodeMultiple",
+      "inputs": [
+        {
+          "name": "toEthAddrs",
+          "type": "address[]",
+          "internalType": "address[]"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "forgeBatch",
+      "inputs": [
+        {
+          "name": "newAccountRoot",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "newVouchRoot",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "newScoreRoot",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "proofA",
+          "type": "uint256[2]",
+          "internalType": "uint256[2]"
+        },
+        {
+          "name": "proofB",
+          "type": "uint256[2][2]",
+          "internalType": "uint256[2][2]"
+        },
+        { "name": "proofC", "type": "uint256[2]", "internalType": "uint256[2]" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getQueueLength",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getRoleAdmin",
+      "inputs": [
+        { "name": "role", "type": "bytes32", "internalType": "bytes32" }
+      ],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "grantRole",
+      "inputs": [
+        { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "account", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "hasRole",
+      "inputs": [
+        { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "account", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "initialize",
+      "inputs": [
+        { "name": "_verifier", "type": "address", "internalType": "address" },
+        { "name": "maxTx", "type": "uint256", "internalType": "uint256" },
+        { "name": "nLevel", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "_poseidon2Elements",
+          "type": "address",
+          "internalType": "address"
+        },
+        {
+          "name": "_poseidon3Elements",
+          "type": "address",
+          "internalType": "address"
+        },
+        { "name": "_adminRole", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "lastAddedTxn",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "lastForgedBatch",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "lastForgedTxn",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "lastIdx",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint24", "internalType": "uint24" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "proveScoreMerkleProof",
+      "inputs": [
+        { "name": "numScoreRoot", "type": "uint32", "internalType": "uint32" },
+        { "name": "idx", "type": "uint24", "internalType": "uint24" },
+        { "name": "score", "type": "uint32", "internalType": "uint32" },
+        { "name": "siblings", "type": "uint256[]", "internalType": "uint256[]" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "renounceRole",
+      "inputs": [
+        { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+        {
+          "name": "callerConfirmation",
+          "type": "address",
+          "internalType": "address"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "revokeRole",
+      "inputs": [
+        { "name": "role", "type": "bytes32", "internalType": "bytes32" },
+        { "name": "account", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "scoreRootMap",
+      "inputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "scoreSnapshots",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [
+        { "name": "score", "type": "uint32", "internalType": "uint32" },
+        { "name": "batchNum", "type": "uint32", "internalType": "uint32" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "scoringRequiredBalance",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "supportsInterface",
+      "inputs": [
+        { "name": "interfaceId", "type": "bytes4", "internalType": "bytes4" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "txsDataHashMap",
+      "inputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "outputs": [{ "name": "", "type": "bytes32", "internalType": "bytes32" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "unprocessedBatchesMap",
+      "inputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "outputs": [
+        { "name": "identifier", "type": "uint8", "internalType": "uint8" },
+        { "name": "from", "type": "uint24", "internalType": "uint24" },
+        { "name": "to", "type": "uint24", "internalType": "uint24" },
+        { "name": "amount", "type": "uint128", "internalType": "uint128" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "unvouch",
+      "inputs": [
+        { "name": "toEthAddr", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateExplodeAmount",
+      "inputs": [
+        {
+          "name": "_explodeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateScoringRequiredBalance",
+      "inputs": [
+        {
+          "name": "_scoringRequiredBalance",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "verifier",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "verifierInterface",
+          "type": "address",
+          "internalType": "contract IVerifier"
+        },
+        { "name": "maxTx", "type": "uint256", "internalType": "uint256" },
+        { "name": "nLevel", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "vouch",
+      "inputs": [
+        { "name": "toEthAddr", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "vouchRootMap",
+      "inputs": [{ "name": "", "type": "uint32", "internalType": "uint32" }],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "vouches",
+      "inputs": [
+        { "name": "", "type": "address", "internalType": "address" },
+        { "name": "", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [{ "name": "", "type": "bool", "internalType": "bool" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "withdraw",
+      "inputs": [
+        { "name": "amount", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "event",
+      "name": "ExplodeAmountUpdated",
+      "inputs": [
+        {
+          "name": "explodeAmount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ForgeBatch",
+      "inputs": [
+        {
+          "name": "lastForgedBatch",
+          "type": "uint32",
+          "indexed": true,
+          "internalType": "uint32"
+        },
+        {
+          "name": "lastForgedTxn",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "batchSize",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Initialized",
+      "inputs": [
+        {
+          "name": "version",
+          "type": "uint64",
+          "indexed": false,
+          "internalType": "uint64"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleAdminChanged",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "previousAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "newAdminRole",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleGranted",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "RoleRevoked",
+      "inputs": [
+        {
+          "name": "role",
+          "type": "bytes32",
+          "indexed": true,
+          "internalType": "bytes32"
+        },
+        {
+          "name": "account",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "sender",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ScoringRequiredBalanceUpdated",
+      "inputs": [
+        {
+          "name": "newBalance",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "TxEvent",
+      "inputs": [
+        {
+          "name": "lastAddedTxn",
+          "type": "uint256",
+          "indexed": true,
+          "internalType": "uint256"
+        },
+        {
+          "name": "identifier",
+          "type": "uint8",
+          "indexed": true,
+          "internalType": "uint8"
+        },
+        {
+          "name": "from",
+          "type": "uint24",
+          "indexed": false,
+          "internalType": "uint24"
+        },
+        {
+          "name": "to",
+          "type": "uint24",
+          "indexed": false,
+          "internalType": "uint24"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    { "type": "error", "name": "AccessControlBadConfirmation", "inputs": [] },
+    {
+      "type": "error",
+      "name": "AccessControlUnauthorizedAccount",
+      "inputs": [
+        { "name": "account", "type": "address", "internalType": "address" },
+        { "name": "neededRole", "type": "bytes32", "internalType": "bytes32" }
+      ]
+    },
+    { "type": "error", "name": "BatchNotFull", "inputs": [] },
+    { "type": "error", "name": "EthTransferFailed", "inputs": [] },
+    { "type": "error", "name": "InsufficientBalance", "inputs": [] },
+    { "type": "error", "name": "InsufficientETH", "inputs": [] },
+    { "type": "error", "name": "InvalidInitialization", "inputs": [] },
+    { "type": "error", "name": "InvalidPoseidon2Address", "inputs": [] },
+    { "type": "error", "name": "InvalidPoseidon3Address", "inputs": [] },
+    { "type": "error", "name": "InvalidProof", "inputs": [] },
+    { "type": "error", "name": "InvalidVerifierAddress", "inputs": [] },
+    { "type": "error", "name": "LimitAmountExceeded", "inputs": [] },
+    { "type": "error", "name": "NotInitializing", "inputs": [] },
+    {
+      "type": "error",
+      "name": "NotVouched",
+      "inputs": [
+        { "name": "from", "type": "address", "internalType": "address" },
+        { "name": "to", "type": "address", "internalType": "address" }
+      ]
+    },
+    { "type": "error", "name": "ReceiverHasZeroBalance", "inputs": [] },
+    { "type": "error", "name": "SelfVouch", "inputs": [] },
+    { "type": "error", "name": "SenderHasZeroBalance", "inputs": [] },
+    { "type": "error", "name": "SmtProofInvalid", "inputs": [] }
+  ]

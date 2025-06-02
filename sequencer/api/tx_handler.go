@@ -12,8 +12,8 @@ import (
 
 type TxResponse struct {
 	ItemID      int64             `json:"item_id"`
-	BatchNum    int64             `json:"batch_num"`
-	Position    int               `json:"position"`
+	BatchNum    uint32            `json:"batch_num"`
+	Position    string            `json:"position"`
 	Type        string            `json:"type"`
 	FromIdx     common.AccountIdx `json:"from_idx,omitempty"`
 	FromEthAddr string            `json:"from_eth_addr,omitempty"`
@@ -49,7 +49,7 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 	resp := TxResponse{
 		ItemID:      tx.ItemID,
 		BatchNum:    tx.BatchNum,
-		Position:    tx.Position,
+		Position:    tx.Position.String(),
 		Type:        tx.Type,
 		FromIdx:     tx.FromIdx,
 		ToIdx:       tx.ToIdx,

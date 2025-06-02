@@ -18,10 +18,11 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 		var tx common.Tx
 		var amountStr string
 		var gasFeeStr string
+		var position string
 
 		// Ensure the order of scanned fields matches the SELECT statements in calling functions
 		err := rows.Scan(
-			&tx.ItemID, &tx.BatchNum, &tx.Position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
+			&tx.ItemID, &tx.BatchNum, &position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
 			&tx.ToIdx, &tx.ToEthAddr, &amountStr,
 			&tx.BlockNumber, &tx.Timestamp, &gasFeeStr,
 		)
@@ -45,6 +46,14 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 			}
 		}
 
+		tx.Position = new(big.Int)
+		if position != "" {
+			_, success := tx.Position.SetString(position, 10)
+			if !success {
+				return nil, fmt.Errorf("failed to parse position string '%s' for transaction item_id %d: %w", position, tx.ItemID, err)
+			}
+		}
+
 		txs = append(txs, &tx)
 	}
 
@@ -57,6 +66,7 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 
 // SaveTx saves a transaction to the database
 func (db *HistoryDB) SaveTx(tx *common.Tx) error {
+	positionStr := tx.Position.String()
 	amountStr := "0"
 	if tx.Amount != nil {
 		amountStr = tx.Amount.String()
@@ -80,7 +90,7 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 			$9, $10, $11
 		)`,
 		tx.BatchNum,
-		tx.Position,
+		positionStr,
 		tx.Type,
 		tx.FromIdx,
 		tx.FromEthAddr,
@@ -116,7 +126,7 @@ func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 }
 
 // GetTxsByBatchNum retrieves all transactions for a specific batch
-func (db *HistoryDB) GetTxsByBatchNum(batchNum int64) ([]*common.Tx, error) {
+func (db *HistoryDB) GetTxsByBatchNum(batchNum uint32) ([]*common.Tx, error) {
 	rows, err := db.dbRead.Query(`
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,

@@ -12,10 +12,6 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 	if tx == nil {
 		return fmt.Errorf("AddTransactionToHistoryDB: transaction is nil")
 	}
-	if tx.Amount == nil {
-		tx.Amount = big.NewInt(0)
-	}
-
 	err := s.historydb.SaveTx(tx)
 	if err != nil {
 		s.logger.Printf("Error saving transaction: %v", err)

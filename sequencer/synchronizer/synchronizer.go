@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -31,8 +32,6 @@ type Synchronizer struct {
 	forger          *forger.Forger
 	lastBlock       int64
 }
-
-var lastSyncBatch uint32
 
 // NewSynchronizer creates a new synchronizer
 func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.HistoryDB, statedb *statedb.StateDB, logger *log.Logger, forger *forger.Forger) (*Synchronizer, error) {
@@ -194,7 +193,11 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 
 // processLog processes a single log entry
 func (s *Synchronizer) processLog(vLog types.Log) {
-	// lastForgedBatch := s.forger.GetLastForgedBatchNum()
+	ctx := context.Background()
+	callOpts := &bind.CallOpts{
+		Context: ctx,
+	}
+
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
 
 	// // Parse the event
@@ -204,19 +207,33 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		return
 	}
 
+	lastForgedTx, err := s.sybilContract.LastForgedTxn(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching last forged transaction: %v", err)
+	}
+
+	batchSize, err := s.sybilContract.BatchSize(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching batch size: %v", err)
+	}
+
+	lastForgedBatch, err := s.sybilContract.LastForgedBatch(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching last forged batch: %v", err)
+	}
+
 	fmt.Printf("event: %v, eventType: %s, err: %v \n", eventData, eventType, err)
 
 	tx := &common.Tx{
-		BatchNum: int64(eventData.QueueIndex), // Initial batch number is 0
-		Position: int(eventData.Position),
+		BatchNum: uint32(lastForgedBatch + 1),
 		Type:     eventType,
-		FromIdx:  0,             // Will be set based on event type
-		ToIdx:    0,             // Will be set based on event type
-		Amount:   big.NewInt(0), // Will be set based on event type
+		FromIdx:  0,
+		ToIdx:    0,
+		Amount:   big.NewInt(0),
 	}
 
 	// Fetch Block Timestamp
-	header, err := s.client.HeaderByNumber(context.Background(), new(big.Int).SetUint64(vLog.BlockNumber))
+	header, err := s.client.HeaderByNumber(ctx, new(big.Int).SetUint64(vLog.BlockNumber))
 	if err != nil {
 		s.logger.Printf("Error fetching block header for block %d: %v", vLog.BlockNumber, err)
 	} else {
@@ -226,7 +243,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	tx.BlockNumber = vLog.BlockNumber
 
 	// Fetch Transaction Receipt for Gas Fee
-	receipt, err := s.client.TransactionReceipt(context.Background(), vLog.TxHash)
+	receipt, err := s.client.TransactionReceipt(ctx, vLog.TxHash)
 	if err != nil {
 		s.logger.Printf("Error fetching transaction receipt for tx %s: %v", vLog.TxHash.Hex(), err)
 	} else {
@@ -239,14 +256,32 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		}
 	}
 
+	var sender ethCommon.Address
+	txDetails, isPending, err := s.client.TransactionByHash(ctx, vLog.TxHash)
+	if err != nil {
+		s.logger.Printf("Error fetching full transaction details for tx %s: %v", vLog.TxHash.Hex(), err)
+	} else if isPending {
+		s.logger.Printf("Transaction %s is still pending, sender might not be final.", vLog.TxHash.Hex())
+	} else if txDetails != nil {
+		chainID, err := s.client.ChainID(ctx)
+		if err != nil {
+			s.logger.Printf("Error fetching chain ID for tx %s: %v", vLog.TxHash.Hex(), err)
+		} else {
+			signer := types.LatestSignerForChainID(chainID)
+			sender, err = types.Sender(signer, txDetails)
+			if err != nil {
+				s.logger.Printf("Error deriving sender for transaction %s: %v", vLog.TxHash.Hex(), err)
+			}
+		}
+	}
+
 	// Format event data based on event type
 	//TODO: Add Different events
 	var eventDetails string
-	switch eventType {
-	case "L1UserTxEvent":
-		eventDetails = fmt.Sprintf("QueueIndex: %d, Position: %d",
-			eventData.QueueIndex, eventData.Position)
-		txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, err := s.ParseTxData(eventData)
+	switch e := eventData.(type) {
+	case *bindings.SybilTxEvent:
+		eventDetails = fmt.Sprintf(", Position: %d", e.LastAddedTxn)
+		txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, err := s.ParseTxData(e, sender)
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
@@ -256,6 +291,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		tx.ToEthAddr = toEthAddr.Bytes()
 		tx.Amount = amount
 		tx.Type = txType
+		tx.Position = e.LastAddedTxn
 
 		s.logger.Println("Transaction", tx)
 
@@ -271,19 +307,12 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		return
 	}
 
-	// Check for current batch to be synced and update it's number
-	if lastSyncBatch == 0 || eventData.QueueIndex > lastSyncBatch {
-		lastSyncBatch = eventData.QueueIndex
+	if tx.Position.Cmp(new(big.Int).Add(lastForgedTx, big.NewInt(int64(batchSize.Uint64())))) >= 0 {
+		err = s.forger.ForgeBatch(lastForgedBatch + 1)
+		if err != nil {
+			s.logger.Fatalf("Error forging batch: %v", err)
+		}
 	}
-
-	//TODO: This will be updated with the new contract updates
-
-	// if lastForgedBatch < (lastSyncBatch + 2) {
-	// 	err = s.forger.ForgeBatch(lastForgedBatch + 1)
-	// 	if err != nil {
-	// 		s.logger.Fatalf("Error forging batch: %v", err)
-	// 	}
-	// }
 
 	s.logger.Printf("Saved transaction: %v, event: %v, data: %v",
 		vLog.TxHash.Hex(), eventType, eventData)

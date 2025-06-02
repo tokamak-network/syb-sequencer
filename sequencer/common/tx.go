@@ -18,8 +18,8 @@ const (
 // Tx represents a transaction
 type Tx struct {
 	ItemID      int64      `json:"item_id"`
-	BatchNum    int64      `json:"batch_num"`
-	Position    int        `json:"position"`
+	BatchNum    uint32     `json:"batch_num"`
+	Position    *big.Int   `json:"position"`
 	Type        string     `json:"type"`
 	FromIdx     AccountIdx `json:"from_idx,omitempty"`
 	FromEthAddr []byte     `json:"from_eth_addr,omitempty"`
