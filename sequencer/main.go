@@ -32,7 +32,7 @@ func main() {
 
 	db, err := historydb.InitSQLDB(cfg.DBPort, cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName)
 	if err != nil {
-		log.Fatalf("Error initializing sql db: %w", err)
+		log.Fatalf("Error initializing sql db: %v", err)
 	}
 
 	// Connect to historyDB
@@ -51,6 +51,7 @@ func main() {
 	}
 
 	// Create StateDB for forger
+	//TODO: Check this why it returns error
 	forgerStateDB, err := statedb.NewLocalStateDB(statedb.Config{
 		Path:    forgerDbPath,
 		Keep:    cfg.Keep,

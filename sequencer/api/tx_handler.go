@@ -11,18 +11,18 @@ import (
 )
 
 type TxResponse struct {
-	ItemID      int64  `json:"item_id"`
-	BatchNum    int64  `json:"batch_num"`
-	Position    int    `json:"position"`
-	Type        string `json:"type"`
-	FromIdx     *int64 `json:"from_idx,omitempty"`
-	FromEthAddr string `json:"from_eth_addr,omitempty"`
-	ToIdx       int64  `json:"to_idx"`
-	ToEthAddr   string `json:"to_eth_addr,omitempty"`
-	Amount      string `json:"amount"`
-	BlockNumber uint64 `json:"block_number"`
-	Timestamp   uint64 `json:"timestamp"`
-	GasFee      string `json:"gas_fee"`
+	ItemID      int64             `json:"item_id"`
+	BatchNum    uint32            `json:"batch_num"`
+	Position    string            `json:"position"`
+	Type        string            `json:"type"`
+	FromIdx     common.AccountIdx `json:"from_idx,omitempty"`
+	FromEthAddr string            `json:"from_eth_addr,omitempty"`
+	ToIdx       common.AccountIdx `json:"to_idx"`
+	ToEthAddr   string            `json:"to_eth_addr,omitempty"`
+	Amount      string            `json:"amount"`
+	BlockNumber uint64            `json:"block_number"`
+	Timestamp   uint64            `json:"timestamp"`
+	GasFee      string            `json:"gas_fee"`
 }
 
 type PaginatedTxResponse struct {
@@ -49,7 +49,7 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 	resp := TxResponse{
 		ItemID:      tx.ItemID,
 		BatchNum:    tx.BatchNum,
-		Position:    tx.Position,
+		Position:    tx.Position.String(),
 		Type:        tx.Type,
 		FromIdx:     tx.FromIdx,
 		ToIdx:       tx.ToIdx,
@@ -70,11 +70,11 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 	}
 
 	if len(tx.FromEthAddr) > 0 {
-		resp.FromEthAddr = ethCommon.BytesToAddress(tx.FromEthAddr).Hex()
+		resp.FromEthAddr = ethCommon.Bytes2Hex(tx.FromEthAddr)
 	}
 
 	if len(tx.ToEthAddr) > 0 {
-		resp.ToEthAddr = ethCommon.BytesToAddress(tx.ToEthAddr).Hex()
+		resp.ToEthAddr = ethCommon.Bytes2Hex(tx.ToEthAddr)
 	}
 
 	return resp

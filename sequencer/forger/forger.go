@@ -3,10 +3,8 @@ package forger
 import (
 	"fmt"
 	"log"
-	"math/big"
 	"sort"
 
-	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 )
@@ -18,8 +16,6 @@ type Forger struct {
 	logger    *log.Logger
 }
 
-var lastForgedBatch uint32
-
 // NewForger creates a new Forger instance
 func NewForger(historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, logger *log.Logger) *Forger {
 	return &Forger{
@@ -29,16 +25,12 @@ func NewForger(historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, lo
 	}
 }
 
-func (f *Forger) GetLastForgedBatchNum() uint32 {
-	return lastForgedBatch
-}
-
 // ProcessBatch processes transactions for a specific batch number
 func (f *Forger) ForgeBatch(batchNum uint32) error {
 	f.logger.Printf("Processing batch %d", batchNum)
 
 	// Get all transactions for the batch
-	txs, err := f.historydb.GetTxsByBatchNum(int64(batchNum))
+	txs, err := f.historydb.GetTxsByBatchNum(batchNum)
 	if err != nil {
 		return fmt.Errorf("failed to get transactions for batch %d: %w", batchNum, err)
 	}
@@ -47,7 +39,7 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 
 	// Sort transactions by position
 	sort.Slice(txs, func(i, j int) bool {
-		return txs[i].Position < txs[j].Position
+		return txs[i].Position.Cmp(txs[j].Position) == -1
 	})
 
 	// Print the sorted transactions
@@ -61,18 +53,17 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	}
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
-	batch := &common.Batch{
-		ItemID:      common.BatchNum(batchNum),
-		AccountRoot: new(big.Int).SetInt64(1),
-		VouchRoot:   new(big.Int).SetInt64(1),
-		ScoreRoot:   new(big.Int).SetInt64(1),
-	}
+	// batch := &common.Batch{
+	// 	ItemID:      common.BatchNum(batchNum),
+	// 	AccountRoot: new(big.Int).SetInt64(1),
+	// 	VouchRoot:   new(big.Int).SetInt64(1),
+	// 	ScoreRoot:   new(big.Int).SetInt64(1),
+	// }
 
-	err = f.historydb.AddBatch(batch)
+	// err = f.historydb.AddBatch(batch)
 
-	if err != nil {
-		return err
-	}
-	lastForgedBatch = batchNum
+	// if err != nil {
+	// 	return err
+	// }
 	return nil
 }
