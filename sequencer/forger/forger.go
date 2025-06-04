@@ -7,6 +7,7 @@ import (
 
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
+	txprocessor "github.com/tokamak-network/syb-sequencer/sequencer/txProcessor"
 )
 
 // Forger is responsible for creating batches from transactions
@@ -51,6 +52,23 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 		f.logger.Printf("  [%d] Type: %s, FromIdx: %v, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
 			i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
 	}
+
+	config := txprocessor.Config{
+		NLevels: 5,
+		MaxTx:   5,
+		MaxL1Tx: 5,
+		ChainID: 0,
+	}
+
+	newBatchBuilder := txprocessor.NewBatchBuilder(config, f.Statedb)
+
+	zki, err := newBatchBuilder.ForgeTransactions(txs)
+	if err != nil {
+		return fmt.Errorf("failed to forge transactions for batch %d: %w", batchNum, err)
+	}
+	f.logger.Printf("ZKI for batch %d: %s", batchNum, zki)
+
+	//TODO: Call the batch builder to process the transactions
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
 	// batch := &common.Batch{

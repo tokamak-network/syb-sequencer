@@ -10,27 +10,24 @@ import (
 	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
-	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
 )
 
-// Config contains the BatchBuilder configuration parameters
 type Config struct {
 	NLevels uint32
 	MaxTx   uint32
 	MaxL1Tx uint32
 	ChainID uint64
 }
-
 type BatchBuilder struct {
-	forger  *forger.Forger
+	statedb *statedb.LocalStateDB
 	config  Config
 	zki     *common.ZKInputs
 	txIndex int
 }
 
-func NewBatchBuilder(forger *forger.Forger, config Config) *BatchBuilder {
+func NewBatchBuilder(config Config, statedb *statedb.LocalStateDB) *BatchBuilder {
 	return &BatchBuilder{
-		forger:  forger,
+		statedb: statedb,
 		config:  config,
 		zki:     nil,
 		txIndex: 0,
@@ -44,11 +41,11 @@ func (batchBuilder *BatchBuilder) resetZKInputs() {
 }
 
 // forgeTransactions processes L1 user transactions, updates the state via forger.statedb, and generates ZKInputs.
-func (batchBuilder *BatchBuilder) forgeTransactions(l1UserTxs []common.Tx) (*common.ZKInputs, error) {
+func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*common.ZKInputs, error) {
 	batchBuilder.resetZKInputs()
 
 	// Access StateDB via the forger
-	sdb := batchBuilder.forger.Statedb
+	sdb := batchBuilder.statedb
 	if sdb == nil {
 		return nil, fmt.Errorf("BatchBuilder's forger does not have an initialized StateDB")
 	}
@@ -106,16 +103,16 @@ func (batchBuilder *BatchBuilder) forgeTransactions(l1UserTxs []common.Tx) (*com
 
 		switch currentTx.Type {
 		case common.TxTypeCreateAccountDeposit:
-			err = batchBuilder.applyCreateAccount(sdb, &currentTx)
+			err = batchBuilder.applyCreateAccount(sdb, currentTx)
 		case common.TxTypeDeposit:
-			err = batchBuilder.applyDeposit(sdb, &currentTx)
+			err = batchBuilder.applyDeposit(sdb, currentTx)
 		// case common.TxTypeForceExit:
 		// 	exitAccount, newExit, err = batchBuilder.applyExit(sdb, exitTree, currentTx.Tx(), currentTx.Amount) // currentTx.Amount is already effective amount
 		// 	if err == nil && exitAccount != nil {                                                               // Only set if exit was processed
 		// 		exitIdxForZKI = &currentTx.FromIdx
 		// 	}
-		case common.TxTypeCreateVouch, common.TxTypeUnVouch:
-			err = batchBuilder.applyVouch(sdb, currentTx, common.AccountIdx(currentTx.ToIdx), currentTx.Type)
+		case common.TxTypeVouch, common.TxTypeUnvouch:
+			err = batchBuilder.applyVouch(sdb, *currentTx, common.AccountIdx(currentTx.ToIdx), currentTx.Type)
 		default:
 			err = fmt.Errorf("unknown L1 transaction type: %s for txID: %s", currentTx.Type, currentTx.ItemID)
 
@@ -192,10 +189,7 @@ func (batchBuilder *BatchBuilder) applyCreateAccount(sdb *statedb.LocalStateDB, 
 // applyDeposit updates an existing account's balance and ZKInputs.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
 func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *common.Tx) error {
-	if tx.FromIdx == nil {
-		return fmt.Errorf("applyDeposit: tx.FromIdx is nil for txID %s", tx.ItemID)
-	}
-	senderAccountIdx := common.AccountIdx(*tx.FromIdx)
+	senderAccountIdx := common.AccountIdx(tx.FromIdx)
 	accSender, err := sdb.GetAccount(senderAccountIdx)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyDeposit: failed to get sender account %d: %w", tx.FromIdx, err))
@@ -230,10 +224,7 @@ func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *co
 // applyVouch handles vouch creation/deletion.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
 func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx common.Tx, auxToIdx common.AccountIdx, txType string) error {
-	if tx.FromIdx == nil {
-		return fmt.Errorf("applyVouch: tx.FromIdx is nil")
-	}
-	fromAccountIdx := common.AccountIdx(*tx.FromIdx)
+	fromAccountIdx := common.AccountIdx(tx.FromIdx)
 	toAccountIdx := auxToIdx // This is the vouchee
 
 	// Construct VouchIdx from the two account indices
@@ -247,7 +238,7 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 
 	// Perform Vouch/UnVouch operation on the Vouch Tree
 	switch txType {
-	case common.TxTypeCreateVouch:
+	case common.TxTypeVouch:
 		// The *common.Vouch argument to sdb.Vouch might be for additional details,
 		// but based on statedb/vouch.go, it might not be strictly used if it only calls CreateVouchInTreeDB.
 		// Passing a constructed one for completeness or future use.
@@ -256,7 +247,7 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to create vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))
 		}
-	case common.TxTypeUnVouch:
+	case common.TxTypeUnvouch:
 		vouchProof, err = sdb.UnVouch(common.VouchIdx(fromAccountIdx))
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))

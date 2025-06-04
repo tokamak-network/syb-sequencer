@@ -171,3 +171,7 @@ func AccountFromBytes(b [32 * NLeafElems]byte) (*Account, error) {
 	}
 	return &a, nil
 }
+
+func EthAddrToBigInt(a ethCommon.Address) *big.Int {
+	return new(big.Int).SetBytes(a.Bytes())
+}
