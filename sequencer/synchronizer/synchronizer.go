@@ -198,17 +198,20 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	s.logger.Printf("Processing log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
 
 	// // Parse the event
-	eventData, eventType, err := ParseEvent(&vLog)
+	eventData, eventType, err := ParseTxEvent(&vLog)
 	if err != nil {
 		s.logger.Printf("Error parsing event: %v", err)
 		return
 	}
 
+	l1UserTx := eventData.L1UserTx
+	forgeBatch := eventData.ForgeBatch
+
 	fmt.Printf("event: %v, eventType: %s, err: %v \n", eventData, eventType, err)
 
 	tx := &common.Tx{
-		BatchNum: int64(eventData.QueueIndex), // Initial batch number is 0
-		Position: int(eventData.Position),
+		BatchNum: int64(l1UserTx.QueueIndex), // Initial batch number is 0
+		Position: int(l1UserTx.Position),
 		Type:     eventType,
 		FromIdx:  0,             // Will be set based on event type
 		ToIdx:    0,             // Will be set based on event type
@@ -245,8 +248,8 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	switch eventType {
 	case "L1UserTxEvent":
 		eventDetails = fmt.Sprintf("QueueIndex: %d, Position: %d",
-			eventData.QueueIndex, eventData.Position)
-		txType, fromEthAddr, toEthAddr, amount, err := ParseTxData(eventData.L1UserTx)
+			l1UserTx.QueueIndex, l1UserTx.Position)
+		txType, fromEthAddr, toEthAddr, amount, err := ParseTxData(l1UserTx.L1UserTx)
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
@@ -279,6 +282,10 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 		s.logger.Println("Transaction", tx)
 
+	case "ForgeBatch":
+		eventDetails = fmt.Sprintf("LastForgedBatch: %d, LastForgedTx: %d, BatchSize: %d",
+			forgeBatch.LastForgedBatch, forgeBatch.LastForgedTxn, forgeBatch.BatchSize)
+
 	default:
 		eventDetails = "Unknown event data"
 	}
@@ -302,8 +309,8 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		return
 	}
 	// Check for current batch to be synced and update it's number
-	if lastSyncBatch == 0 || eventData.QueueIndex > lastSyncBatch {
-		lastSyncBatch = eventData.QueueIndex
+	if lastSyncBatch == 0 || l1UserTx.QueueIndex > lastSyncBatch {
+		lastSyncBatch = l1UserTx.QueueIndex
 	}
 
 	if lastForgedBatch < (lastSyncBatch + 2) {

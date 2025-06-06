@@ -20,17 +20,30 @@ type L1UserTxEvent struct {
 	L1UserTx   []byte
 }
 
-type Transaction struct {
+type ForgeBatchEvent struct {
+	LastForgedBatch uint32
+	LastForgedTxn   uint64
+	BatchSize       uint64
+}
+
+type L1UserTx struct {
 	L1UserTx []byte
 }
 
 var (
 	logSYBL1UserTxEvent = crypto.Keccak256Hash([]byte(
 		"L1UserTxEvent(uint32,uint8,bytes)"))
+	logForgeBatchEvent = crypto.Keccak256Hash([]byte(
+		"ForgeBatch(uint32,uint256,uint256)"))
 )
 
-// ParseEvent parses data of events found on blockchain in required structure
-func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
+type RollupEvent struct {
+	L1UserTx   *L1UserTxEvent
+	ForgeBatch *ForgeBatchEvent
+}
+
+// ParseTxEvent parses data of events found on blockchain in required structure
+func ParseTxEvent(log *types.Log) (*RollupEvent, string, error) {
 	// Parse ABI
 	sybilABI, err := abi.JSON(strings.NewReader(bindings.BindingsMetaData.ABI))
 	if err != nil {
@@ -38,8 +51,10 @@ func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 	}
 
 	var l1UserTx L1UserTxEvent
+	var forgeBatchEvent ForgeBatchEvent
+	var rollupEvent RollupEvent
 
-	var tx Transaction
+	var tx L1UserTx
 
 	// Check which event it is and unpack accordingly
 	switch log.Topics[0].Hex() {
@@ -57,7 +72,21 @@ func ParseEvent(log *types.Log) (*L1UserTxEvent, string, error) {
 		l1UserTx.L1UserTx = tx.L1UserTx
 		l1UserTx.QueueIndex = uint32(queueIndex)
 		l1UserTx.Position = uint8(position)
-		return &l1UserTx, "L1UserTxEvent", nil
+
+		rollupEvent.L1UserTx = &l1UserTx
+		return &rollupEvent, "L1UserTxEvent", nil
+
+	case logForgeBatchEvent.Hex():
+		lastForgedBatch := new(big.Int).SetBytes(log.Topics[1].Bytes()).Uint64()
+		lastForgedTxn := new(big.Int).SetBytes(log.Topics[2].Bytes()).Uint64()
+		batchSize := new(big.Int).SetBytes(log.Topics[3].Bytes()).Uint64()
+
+		forgeBatchEvent.LastForgedBatch = uint32(lastForgedBatch)
+		forgeBatchEvent.LastForgedTxn = lastForgedTxn
+		forgeBatchEvent.BatchSize = batchSize
+
+		rollupEvent.ForgeBatch = &forgeBatchEvent
+		return &rollupEvent, "ForgeBatchEvent", nil
 	}
 
 	// If we get here, it's an unknown event
