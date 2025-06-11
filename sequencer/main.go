@@ -51,7 +51,6 @@ func main() {
 	}
 
 	// Create StateDB for forger
-	//TODO: Check this why it returns error
 	forgerStateDB, err := statedb.NewLocalStateDB(statedb.Config{
 		Path:    forgerDbPath,
 		Keep:    cfg.Keep,

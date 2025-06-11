@@ -29,4 +29,5 @@ type Tx struct {
 	BlockNumber uint64     `json:"block_number"`
 	Timestamp   uint64     `json:"timestamp"`
 	GasFee      *big.Int   `json:"gas_fee,omitempty"`
+	TxHash      []byte     `json:"tx_hash,omitempty"`
 }

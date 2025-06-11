@@ -292,6 +292,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		tx.Amount = amount
 		tx.Type = txType
 		tx.Position = e.LastAddedTxn
+		tx.TxHash = vLog.TxHash.Bytes()
 
 		s.logger.Println("Transaction", tx)
 
