@@ -23,6 +23,7 @@ type TxResponse struct {
 	BlockNumber uint64            `json:"block_number"`
 	Timestamp   uint64            `json:"timestamp"`
 	GasFee      string            `json:"gas_fee"`
+	TxHash      string            `json:"tx_hash"`
 }
 
 type PaginatedTxResponse struct {
@@ -75,6 +76,10 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 
 	if len(tx.ToEthAddr) > 0 {
 		resp.ToEthAddr = ethCommon.Bytes2Hex(tx.ToEthAddr)
+	}
+
+	if len(tx.TxHash) > 0 {
+		resp.TxHash = ethCommon.Bytes2Hex(tx.TxHash)
 	}
 
 	return resp
