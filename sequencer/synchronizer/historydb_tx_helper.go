@@ -110,20 +110,28 @@ func (s *Synchronizer) VouchTx(tx *common.Tx) error {
 	vouchTableKeyValue := common.VouchIdx(vouchTableKeyBigInt.Uint64())
 
 	if tx.Type == common.TxTypeVouch {
-		vouchEntry := &common.Vouch{
-			Idx:         vouchTableKeyValue,
-			FromIdx:     vouchingAccount.Idx,
-			FromEthAddr: vouchingAccount.EthAddr,
-			ToIdx:       vouchedAccount.Idx,
-			ToEthAddr:   vouchedAccount.EthAddr,
+		existingVouch, err := s.historydb.GetVouchByIdx(vouchTableKeyValue)
+		if err != nil {
+			return fmt.Errorf("VouchTx: failed to check for existing vouch: %w", err)
 		}
 
-		err = s.historydb.AddVouch(vouchEntry)
-		if err != nil {
-			return fmt.Errorf("VouchTx: failed to add vouch (key %d, from %d to %d): %w",
-				vouchEntry.Idx, vouchEntry.FromIdx, vouchEntry.ToIdx, err)
+		if existingVouch != nil {
+			s.logger.Printf("Vouch already exists, skipping: Key %d (From Acct %d -> To Acct %d)", existingVouch.Idx, existingVouch.FromIdx, existingVouch.ToIdx)
+		} else {
+			vouchEntry := &common.Vouch{
+				Idx:         vouchTableKeyValue,
+				FromIdx:     vouchingAccount.Idx,
+				FromEthAddr: vouchingAccount.EthAddr,
+				ToIdx:       vouchedAccount.Idx,
+				ToEthAddr:   vouchedAccount.EthAddr,
+			}
+			err = s.historydb.AddVouch(vouchEntry)
+			if err != nil {
+				return fmt.Errorf("VouchTx: failed to add vouch (key %d, from %d to %d): %w",
+					vouchEntry.Idx, vouchEntry.FromIdx, vouchEntry.ToIdx, err)
+			}
+			s.logger.Printf("Vouch created: Key %d (From Acct %d -> To Acct %d)", vouchEntry.Idx, vouchingAccount.Idx, vouchedAccount.Idx)
 		}
-		s.logger.Printf("Vouch created: Key %d (From Acct %d -> To Acct %d)", vouchEntry.Idx, vouchingAccount.Idx, vouchedAccount.Idx)
 	} else if tx.Type == common.TxTypeUnvouch {
 		err = s.historydb.DeleteVouchByIdx(vouchTableKeyValue)
 		if err != nil {
