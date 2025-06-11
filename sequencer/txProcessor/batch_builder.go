@@ -106,11 +106,6 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 			err = batchBuilder.applyCreateAccount(sdb, currentTx)
 		case common.TxTypeDeposit:
 			err = batchBuilder.applyDeposit(sdb, currentTx)
-		// case common.TxTypeForceExit:
-		// 	exitAccount, newExit, err = batchBuilder.applyExit(sdb, exitTree, currentTx.Tx(), currentTx.Amount) // currentTx.Amount is already effective amount
-		// 	if err == nil && exitAccount != nil {                                                               // Only set if exit was processed
-		// 		exitIdxForZKI = &currentTx.FromIdx
-		// 	}
 		case common.TxTypeVouch, common.TxTypeUnvouch:
 			err = batchBuilder.applyVouch(sdb, *currentTx, common.AccountIdx(currentTx.ToIdx), currentTx.Type)
 		default:
@@ -139,45 +134,38 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 	return batchBuilder.zki, nil
 }
 
+// TODO: Update zki inputs as per the requirements in all the apply functions
 // applyCreateAccount creates a new account and updates ZKInputs.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
 func (batchBuilder *BatchBuilder) applyCreateAccount(sdb *statedb.LocalStateDB, tx *common.Tx) error {
 	account := &common.Account{
-		// Nonce:   0,
-		Balance: tx.Amount, // Use effective deposit amount
-		// BJJ:     tx.FromBJJ,
+		Idx:     common.AccountIdx(tx.FromIdx),
+		Balance: tx.Amount,
 		EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
 	}
 
 	newAccountIdx := common.AccountIdx(sdb.CurrentAccountIdx() + 1)
-	p, err := sdb.CreateAccount(newAccountIdx, account)
+	_, err := sdb.CreateAccount(newAccountIdx, account)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyCreateAccount: failed to create account %d: %w", newAccountIdx, err))
 	}
 
-	// Populate ZKI for state 1 (the new account)
-	// batchBuilder.zki.TokenID1[batchBuilder.txIndex] = tx.TokenID.BigInt() // If TokenID is part of L1Tx / Account
-	// batchBuilder.zki.Nonce1[batchBuilder.txIndex] = big.NewInt(0)
-	// fromBJJSign, fromBJJY := babyjub.UnpackSignY(tx.FromBJJ)
-	// bjjSignBool := fromBJJSign
-	// batchBuilder.zki.Sign1[batchBuilder.txIndex] = &bjjSignBool
-	// batchBuilder.zki.Ay1[batchBuilder.txIndex] = fromBJJY
-	batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(tx.Amount)
-	batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(account.EthAddr)
-	batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
+	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(tx.Amount)
+	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(account.EthAddr)
+	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
 
-	isOld0Val := p.IsOld0
-	batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Val
-	batchBuilder.zki.OldKey1[batchBuilder.txIndex] = p.OldKey.BigInt()
-	batchBuilder.zki.OldValue1[batchBuilder.txIndex] = p.OldValue.BigInt()
+	// isOld0Val := p.IsOld0
+	// batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Val
+	// batchBuilder.zki.OldKey1[batchBuilder.txIndex] = p.OldKey.BigInt()
+	// batchBuilder.zki.OldValue1[batchBuilder.txIndex] = p.OldValue.BigInt()
 
-	auxFromIdxVal := uint32(newAccountIdx)
-	batchBuilder.zki.AuxFromIdx[batchBuilder.txIndex] = &auxFromIdxVal
-	newAccountCreatedVal := true
-	batchBuilder.zki.NewAccount[batchBuilder.txIndex] = &newAccountCreatedVal
+	// auxFromIdxVal := uint32(newAccountIdx)
+	// batchBuilder.zki.AuxFromIdx[batchBuilder.txIndex] = &auxFromIdxVal
+	// newAccountCreatedVal := true
+	// batchBuilder.zki.NewAccount[batchBuilder.txIndex] = &newAccountCreatedVal
 
-	// Update NewLastIdxRaw in ZKI as an account was created
-	batchBuilder.zki.NewLastIdxRaw = uint32(newAccountIdx)
+	// // Update NewLastIdxRaw in ZKI as an account was created
+	// batchBuilder.zki.NewLastIdxRaw = uint32(newAccountIdx)
 
 	err = sdb.SetCurrentAccountIdx(newAccountIdx)
 	if err != nil {
@@ -194,16 +182,8 @@ func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *co
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyDeposit: failed to get sender account %d: %w", tx.FromIdx, err))
 	}
-
-	// Populate ZKI for state 1 (sender account before update)
-	// batchBuilder.zki.TokenID1[batchBuilder.txIndex] = accSender.TokenID.BigInt() // If TokenID is part of Account
-	// batchBuilder.zki.Nonce1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Nonce.BigInt())
-	// senderBJJSign, senderBJJY := babyjub.UnpackSignY(accSender.BJJ)
-	// bjjSignBool := senderBJJSign
-	// batchBuilder.zki.Sign1[batchBuilder.txIndex] = &bjjSignBool
-	// batchBuilder.zki.Ay1[batchBuilder.txIndex] = senderBJJY
-	batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
-	batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
+	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
+	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
 
 	// Add the deposit to the sender
 	accSender.Balance.Add(accSender.Balance, tx.Amount)
@@ -212,11 +192,11 @@ func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *co
 		return fmt.Errorf("applyDeposit: sender %d balance became negative: %s", tx.FromIdx, accSender.Balance.String()) // Or use newErrorNotEnoughBalance
 	}
 
-	p, err := sdb.UpdateAccount(senderAccountIdx, accSender)
+	_, err = sdb.UpdateAccount(senderAccountIdx, accSender)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyDeposit: failed to update sender account %d: %w", tx.FromIdx, err))
 	}
-	batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
+	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
 
 	return nil
 }
@@ -225,23 +205,13 @@ func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *co
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
 func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx common.Tx, auxToIdx common.AccountIdx, txType string) error {
 	fromAccountIdx := common.AccountIdx(tx.FromIdx)
-	toAccountIdx := auxToIdx // This is the vouchee
-
-	// Construct VouchIdx from the two account indices
-	// vouchIdx, err := common.NewVouchIdx(fromAccountIdx, toAccountIdx)
-	// if err != nil {
-	// 	return common.Wrap(fmt.Errorf("applyVouch: failed to create VouchIdx from %d and %d: %w", fromAccountIdx, toAccountIdx, err))
-	// }
+	toAccountIdx := auxToIdx
 
 	var vouchProof *merkletree.CircomProcessorProof
 	var err error
 
-	// Perform Vouch/UnVouch operation on the Vouch Tree
 	switch txType {
 	case common.TxTypeVouch:
-		// The *common.Vouch argument to sdb.Vouch might be for additional details,
-		// but based on statedb/vouch.go, it might not be strictly used if it only calls CreateVouchInTreeDB.
-		// Passing a constructed one for completeness or future use.
 		vouchDetails := &common.Vouch{FromIdx: fromAccountIdx, ToIdx: toAccountIdx}
 		vouchProof, err = sdb.Vouch(common.VouchIdx(fromAccountIdx), vouchDetails)
 		if err != nil {
@@ -256,49 +226,28 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 		return fmt.Errorf("applyVouch: unsupported txType for vouch operation: %s", txType)
 	}
 
-	// --- Populate ZKI ---
+	fmt.Println(vouchProof, "vouchProof")
 
-	// 1. Populate ZKI fields for the Vouch Tree Merkle operation (using "State1" fields)
-	// These ZKI field names (Key1, OldValue1, NewValue1, IsOld0_1) are assumed.
-	// Adjust them if your ZKInputs struct uses different names for generic Merkle tree operations.
-	batchBuilder.zki.OldValue1[batchBuilder.txIndex] = vouchProof.OldValue.BigInt() // Previous state of vouch (0 or 1)
-	isOld0Bool := vouchProof.IsOld0
-	batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Bool
-	batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(vouchProof.Siblings) // Siblings from Vouch Tree
+	// batchBuilder.zki.OldValue1[batchBuilder.txIndex] = vouchProof.OldValue.BigInt() // Previous state of vouch (0 or 1)
+	// isOld0Bool := vouchProof.IsOld0
+	// batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Bool
+	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(vouchProof.Siblings) // Siblings from Vouch Tree
 
-	// 2. Populate ZKI fields with sender (voucher) account information (read-only)
-	// These are for context if the circuit needs them, accounts are not updated here.
-	accSender, err := sdb.GetAccount(fromAccountIdx)
-	if err != nil {
-		return common.Wrap(fmt.Errorf("applyVouch: failed to get sender account %d for ZKI: %w", fromAccountIdx, err))
-	}
-	// batchBuilder.zki.Nonce1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Nonce.BigInt())
-	// senderBJJSign, senderBJJY := babyjub.UnpackSignY(accSender.BJJ)
-	// bjjSignBool1 := senderBJJSign
-	// batchBuilder.zki.Sign1[batchBuilder.txIndex] = &bjjSignBool1
-	// batchBuilder.zki.Ay1[batchBuilder.txIndex] = senderBJJY
-	batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
-	batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
+	// accSender, err := sdb.GetAccount(fromAccountIdx)
+	// if err != nil {
+	// 	return common.Wrap(fmt.Errorf("applyVouch: failed to get sender account %d for ZKI: %w", fromAccountIdx, err))
+	// }
+	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
+	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
 
-	// 3. Populate ZKI fields with receiver (vouchee) account information (read-only)
-	accReceiver, err := sdb.GetAccount(toAccountIdx)
-	if err != nil {
-		return common.Wrap(fmt.Errorf("applyVouch: failed to get receiver account %d for ZKI: %w", toAccountIdx, err))
-	}
-	// batchBuilder.zki.Nonce2[batchBuilder.txIndex] = new(big.Int).Set(accReceiver.Nonce.BigInt())
-	// receiverBJJSign, receiverBJJY := babyjub.UnpackSignY(accReceiver.BJJ)
-	// bjjSignBool2 := receiverBJJSign
-	// batchBuilder.zki.Sign2[batchBuilder.txIndex] = &bjjSignBool2
-	// batchBuilder.zki.Ay2[batchBuilder.txIndex] = receiverBJJY
-	batchBuilder.zki.Balance2[batchBuilder.txIndex] = new(big.Int).Set(accReceiver.Balance)
-	batchBuilder.zki.EthAddr2[batchBuilder.txIndex] = common.EthAddrToBigInt(accReceiver.EthAddr)
+	// accReceiver, err := sdb.GetAccount(toAccountIdx)
+	// if err != nil {
+	// 	return common.Wrap(fmt.Errorf("applyVouch: failed to get receiver account %d for ZKI: %w", toAccountIdx, err))
+	// }
+	// batchBuilder.zki.Balance2[batchBuilder.txIndex] = new(big.Int).Set(accReceiver.Balance)
+	// batchBuilder.zki.EthAddr2[batchBuilder.txIndex] = common.EthAddrToBigInt(accReceiver.EthAddr)
 
-	// 4. Siblings2 would be for a secondary Merkle proof, which is not generated by this Vouch/UnVouch logic.
-	// Set to empty/default if the ZKI slot must be filled.
-	batchBuilder.zki.Siblings2[batchBuilder.txIndex] = siblingsToZKInputFormat(nil) // Or an empty slice of the correct type
-
-	// batchBuilder.zki.FromIdx[batchBuilder.txIndex] = fromAccountIdx
-	// batchBuilder.zki.ToIdx[batchBuilder.txIndex] = toAccountIdx.BigInt()
+	// batchBuilder.zki.Siblings2[batchBuilder.txIndex] = siblingsToZKInputFormat(nil) // Or an empty slice of the correct type
 
 	return nil
 }

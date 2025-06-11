@@ -66,7 +66,10 @@ func main() {
 	log.Println("StateDBs initialized successfully.")
 
 	// Create Forger
-	forger := forger.NewForger(historyDB, forgerStateDB, logger)
+	forger, err := forger.NewForger(cfg.EthereumRPC, cfg.ContractAddress, historyDB, forgerStateDB, logger)
+	if err != nil {
+		logger.Fatalf("Failed to create forger: %v", err)
+	}
 
 	// Create synchronizer
 	sync, err := synchronizer.NewSynchronizer(cfg.EthereumRPC, cfg.ContractAddress, historyDB, synchronizerStateDB, logger, forger)

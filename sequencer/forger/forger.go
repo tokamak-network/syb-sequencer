@@ -1,10 +1,19 @@
 package forger
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"math/big"
+	"os"
 	"sort"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	ethCommon "github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
+	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	txprocessor "github.com/tokamak-network/syb-sequencer/sequencer/txProcessor"
@@ -12,18 +21,51 @@ import (
 
 // Forger is responsible for creating batches from transactions
 type Forger struct {
-	historydb *historydb.HistoryDB
-	Statedb   *statedb.LocalStateDB
-	logger    *log.Logger
+	historydb     *historydb.HistoryDB
+	Statedb       *statedb.LocalStateDB
+	logger        *log.Logger
+	sybilContract *bindings.Sybil
+	transactOpts  *bind.TransactOpts
 }
 
 // NewForger creates a new Forger instance
-func NewForger(historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, logger *log.Logger) *Forger {
-	return &Forger{
-		historydb: historydb,
-		Statedb:   statedb,
-		logger:    logger,
+func NewForger(ethRPC, contractAddressHex string, historydb *historydb.HistoryDB, statedb *statedb.LocalStateDB, logger *log.Logger) (*Forger, error) {
+	client, err := ethclient.Dial(ethRPC)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Ethereum client: %v", err)
 	}
+
+	privateKeyHex := os.Getenv("PRIVATE_KEY")
+	if privateKeyHex == "" {
+		return nil, fmt.Errorf("PRIVATE_KEY environment variable not set")
+	}
+	privateKey, err := crypto.HexToECDSA(privateKeyHex)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse private key: %v", err)
+	}
+
+	chainID, err := client.ChainID(context.Background())
+	if err != nil {
+		return nil, fmt.Errorf("failed to get chain ID: %v", err)
+	}
+
+	transactOpts, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create transactor: %v", err)
+	}
+
+	contractAddress := ethCommon.HexToAddress(contractAddressHex)
+	sybilContract, err := bindings.NewSybil(contractAddress, client)
+	if err != nil {
+		return nil, fmt.Errorf("failed to instantiate Sybil contract: %v", err)
+	}
+	return &Forger{
+		historydb:     historydb,
+		Statedb:       statedb,
+		logger:        logger,
+		sybilContract: sybilContract,
+		transactOpts:  transactOpts,
+	}, nil
 }
 
 // ProcessBatch processes transactions for a specific batch number
@@ -68,20 +110,32 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	}
 	f.logger.Printf("ZKI for batch %d: %s", batchNum, zki)
 
-	//TODO: Call the batch builder to process the transactions
+	//TODO: Call the circuit with the ZKI to generate the proof
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
-	// batch := &common.Batch{
-	// 	ItemID:      common.BatchNum(batchNum),
-	// 	AccountRoot: new(big.Int).SetInt64(1),
-	// 	VouchRoot:   new(big.Int).SetInt64(1),
-	// 	ScoreRoot:   new(big.Int).SetInt64(1),
-	// }
+	batch := &common.Batch{
+		ItemID:      common.BatchNum(batchNum),
+		AccountRoot: zki.NewAccountRootRaw.BigInt(),
+		VouchRoot:   zki.NewVouchRootRaw.BigInt(),
+		ScoreRoot:   zki.NewScoreRootRaw.BigInt(),
+	}
+	proofA := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
+	proofB := [2][2]*big.Int{
+		{big.NewInt(0), big.NewInt(0)},
+		{big.NewInt(0), big.NewInt(0)},
+	}
+	proofC := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
 
-	// err = f.historydb.AddBatch(batch)
+	_, err = f.sybilContract.ForgeBatch(f.transactOpts, batch.AccountRoot, batch.VouchRoot, batch.ScoreRoot, proofA, proofB, proofC)
+	if err != nil {
+		return fmt.Errorf("failed to call ForgeBatch: %w", err)
+	}
+	// Add the batch to the history database
 
-	// if err != nil {
-	// 	return err
-	// }
+	err = f.historydb.AddBatch(batch)
+
+	if err != nil {
+		return err
+	}
 	return nil
 }
