@@ -12,12 +12,12 @@ CREATE SEQUENCE IF NOT EXISTS tx_item_id;
 -- Create tx scheme
 CREATE TABLE IF NOT EXISTS tx (
     item_id INTEGER PRIMARY KEY DEFAULT nextval('tx_item_id'),
-    batch_num BIGINT NOT NULL,
-    position INT NOT NULL,
+    batch_num INTEGER NOT NULL,
+    position DECIMAL(78,0) NOT NULL,
     type VARCHAR(40) NOT NULL,
-    from_idx BIGINT,
+    from_idx INTEGER,
     from_eth_addr BYTEA,
-    to_idx BIGINT NOT NULL,
+    to_idx INTEGER NOT NULL,
     to_eth_addr BYTEA,
     amount DECIMAL(78,0) NOT NULL,
     block_number BIGINT,
@@ -36,8 +36,7 @@ CREATE TABLE IF NOT EXISTS batch (
 -- TODO: NLEVELS was giving error here on running the migration, So changed the same to DECIMAL(78,0)[]
 -- Create account scheme
 CREATE TABLE IF NOT EXISTS account (
-    item_id SERIAL,
-    idx BIGINT PRIMARY KEY,
+    idx INTEGER PRIMARY KEY,
     eth_addr BYTEA NOT NULL,
     balance DECIMAL(78,0) NOT NULL,
     score DECIMAL(78,0) NOT NULL,
@@ -47,9 +46,9 @@ CREATE TABLE IF NOT EXISTS account (
 -- Create vouch scheme
 CREATE TABLE IF NOT EXISTS vouch (
     idx BIGINT PRIMARY KEY,
-    from_idx BIGINT,
+    from_idx INTEGER,
     from_eth_addr BYTEA,
-    to_idx BIGINT,
+    to_idx INTEGER,
     to_eth_addr BYTEA
 );
 

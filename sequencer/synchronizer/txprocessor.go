@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 
+	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 )
@@ -46,7 +47,7 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		// Create Account
 		account := &common.Account{
 			Idx:     tx.FromIdx,
-			EthAddr: tx.FromEthAddr,
+			EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
 			Balance: tx.Amount,
 		}
 
@@ -59,7 +60,7 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		// Create Score for newly created account
 		score := &common.Score{
 			Idx:     common.ScoreIdx(tx.FromIdx),
-			EthAddr: tx.FromEthAddr,
+			EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
 			Score:   big.NewInt(0),
 		}
 		_, err = txProcessor.state.CreateScore(score.Idx, score)
@@ -93,9 +94,9 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		vouch := common.Vouch{
 			Idx:         vouchIdx,
 			FromIdx:     tx.FromIdx,
-			FromEthAddr: tx.FromEthAddr,
+			FromEthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
 			ToIdx:       tx.ToIdx,
-			ToEthAddr:   tx.ToEthAddr,
+			ToEthAddr:   ethCommon.BytesToAddress(tx.ToEthAddr),
 		}
 
 		_, err = txProcessor.state.Vouch(vouchIdx, &vouch)
