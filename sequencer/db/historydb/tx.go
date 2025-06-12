@@ -24,7 +24,7 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 		err := rows.Scan(
 			&tx.ItemID, &tx.BatchNum, &position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
 			&tx.ToIdx, &tx.ToEthAddr, &amountStr,
-			&tx.BlockNumber, &tx.Timestamp, &gasFeeStr,
+			&tx.BlockNumber, &tx.Timestamp, &gasFeeStr, &tx.TxHash,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
@@ -84,10 +84,10 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 		INSERT INTO tx (
 			batch_num, position, type, from_idx, from_eth_addr, 
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee
+			block_number, tx_timestamp, gas_fee, tx_hash
 		) VALUES (
 			$1, $2, $3, $4, $5, $6, $7, $8,
-			$9, $10, $11
+			$9, $10, $11, $12
 		)`,
 		tx.BatchNum,
 		positionStr,
@@ -100,6 +100,7 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 		tx.BlockNumber,
 		tx.Timestamp,
 		gasFeeStr,
+		tx.TxHash,
 	)
 
 	if err != nil {
@@ -115,7 +116,7 @@ func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee
+			block_number, tx_timestamp, gas_fee, tx_hash
 		FROM tx
 		ORDER BY item_id DESC
 	`)
@@ -131,7 +132,7 @@ func (db *HistoryDB) GetTxsByBatchNum(batchNum uint32) ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee
+			block_number, tx_timestamp, gas_fee, tx_hash
 		FROM tx
 		WHERE batch_num = $1
 		ORDER BY position
@@ -153,7 +154,7 @@ func (db *HistoryDB) GetTxsByAccountAddress(accountAddress string) ([]*common.Tx
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee
+			block_number, tx_timestamp, gas_fee, tx_hash
 		FROM tx
 		WHERE from_eth_addr = $1
 		ORDER BY item_id DESC
@@ -191,7 +192,7 @@ func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string
 		SELECT
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee
+			block_number, tx_timestamp, gas_fee, tx_hash
 		FROM tx
 		ORDER BY %s %s
 		LIMIT $1 OFFSET $2
