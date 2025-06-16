@@ -44,6 +44,7 @@ const (
 	GetTransactionsByAccountResponseMessage = "Retrieved transactions for account %s"
 	GetTransactionsPaginatedResponseMessage = "Retrieved transactions in paginated format"
 	NoTransactionsFoundResponseMessage      = "No transactions found for account %s"
+	GetTransactionByHashResponseMessage     = "Retrieved transaction by hash %s"
 )
 
 func convertTxToResponse(tx *common.Tx) TxResponse {
@@ -177,5 +178,27 @@ func (a *API) GetTransactionsPaginated(c *gin.Context) {
 			TotalItems:   totalItems,
 			TotalPages:   totalPages,
 		},
+	})
+}
+
+func (a *API) GetTransactionByHash(c *gin.Context) {
+	txHash := c.Param("txHash")
+	txHashBytes := ethCommon.HexToHash(txHash).Bytes()
+
+	tx, err := a.db.GetTxByHash(txHashBytes)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve transaction: " + err.Error()})
+		return
+	}
+
+	if tx == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Transaction not found"})
+		return
+	}
+
+	txResponse := convertTxToResponse(tx)
+	c.JSON(http.StatusOK, gin.H{
+		"transaction": txResponse,
+		"message":     fmt.Sprintf(GetTransactionByHashResponseMessage, txHash),
 	})
 }

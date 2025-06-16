@@ -36,6 +36,8 @@ func (a *API) setupRoutes() {
 		v1.GET("/transactions/:accountAddress", a.GetTransactionsByAccount)
 		// Transaction endpoint for paginated and sorted list
 		v1.GET("/transactions/list", a.GetTransactionsPaginated)
+		// Transaction endpoint to get transaction by hash
+		v1.GET("/transactions/hash/:txHash", a.GetTransactionByHash)
 
 		// Add other endpoints as needed
 	}

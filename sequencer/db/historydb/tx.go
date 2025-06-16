@@ -215,3 +215,59 @@ func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string
 
 	return txs, totalItems, nil
 }
+
+// GetTxByHash retrieves a transaction by its hash
+func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
+	query := `
+		SELECT 
+			item_id, batch_num, position, type, from_idx, from_eth_addr,
+			to_idx, to_eth_addr, amount,
+			block_number, tx_timestamp, gas_fee, tx_hash
+		FROM tx
+		WHERE tx_hash = $1
+	`
+	row := db.dbRead.QueryRow(query, txHash)
+
+	var tx common.Tx
+	var amountStr string
+	var gasFeeStr string
+	var position string
+
+	err := row.Scan(
+		&tx.ItemID, &tx.BatchNum, &position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
+		&tx.ToIdx, &tx.ToEthAddr, &amountStr,
+		&tx.BlockNumber, &tx.Timestamp, &gasFeeStr, &tx.TxHash,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, fmt.Errorf("failed to get transaction by hash: %w", err)
+	}
+
+	tx.Amount = new(big.Int)
+	if amountStr != "" {
+		_, success := tx.Amount.SetString(amountStr, 10)
+		if !success {
+			return nil, fmt.Errorf("failed to parse amount string '%s' for transaction hash %x", amountStr, txHash)
+		}
+	}
+
+	tx.GasFee = new(big.Int)
+	if gasFeeStr != "" {
+		_, success := tx.GasFee.SetString(gasFeeStr, 10)
+		if !success {
+			return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction hash %x", gasFeeStr, txHash)
+		}
+	}
+
+	tx.Position = new(big.Int)
+	if position != "" {
+		_, success := tx.Position.SetString(position, 10)
+		if !success {
+			return nil, fmt.Errorf("failed to parse position string '%s' for transaction hash %x", position, txHash)
+		}
+	}
+
+	return &tx, nil
+}
