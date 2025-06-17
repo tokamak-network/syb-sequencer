@@ -29,6 +29,8 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 		return s.VouchTx(tx)
 	case common.TxTypeUnvouch:
 		return s.VouchTx(tx)
+	case common.TxTypeForgeBatch:
+		return nil
 	default:
 		return fmt.Errorf("AddTransactionToHistoryDB: Unhandled transaction type '%s'", tx.Type)
 	}

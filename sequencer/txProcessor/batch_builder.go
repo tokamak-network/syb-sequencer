@@ -89,13 +89,6 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 		return nil, common.Wrap(fmt.Errorf("failed to create exit merkle tree: %w", err))
 	}
 
-	if len(l1UserTxs) > int(batchBuilder.config.MaxL1Tx) {
-		return nil, common.Wrap(fmt.Errorf("number of L1UserTxs (%d) exceeds MaxL1Tx (%d)", len(l1UserTxs), batchBuilder.config.MaxL1Tx))
-	}
-	if len(l1UserTxs) > int(batchBuilder.config.MaxTx) {
-		return nil, common.Wrap(fmt.Errorf("number of L1UserTxs (%d) exceeds MaxTx (%d)", len(l1UserTxs), batchBuilder.config.MaxTx))
-	}
-
 	for i, tx := range l1UserTxs {
 		batchBuilder.txIndex = i // Set current transaction index for ZKI population
 
@@ -104,10 +97,10 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 		switch currentTx.Type {
 		case common.TxTypeCreateAccountDeposit:
 			err = batchBuilder.applyCreateAccount(sdb, currentTx)
-		case common.TxTypeDeposit:
-			err = batchBuilder.applyDeposit(sdb, currentTx)
+		case common.TxTypeDeposit, common.TxTypeWithdraw:
+			err = batchBuilder.applyDepositWithdrawal(sdb, currentTx)
 		case common.TxTypeVouch, common.TxTypeUnvouch:
-			err = batchBuilder.applyVouch(sdb, *currentTx, common.AccountIdx(currentTx.ToIdx), currentTx.Type)
+			err = batchBuilder.applyVouch(sdb, *currentTx)
 		default:
 			err = fmt.Errorf("unknown L1 transaction type: %s for txID: %s", currentTx.Type, currentTx.ItemID)
 
@@ -121,15 +114,15 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 		batchBuilder.zki.GlobalChainID = &globalChainIDVal
 		batchBuilder.zki.NewAccountRootRaw = sdb.GetATRootHash()
 		batchBuilder.zki.NewVouchRootRaw = sdb.GetVTRootHash()
-		// batchBuilder.zki.NewScoreRootRaw = sdb.GetMTRootScore()
+		batchBuilder.zki.NewScoreRootRaw = sdb.GetSTRootScore()
 		if exitTree != nil {
 			batchBuilder.zki.NewExitRootRaw = exitTree.Root()
 		}
 
 		// Make a checkpoint in the StateDB after processing all transactions for this batch
-		if err := sdb.MakeCheckpoint(); err != nil {
-			return nil, common.Wrap(fmt.Errorf("failed to make checkpoint in StateDB: %w", err))
-		}
+	}
+	if err := sdb.MakeCheckpoint(); err != nil {
+		return nil, common.Wrap(fmt.Errorf("failed to make checkpoint in StateDB: %w", err))
 	}
 	return batchBuilder.zki, nil
 }
@@ -139,115 +132,94 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
 func (batchBuilder *BatchBuilder) applyCreateAccount(sdb *statedb.LocalStateDB, tx *common.Tx) error {
 	account := &common.Account{
-		Idx:     common.AccountIdx(tx.FromIdx),
+		Idx:     tx.FromIdx,
 		Balance: tx.Amount,
 		EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
 	}
 
-	newAccountIdx := common.AccountIdx(sdb.CurrentAccountIdx() + 1)
-	_, err := sdb.CreateAccount(newAccountIdx, account)
+	_, err := sdb.CreateAccount(tx.FromIdx, account)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyCreateAccount: failed to create account %d: %w", newAccountIdx, err))
+		return common.Wrap(fmt.Errorf("applyCreateAccount: failed to create account %d: %w", tx.FromIdx, err))
 	}
 
-	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(tx.Amount)
-	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(account.EthAddr)
-	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
-
-	// isOld0Val := p.IsOld0
-	// batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Val
-	// batchBuilder.zki.OldKey1[batchBuilder.txIndex] = p.OldKey.BigInt()
-	// batchBuilder.zki.OldValue1[batchBuilder.txIndex] = p.OldValue.BigInt()
-
-	// auxFromIdxVal := uint32(newAccountIdx)
-	// batchBuilder.zki.AuxFromIdx[batchBuilder.txIndex] = &auxFromIdxVal
-	// newAccountCreatedVal := true
-	// batchBuilder.zki.NewAccount[batchBuilder.txIndex] = &newAccountCreatedVal
-
-	// // Update NewLastIdxRaw in ZKI as an account was created
-	// batchBuilder.zki.NewLastIdxRaw = uint32(newAccountIdx)
-
-	err = sdb.SetCurrentAccountIdx(newAccountIdx)
+	// Create Score for newly created account
+	score := &common.Score{
+		Idx:     common.ScoreIdx(tx.FromIdx),
+		EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
+		Score:   big.NewInt(0),
+	}
+	_, err = sdb.CreateScore(score.Idx, score)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyCreateAccount: failed to update current account index to %d: %w", newAccountIdx, err))
+		return common.Wrap(err)
+	}
+
+	err = sdb.SetCurrentAccountIdx(tx.FromIdx)
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyCreateAccount: failed to update current account index to %d: %w", tx.FromIdx, err))
 	}
 	return nil
 }
 
 // applyDeposit updates an existing account's balance and ZKInputs.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
-func (batchBuilder *BatchBuilder) applyDeposit(sdb *statedb.LocalStateDB, tx *common.Tx) error {
-	senderAccountIdx := common.AccountIdx(tx.FromIdx)
-	accSender, err := sdb.GetAccount(senderAccountIdx)
+func (batchBuilder *BatchBuilder) applyDepositWithdrawal(sdb *statedb.LocalStateDB, tx *common.Tx) error {
+	account, err := sdb.GetAccount(tx.FromIdx)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyDeposit: failed to get sender account %d: %w", tx.FromIdx, err))
 	}
-	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
-	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
 
 	// Add the deposit to the sender
-	accSender.Balance.Add(accSender.Balance, tx.Amount)
-
-	if accSender.Balance.Cmp(big.NewInt(0)) == -1 {
-		return fmt.Errorf("applyDeposit: sender %d balance became negative: %s", tx.FromIdx, accSender.Balance.String()) // Or use newErrorNotEnoughBalance
+	if tx.Type == common.TxTypeDeposit {
+		account.Balance.Add(account.Balance, tx.Amount)
+	} else if tx.Type == common.TxTypeWithdraw {
+		if account.Balance.Cmp(tx.Amount) < 0 {
+			return fmt.Errorf("WithdrawalTx: insufficient balance for account idx %d. Has: %s, Wants: %s",
+				account.Idx, account.Balance.String(), tx.Amount.String())
+		}
+		account.Balance.Sub(account.Balance, tx.Amount)
 	}
-
-	_, err = sdb.UpdateAccount(senderAccountIdx, accSender)
+	_, err = sdb.UpdateAccount(tx.FromIdx, account)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyDeposit: failed to update sender account %d: %w", tx.FromIdx, err))
 	}
-	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(p.Siblings)
 
 	return nil
 }
 
 // applyVouch handles vouch creation/deletion.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
-func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx common.Tx, auxToIdx common.AccountIdx, txType string) error {
-	fromAccountIdx := common.AccountIdx(tx.FromIdx)
-	toAccountIdx := auxToIdx
+func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx common.Tx) error {
+	fromAccountIdx := tx.FromIdx
+	toAccountIdx := tx.ToIdx
+	fromEthAddr := ethCommon.Address(tx.FromEthAddr)
+	toEthAddr := ethCommon.Address(tx.ToEthAddr)
+	vouchTableKeyStr := fmt.Sprintf("%d%d", tx.FromIdx, tx.ToIdx)
+	vouchTableKeyBigInt, ok := new(big.Int).SetString(vouchTableKeyStr, 10)
+	if !ok {
+		return fmt.Errorf("VouchTx: failed to create vouch table key from string '%s'", vouchTableKeyStr)
+	}
+	vouchIdx := common.VouchIdx(vouchTableKeyBigInt.Uint64())
 
 	var vouchProof *merkletree.CircomProcessorProof
 	var err error
 
-	switch txType {
+	switch tx.Type {
 	case common.TxTypeVouch:
-		vouchDetails := &common.Vouch{FromIdx: fromAccountIdx, ToIdx: toAccountIdx}
+		vouchDetails := &common.Vouch{Idx: vouchIdx, FromEthAddr: fromEthAddr, ToEthAddr: toEthAddr, FromIdx: fromAccountIdx, ToIdx: toAccountIdx}
 		vouchProof, err = sdb.Vouch(common.VouchIdx(fromAccountIdx), vouchDetails)
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to create vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))
 		}
 	case common.TxTypeUnvouch:
-		vouchProof, err = sdb.UnVouch(common.VouchIdx(fromAccountIdx))
+		vouchProof, err = sdb.UnVouch(vouchIdx)
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))
 		}
 	default:
-		return fmt.Errorf("applyVouch: unsupported txType for vouch operation: %s", txType)
+		return fmt.Errorf("applyVouch: unsupported txType for vouch operation: %s", tx.Type)
 	}
 
 	fmt.Println(vouchProof, "vouchProof")
-
-	// batchBuilder.zki.OldValue1[batchBuilder.txIndex] = vouchProof.OldValue.BigInt() // Previous state of vouch (0 or 1)
-	// isOld0Bool := vouchProof.IsOld0
-	// batchBuilder.zki.IsOld0_1[batchBuilder.txIndex] = &isOld0Bool
-	// batchBuilder.zki.Siblings1[batchBuilder.txIndex] = siblingsToZKInputFormat(vouchProof.Siblings) // Siblings from Vouch Tree
-
-	// accSender, err := sdb.GetAccount(fromAccountIdx)
-	// if err != nil {
-	// 	return common.Wrap(fmt.Errorf("applyVouch: failed to get sender account %d for ZKI: %w", fromAccountIdx, err))
-	// }
-	// batchBuilder.zki.Balance1[batchBuilder.txIndex] = new(big.Int).Set(accSender.Balance)
-	// batchBuilder.zki.EthAddr1[batchBuilder.txIndex] = common.EthAddrToBigInt(accSender.EthAddr)
-
-	// accReceiver, err := sdb.GetAccount(toAccountIdx)
-	// if err != nil {
-	// 	return common.Wrap(fmt.Errorf("applyVouch: failed to get receiver account %d for ZKI: %w", toAccountIdx, err))
-	// }
-	// batchBuilder.zki.Balance2[batchBuilder.txIndex] = new(big.Int).Set(accReceiver.Balance)
-	// batchBuilder.zki.EthAddr2[batchBuilder.txIndex] = common.EthAddrToBigInt(accReceiver.EthAddr)
-
-	// batchBuilder.zki.Siblings2[batchBuilder.txIndex] = siblingsToZKInputFormat(nil) // Or an empty slice of the correct type
 
 	return nil
 }

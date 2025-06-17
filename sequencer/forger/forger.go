@@ -26,6 +26,7 @@ type Forger struct {
 	logger        *log.Logger
 	sybilContract *bindings.Sybil
 	transactOpts  *bind.TransactOpts
+	client        *ethclient.Client
 }
 
 // NewForger creates a new Forger instance
@@ -65,6 +66,7 @@ func NewForger(ethRPC, contractAddressHex string, historydb *historydb.HistoryDB
 		logger:        logger,
 		sybilContract: sybilContract,
 		transactOpts:  transactOpts,
+		client:        client,
 	}, nil
 }
 
@@ -90,10 +92,10 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 
 	//TODO: Add logic here to call the txprocessor to update the stateDB, pass the zki to the circuit.
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
-	for i, tx := range txs {
-		f.logger.Printf("  [%d] Type: %s, FromIdx: %v, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
-			i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
-	}
+	// for i, tx := range txs {
+	// 	f.logger.Printf("  [%d] Type: %s, FromIdx: %v, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
+	// 		i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
+	// }
 
 	config := txprocessor.Config{
 		NLevels: 5,
@@ -113,6 +115,12 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	//TODO: Call the circuit with the ZKI to generate the proof
 
 	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
+	fmt.Println("Calling ForgeBatch on the smart contract with the new roots...")
+	fmt.Println("AccountRoot:", zki.NewAccountRootRaw.BigInt())
+	fmt.Println("-------------------------------------------------------------------------------------------------")
+	fmt.Println("VouchRoot:", zki.NewVouchRootRaw.BigInt())
+	fmt.Println("-------------------------------------------------------------------------------------------------")
+	fmt.Println("ScoreRoot:", zki.NewScoreRootRaw.BigInt())
 	batch := &common.Batch{
 		ItemID:      common.BatchNum(batchNum),
 		AccountRoot: zki.NewAccountRootRaw.BigInt(),
@@ -126,16 +134,26 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	}
 	proofC := [2]*big.Int{big.NewInt(0), big.NewInt(0)}
 
-	_, err = f.sybilContract.ForgeBatch(f.transactOpts, batch.AccountRoot, batch.VouchRoot, batch.ScoreRoot, proofA, proofB, proofC)
+	forgeTx, err := f.sybilContract.ForgeBatch(f.transactOpts, batch.AccountRoot, batch.VouchRoot, batch.ScoreRoot, proofA, proofB, proofC)
 	if err != nil {
 		return fmt.Errorf("failed to call ForgeBatch: %w", err)
 	}
+	f.logger.Printf("ForgeBatch transaction hash: %s", forgeTx.Hash().Hex())
+	receipt, err := bind.WaitMined(context.Background(), f.client, forgeTx)
+	if err != nil {
+		return fmt.Errorf("failed to wait for transaction to be mined: %w", err)
+	}
+
+	// Check if the transaction was successful
+	if receipt.Status != 1 {
+		return fmt.Errorf("transaction failed: %s", forgeTx.Hash().Hex())
+	}
 	// Add the batch to the history database
-
+	fmt.Println("Adding batch to history database.......................................................")
 	err = f.historydb.AddBatch(batch)
-
 	if err != nil {
 		return err
 	}
+	f.Statedb.UpdateBatchBumber()
 	return nil
 }
