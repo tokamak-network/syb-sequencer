@@ -87,15 +87,7 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 		return txs[i].Position.Cmp(txs[j].Position) == -1
 	})
 
-	// Print the sorted transactions
-	//TODO: Remove this once done
-
-	//TODO: Add logic here to call the txprocessor to update the stateDB, pass the zki to the circuit.
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
-	// for i, tx := range txs {
-	// 	f.logger.Printf("  [%d] Type: %s, FromIdx: %v, FromAddr: %s, ToIdx: %d, ToAddr: %s, Amount: %s",
-	// 		i, tx.Type, tx.FromIdx, tx.FromEthAddr, tx.ToIdx, tx.ToEthAddr, tx.Amount.String())
-	// }
 
 	config := txprocessor.Config{
 		NLevels: 5,
@@ -110,17 +102,9 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	if err != nil {
 		return fmt.Errorf("failed to forge transactions for batch %d: %w", batchNum, err)
 	}
-	f.logger.Printf("ZKI for batch %d: %s", batchNum, zki)
 
 	//TODO: Call the circuit with the ZKI to generate the proof
 
-	//TODO: With the new roots saved in the statedb call forge function in the smart contract.
-	fmt.Println("Calling ForgeBatch on the smart contract with the new roots...")
-	fmt.Println("AccountRoot:", zki.NewAccountRootRaw.BigInt())
-	fmt.Println("-------------------------------------------------------------------------------------------------")
-	fmt.Println("VouchRoot:", zki.NewVouchRootRaw.BigInt())
-	fmt.Println("-------------------------------------------------------------------------------------------------")
-	fmt.Println("ScoreRoot:", zki.NewScoreRootRaw.BigInt())
 	batch := &common.Batch{
 		ItemID:      common.BatchNum(batchNum),
 		AccountRoot: zki.NewAccountRootRaw.BigInt(),
@@ -149,7 +133,6 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 		return fmt.Errorf("transaction failed: %s", forgeTx.Hash().Hex())
 	}
 	// Add the batch to the history database
-	fmt.Println("Adding batch to history database.......................................................")
 	err = f.historydb.AddBatch(batch)
 	if err != nil {
 		return err
