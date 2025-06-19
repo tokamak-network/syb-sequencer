@@ -3,6 +3,7 @@ module github.com/tokamak-network/syb-sequencer/sequencer
 go 1.23.0
 
 require (
+	github.com/aws/aws-sdk-go v1.25.48
 	github.com/go-pg/pg/v10 v10.14.0
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/iden3/go-merkletree v0.0.0-20210308143313-8b63ca866189
@@ -31,6 +32,7 @@ require (
 	github.com/goccy/go-json v0.10.4 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/snappy v0.0.5-0.20220116011046-fa5810519dcb // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/kr/pretty v0.3.1 // indirect

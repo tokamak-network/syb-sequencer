@@ -1,10 +1,15 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/joho/godotenv"
 )
 
@@ -32,8 +37,62 @@ type Config struct {
 	MaxBlocksPerBatch   int
 }
 
+type DBCredentials struct {
+	Port     int    `json:"port"`
+	Host     string `json:"host"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+	Dbname   string `json:"dbname"`
+}
+
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
+	appMode := getEnv("APP_MODE", "dev")
+
+	if appMode == "test" {
+		var secrets string
+		var err error
+
+		secrets, err = getAwsSecrets(os.Getenv("AWS_DB_SECRET_NAME"), os.Getenv("AWS_REGION"))
+		if secrets == "" {
+			panic("No secrets found in AWS Secrets Manager.")
+		}
+		var creds DBCredentials
+		err = json.Unmarshal([]byte(secrets), &creds)
+		if err != nil {
+			panic(err)
+		}
+		// TODO: for some reason RDS doesn't save dbname in the secrets, need to investigate
+		if creds.Dbname == "" {
+			creds.Dbname = "postgres"
+		}
+
+		config := &Config{
+			// HistoryDB configuration
+			DBHost:     creds.Host,
+			DBPort:     creds.Port,
+			DBUser:     creds.Username,
+			DBPassword: creds.Password,
+			DBName:     creds.Dbname,
+			DBSSLMode:  "require",
+
+			// StateDB configuration
+			Path: getEnv("STATEDB_DIR_PATH", "./var/tokamak/statedb"),
+			Keep: getEnvInt("KEEP", 256),
+
+			// Ethereum configuration
+			EthereumRPC:     getEnv("ETHEREUM_RPC", "http://localhost:8545"),
+			ContractAddress: getEnv("CONTRACT_ADDRESS", ""),
+
+			// Synchronizer configuration with defaults
+			PollingInterval:     getEnvInt("POLLING_INTERVAL", 15),
+			SafetyCheckInterval: getEnvInt("SAFETY_CHECK_INTERVAL", 300), // 5 minutes
+			MaxBlocksPerBatch:   getEnvInt("MAX_BLOCKS_PER_BATCH", 1000),
+		}
+
+		return config
+	}
+
 	// Load .env file if it exists
 	err := godotenv.Load()
 	if err != nil {
@@ -88,4 +147,29 @@ func getEnvInt(key string, defaultValue int) int {
 	}
 
 	return value
+}
+
+func getAwsSecrets(secretName, region string) (string, error) {
+	if secretName == "" || region == "" {
+		return "", fmt.Errorf("secretName and region must be provided to fetch secrets from AWS")
+	}
+	sess, err := session.NewSessionWithOptions(session.Options{
+		Config: aws.Config{
+			Region: aws.String(region),
+		},
+		Profile:           "default",
+		SharedConfigState: session.SharedConfigEnable,
+	})
+	if err != nil {
+		return "", err
+	}
+	svc := secretsmanager.New(sess)
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId: aws.String(secretName),
+	}
+	result, err := svc.GetSecretValue(input)
+	if err != nil {
+		return "", err
+	}
+	return *result.SecretString, nil
 }
