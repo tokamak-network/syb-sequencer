@@ -28,7 +28,7 @@ var (
 	logSybilTxEvent = crypto.Keccak256Hash([]byte(
 		"TxEvent(uint256,uint8,uint24,uint24,uint256)"))
 	logSybilForgeBatch = crypto.Keccak256Hash([]byte(
-		"ForgeBatch(uint32,uint256,uint256)"))
+		"ForgeBatch(uint32,uint256,uint256,bytes)"))
 	logSybilExplodeAmountUpdated = crypto.Keccak256Hash([]byte(
 		"ExplodeAmountUpdated(uint256)"))
 	logSybilScoringRequiredBalanceUpdated = crypto.Keccak256Hash([]byte(

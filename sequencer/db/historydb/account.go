@@ -72,7 +72,7 @@ func (hdb *HistoryDB) GetAccountByIdx(idx uint32) (*common.Account, error) {
 	var ok bool
 	acc.Balance, ok = new(big.Int).SetString(balanceStr, 10)
 	if !ok {
-		return nil, fmt.Errorf("GetAccountByIdx: failed to parse balance string '%s' for account idx %d", balanceStr, idx)
+		return nil, fmt.Errorf("GetAllAccounts: failed to parse balance string '%s'", balanceStr)
 	}
 	acc.Score, ok = new(big.Int).SetString(scoreStr, 10)
 	if !ok {
@@ -154,4 +154,74 @@ func (hdb *HistoryDB) UpdateAccountBalance(idx common.AccountIdx, newBalance *bi
 		return fmt.Errorf("UpdateAccountBalance: no account found with idx %d to update", idx)
 	}
 	return nil
+}
+
+func (hdb *HistoryDB) GetAllAccounts() ([]*common.Account, int64, error) {
+	query := `
+        SELECT idx, eth_addr, balance, score, score_siblings
+        FROM account
+        ORDER BY idx
+    `
+	rows, err := hdb.dbRead.Query(query)
+	if err != nil {
+		return nil, 0, fmt.Errorf("GetAllAccounts: failed to query accounts: %w", err)
+	}
+	defer rows.Close()
+
+	countQuery := `SELECT COUNT(*) FROM account;`
+	var totalItems int64
+	err = hdb.dbRead.QueryRow(countQuery).Scan(&totalItems)
+	if err != nil {
+		return nil, 0, fmt.Errorf("GetAllAccounts: failed to get total count: %w", err)
+	}
+
+	var accounts []*common.Account
+	for rows.Next() {
+		acc := &common.Account{}
+		var ethAddrBytes []byte
+		var balanceStr, scoreStr string
+		var scoreSiblingsStr pq.StringArray
+
+		err := rows.Scan(
+			&acc.Idx,
+			&ethAddrBytes,
+			&balanceStr,
+			&scoreStr,
+			&scoreSiblingsStr,
+		)
+		if err != nil {
+			return nil, 0, fmt.Errorf("GetAllAccounts: failed to scan account row: %w", err)
+		}
+
+		acc.EthAddr = ethCommon.BytesToAddress(ethAddrBytes)
+
+		var ok bool
+		acc.Balance, ok = new(big.Int).SetString(balanceStr, 10)
+		if !ok {
+			return nil, 0, fmt.Errorf("GetAllAccounts: failed to parse balance string '%s'", balanceStr)
+		}
+
+		acc.Score, ok = new(big.Int).SetString(scoreStr, 10)
+		if !ok {
+			return nil, 0, fmt.Errorf("GetAllAccounts: failed to parse score string '%s'", scoreStr)
+		}
+
+		acc.ScoreSiblings = make([]*big.Int, len(scoreSiblingsStr))
+		for i, s := range scoreSiblingsStr {
+			val, ok := new(big.Int).SetString(s, 10)
+			if !ok {
+				acc.ScoreSiblings[i] = big.NewInt(0)
+			} else {
+				acc.ScoreSiblings[i] = val
+			}
+		}
+
+		accounts = append(accounts, acc)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, 0, fmt.Errorf("GetAllAccounts: error iterating over rows: %w", err)
+	}
+
+	return accounts, totalItems, nil
 }

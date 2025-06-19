@@ -86,7 +86,10 @@ func main() {
 	}()
 
 	// Initialize and start API server
-	apiServer := api.NewAPI(historyDB)
+	apiServer, err := api.NewAPI(historyDB, cfg.EthereumRPC, cfg.ContractAddress, forgerStateDB)
+	if err != nil {
+		logger.Fatalf("Failed to create API server: %v", err)
+	}
 	go func() {
 		// Use environment variable for API port or default to 8080
 		apiPort := os.Getenv("API_PORT")

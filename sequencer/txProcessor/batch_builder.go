@@ -108,19 +108,18 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 				return nil, common.Wrap(fmt.Errorf("failed to process tx %s (type %s): %w", currentTx.ItemID, currentTx.Type, err))
 			}
 		}
-
-		// Final ZKI parameters
-		globalChainIDVal := uint16(batchBuilder.config.ChainID)
-		batchBuilder.zki.GlobalChainID = &globalChainIDVal
-		batchBuilder.zki.NewAccountRootRaw = sdb.GetATRootHash()
-		batchBuilder.zki.NewVouchRootRaw = sdb.GetVTRootHash()
-		batchBuilder.zki.NewScoreRootRaw = sdb.GetSTRootScore()
-		if exitTree != nil {
-			batchBuilder.zki.NewExitRootRaw = exitTree.Root()
-		}
-
-		// Make a checkpoint in the StateDB after processing all transactions for this batch
 	}
+	// Final ZKI parameters
+	globalChainIDVal := uint16(batchBuilder.config.ChainID)
+	batchBuilder.zki.GlobalChainID = &globalChainIDVal
+	batchBuilder.zki.NewAccountRootRaw = sdb.GetATRootHash()
+	batchBuilder.zki.NewVouchRootRaw = sdb.GetVTRootHash()
+	batchBuilder.zki.NewScoreRootRaw = sdb.GetSTRootScore()
+	if exitTree != nil {
+		batchBuilder.zki.NewExitRootRaw = exitTree.Root()
+	}
+
+	// Make a checkpoint in the StateDB after processing all transactions for this batch
 	if err := sdb.MakeCheckpoint(); err != nil {
 		return nil, common.Wrap(fmt.Errorf("failed to make checkpoint in StateDB: %w", err))
 	}
@@ -188,6 +187,7 @@ func (batchBuilder *BatchBuilder) applyDepositWithdrawal(sdb *statedb.LocalState
 
 // applyVouch handles vouch creation/deletion.
 // It now takes sdb (*statedb.LocalStateDB) as a parameter.
+// TODO: Remove the part updating the score in the vouch function and add this at the end of the batch processing when all the transactions are forged via score calculation logic.
 func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx common.Tx) error {
 	fromAccountIdx := tx.FromIdx
 	toAccountIdx := tx.ToIdx
@@ -198,29 +198,39 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 	if !ok {
 		return fmt.Errorf("VouchTx: failed to create vouch table key from string '%s'", vouchTableKeyStr)
 	}
-	vouchIdx := common.VouchIdx(vouchTableKeyBigInt.Uint64())
-
-	var vouchProof *merkletree.CircomProcessorProof
 	var err error
+
+	vouchIdx := common.VouchIdx(vouchTableKeyBigInt.Uint64())
+	score, err := sdb.GetScore(common.ScoreIdx(toAccountIdx))
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyVouch: failed to get score for account idx %d: %w", toAccountIdx, err))
+	}
 
 	switch tx.Type {
 	case common.TxTypeVouch:
 		vouchDetails := &common.Vouch{Idx: vouchIdx, FromEthAddr: fromEthAddr, ToEthAddr: toEthAddr, FromIdx: fromAccountIdx, ToIdx: toAccountIdx}
-		vouchProof, err = sdb.Vouch(common.VouchIdx(fromAccountIdx), vouchDetails)
+		_, err = sdb.Vouch(common.VouchIdx(fromAccountIdx), vouchDetails)
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to create vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))
 		}
+		score.Score.Add(score.Score, big.NewInt(1)) // Increment score by 1 for vouching
+		_, err = sdb.UpdateScore(score.Idx, score)
+		if err != nil {
+			return common.Wrap(err)
+		}
 	case common.TxTypeUnvouch:
-		vouchProof, err = sdb.UnVouch(vouchIdx)
+		_, err = sdb.UnVouch(vouchIdx)
 		if err != nil {
 			return common.Wrap(fmt.Errorf("applyVouch: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(fromAccountIdx).String(), err))
+		}
+		score.Score.Sub(score.Score, big.NewInt(1)) // Decrement score by 1 for unvouching
+		_, err = sdb.UpdateScore(score.Idx, score)
+		if err != nil {
+			return common.Wrap(err)
 		}
 	default:
 		return fmt.Errorf("applyVouch: unsupported txType for vouch operation: %s", tx.Type)
 	}
-
-	fmt.Println(vouchProof, "vouchProof")
-
 	return nil
 }
 
