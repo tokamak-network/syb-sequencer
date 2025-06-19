@@ -46,14 +46,7 @@ jobs:
           ECR_REPOSITORY: test-ecr-repo
           IMAGE_TAG: ${{ github.sha }}
           APP_MODE: test
-          KEYSTORE_PATH: /var/tokamak/ethkeystore
-          # TODO: move this password to github secrets
-          KEYSTORE_PASSWORD: 123
-          ROLLUP_START_BLOCK_NUM: 7978600
-          WAIT_TIME_SECONDS: 3
-          MAXTX: 100
-          NLEVEL: 5
-          TEST_AWS_DB_SECRET_NAME: rds-credentials-test
+          AWS_DB_SECRET_NAME: rds-credentials-test
           AWS_REGION: us-east-2
         run: |
           docker build --build-arg APP_MODE=${APP_MODE} --build-arg AWS_DB_SECRET_NAME=${AWS_DB_SECRET_NAME} --build-arg AWS_REGION=${AWS_REGION} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f sequencer/Dockerfile sequencer
