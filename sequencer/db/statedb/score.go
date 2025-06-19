@@ -2,6 +2,8 @@ package statedb
 
 import (
 	"errors"
+	"fmt"
+	"log"
 	"math/big"
 
 	"github.com/iden3/go-merkletree"
@@ -179,4 +181,57 @@ func GetScoreInTreeDB(sto db.Storage, idx common.ScoreIdx) (*common.Score, error
 // GetSTRoot returns the root of the Score Merkle Tree
 func (s *StateDB) GetSTRoot() *big.Int {
 	return s.ST.Root().BigInt()
+}
+
+// GetScores return array of scores from Score Merkle Tree
+func (s *StateDB) GetScores() ([]*big.Int, error) {
+	num := 1 << (MaxNLevels - 1)
+
+	scores := make([]*big.Int, num)
+
+	for i := 0; i < num; i++ {
+		idx := common.ScoreIdx(i)
+		score, err := s.GetScore(idx)
+		if err != nil {
+			if errors.Is(err, ErrKeyNotFound) {
+				scores[i] = big.NewInt(0)
+				continue
+			}
+			return nil, fmt.Errorf("failed to get score %d: %w", i, err)
+		}
+		scores[i] = score.Score
+	}
+
+	return scores, nil
+}
+
+func (s *StateDB) CalculateScore() ([]*big.Int, error) {
+	num := 1 << (MaxNLevels - 1)
+
+	balances, err := s.GetBalances()
+	if err != nil {
+		return nil, err
+	}
+	log.Println(balances)
+
+	vouches, err := s.GetVouches()
+	if err != nil {
+		return nil, err
+	}
+	log.Println(vouches)
+
+	scores, err := s.GetScores()
+	if err != nil {
+		return nil, err
+	}
+	log.Println(scores)
+
+	newScores := make([]*big.Int, num)
+
+	for i := 0; i < num; i++ {
+		// Mock Score Calculation
+		newScores[i].Add(newScores[i], big.NewInt(1))
+	}
+
+	return newScores, nil
 }

@@ -2,6 +2,7 @@ package statedb
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/iden3/go-merkletree"
@@ -166,4 +167,26 @@ func GetVouchInTreeDB(sto db.Storage, idx common.VouchIdx) (*common.Vouch, error
 // GetATRoot returns the root of the Account Merkle Tree
 func (s *StateDB) GetVTRoot() *big.Int {
 	return s.VT.Root().BigInt()
+}
+
+// GetVouches returns vouch array from Vouch Merkle Tree
+func (s *StateDB) GetVouches() ([]bool, error) {
+	num := 1 << (MaxNLevels - 1)
+
+	vouches := make([]bool, num)
+
+	for i := 0; i < num; i++ {
+		idx := common.VouchIdx(i)
+		_, err := s.GetVouch(idx)
+		if err != nil {
+			if errors.Is(err, ErrKeyNotFound) {
+				vouches[i] = false
+				continue
+			}
+			return nil, fmt.Errorf("failed to get vouch %d: %w", i, err)
+		}
+		vouches[i] = true
+	}
+
+	return vouches, nil
 }

@@ -24,6 +24,10 @@ var (
 	ErrGetIdxNoCase = errors.New(
 		"cannot get Idx due unexpected combination of ethereum Address")
 
+	// ErrKeyNotFound is used when align new value whenever didn't find the value
+	// with the certain key in merkle tree
+	ErrKeyNotFound = errors.New("key not found")
+
 	// PrefixKeyAT is the key prefix for account merkle tree in the db
 	PrefixKeyAT = []byte("at:")
 	// PrefixKeyVT is the key prefix for vouch merkle tree in the db

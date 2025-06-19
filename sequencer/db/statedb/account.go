@@ -337,3 +337,25 @@ func (s *StateDB) GetAccountIdxByEthAddr(addr ethCommon.Address) (common.Account
 	}
 	return idx, nil
 }
+
+// GetBalances returns balance array from Account Merkle Tree
+func (s *StateDB) GetBalances() ([]*big.Int, error) {
+	num := 1 << (MaxNLevels - 1)
+
+	balances := make([]*big.Int, num)
+
+	for i := 0; i < num; i++ {
+		idx := common.AccountIdx(i)
+		account, err := s.GetAccount(idx)
+		if err != nil {
+			if errors.Is(err, ErrKeyNotFound) {
+				balances[i] = big.NewInt(0)
+				continue
+			}
+			return nil, fmt.Errorf("failed to get account %d: %w", i, err)
+		}
+		balances[i] = account.Balance
+	}
+
+	return balances, nil
+}

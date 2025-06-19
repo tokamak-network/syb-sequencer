@@ -89,4 +89,5 @@ type Vouch struct {
 	FromEthAddr ethCommon.Address `json:"from_eth_addr"`
 	ToIdx       AccountIdx        `json:"to_idx"`
 	ToEthAddr   ethCommon.Address `json:"to_eth_addr"`
+	Vouch       bool              `json:"vouch"`
 }

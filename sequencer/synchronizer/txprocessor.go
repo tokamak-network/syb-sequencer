@@ -82,6 +82,25 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		if err != nil {
 			return nil, common.Wrap(err)
 		}
+
+		// Calculate scores
+		scores, err := txProcessor.state.CalculateScore()
+
+		for i := 0; i < statedb.MaxNLevels; i++ {
+			toIdx := common.ScoreIdx(tx.ToIdx)
+
+			vouched, err := txProcessor.state.GetScore(toIdx)
+			if err != nil {
+				return nil, err
+			}
+
+			vouched.Score = scores[i]
+
+			_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+			if err != nil {
+				return nil, common.Wrap(err)
+			}
+		}
 	case common.TxTypeVouch:
 		// Create vouchIdx from from & to Idx
 		vouchIdx, err := common.VouchIdxFromAccountIdxs(tx.FromIdx, tx.ToIdx)
@@ -103,20 +122,23 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 			return nil, common.Wrap(err)
 		}
 
-		// get score for vouched from stateDB
-		toIdx := common.ScoreIdx(tx.ToIdx)
+		// Calculate scores
+		scores, err := txProcessor.state.CalculateScore()
 
-		vouched, err := txProcessor.state.GetScore(toIdx)
-		if err != nil {
-			return nil, common.Wrap(err)
-		}
+		for i := 0; i < statedb.MaxNLevels; i++ {
+			toIdx := common.ScoreIdx(tx.ToIdx)
 
-		// TODO: Update vouched's score
-		// vouched.Score = score
+			vouched, err := txProcessor.state.GetScore(toIdx)
+			if err != nil {
+				return nil, err
+			}
 
-		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
-		if err != nil {
-			return nil, common.Wrap(err)
+			vouched.Score = scores[i]
+
+			_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+			if err != nil {
+				return nil, common.Wrap(err)
+			}
 		}
 	case common.TxTypeUnvouch:
 		// Create vouchIdx from from & to Idx
@@ -130,20 +152,23 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 			return nil, common.Wrap(err)
 		}
 
-		// get score for vouched from stateDB
-		toIdx := common.ScoreIdx(tx.ToIdx)
+		// Calculate scores
+		scores, err := txProcessor.state.CalculateScore()
 
-		vouched, err := txProcessor.state.GetScore(toIdx)
-		if err != nil {
-			return nil, common.Wrap(err)
-		}
+		for i := 0; i < statedb.MaxNLevels; i++ {
+			toIdx := common.ScoreIdx(tx.ToIdx)
 
-		// TODO: Update vouched's score
-		// vouched.Score = score
+			vouched, err := txProcessor.state.GetScore(toIdx)
+			if err != nil {
+				return nil, err
+			}
 
-		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
-		if err != nil {
-			return nil, common.Wrap(err)
+			vouched.Score = scores[i]
+
+			_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+			if err != nil {
+				return nil, common.Wrap(err)
+			}
 		}
 	case common.TxTypeWithdraw:
 		accSender, err := txProcessor.state.GetAccount(tx.FromIdx)
@@ -161,6 +186,25 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		_, err = txProcessor.state.UpdateAccount(tx.FromIdx, accSender)
 		if err != nil {
 			return nil, common.Wrap(err)
+		}
+
+		// Calculate scores
+		scores, err := txProcessor.state.CalculateScore()
+
+		for i := 0; i < statedb.MaxNLevels; i++ {
+			toIdx := common.ScoreIdx(tx.ToIdx)
+
+			vouched, err := txProcessor.state.GetScore(toIdx)
+			if err != nil {
+				return nil, err
+			}
+
+			vouched.Score = scores[i]
+
+			_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+			if err != nil {
+				return nil, common.Wrap(err)
+			}
 		}
 	case common.TxTypeExplode:
 		// get sender account from StateDB
@@ -194,6 +238,25 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		_, err = txProcessor.state.UpdateAccount(tx.ToIdx, accReceiver)
 		if err != nil {
 			return nil, common.Wrap(err)
+		}
+
+		// Calculate scores
+		scores, err := txProcessor.state.CalculateScore()
+
+		for i := 0; i < statedb.MaxNLevels; i++ {
+			toIdx := common.ScoreIdx(tx.ToIdx)
+
+			vouched, err := txProcessor.state.GetScore(toIdx)
+			if err != nil {
+				return nil, err
+			}
+
+			vouched.Score = scores[i]
+
+			_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+			if err != nil {
+				return nil, common.Wrap(err)
+			}
 		}
 	}
 
