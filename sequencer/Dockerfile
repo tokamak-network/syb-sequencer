@@ -1,0 +1,25 @@
+FROM golang:1.23.0-alpine
+
+WORKDIR /app
+
+ARG APP_MODE
+ARG AWS_REGION
+ARG AWS_DB_SECRET_NAME
+ARG CONTRACT_ADDRESS
+
+ENV APP_MODE=${APP_MODE}
+ENV AWS_REGION=${AWS_REGION}
+ENV AWS_DB_SECRET_NAME=${AWS_DB_SECRET_NAME}
+ENV CONTRACT_ADDRESS=${CONTRACT_ADDRESS}
+
+# for internal health check
+RUN apk add --no-cache curl 
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["go", "run", "main.go", "run", "--cfg", "cfg.toml"]
