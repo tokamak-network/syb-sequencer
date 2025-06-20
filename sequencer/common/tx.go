@@ -13,6 +13,7 @@ const (
 	TxTypeUnvouch              string = "Unvouch"
 	TxTypeExplode              string = "Explode"
 	TxTypeUnknown              string = "Unknown"
+	TxTypeForgeBatch           string = "ForgeBatch"
 )
 
 // Tx represents a transaction

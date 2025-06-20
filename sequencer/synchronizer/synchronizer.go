@@ -296,6 +296,10 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 		s.logger.Println("Transaction", tx)
 
+	case *bindings.SybilForgeBatch:
+		s.logger.Printf("Received SybilForgeBatch event, skipping transaction processing")
+		return
+
 	default:
 		eventDetails = "Unknown event data"
 	}

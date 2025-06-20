@@ -163,6 +163,10 @@ func (s *StateDB) CurrentBatch() common.BatchNum {
 	return s.db.CurrentBatch
 }
 
+func (s *StateDB) UpdateBatchBumber() {
+	s.db.CurrentBatch++
+}
+
 // getCurrentBatch returns the current BatchNum stored in the StateDB.db
 func (s *StateDB) getCurrentBatch() (common.BatchNum, error) {
 	return s.db.GetCurrentBatch()

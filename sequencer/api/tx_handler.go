@@ -1,10 +1,13 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"math/big"
 	"net/http"
 	"strconv"
 
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
@@ -24,8 +27,8 @@ type TxResponse struct {
 	Timestamp   uint64            `json:"timestamp"`
 	GasFee      string            `json:"gas_fee"`
 	TxHash      string            `json:"tx_hash"`
+	IsTxForged  bool              `json:"is_tx_forged"`
 }
-
 type PaginatedTxResponse struct {
 	Message      string       `json:"message"`
 	Transactions []TxResponse `json:"transactions"`
@@ -38,6 +41,18 @@ type Pagination struct {
 	TotalItems   int64 `json:"totalItems"`
 	TotalPages   int   `json:"totalPages"`
 }
+type AccountResponse struct {
+	Idx     string `json:"idx"`
+	EthAddr string `json:"eth_addr"`
+	Balance string `json:"balance"`
+	Score   string `json:"score"`
+}
+
+type PaginatedAccountResponse struct {
+	Message       string            `json:"message"`
+	Accounts      []AccountResponse `json:"accounts"`
+	TotalAccounts int64             `json:"total_accounts"`
+}
 
 const (
 	GetAllTransactionsResponseMessage       = "Retrieved all transactions"
@@ -45,9 +60,14 @@ const (
 	GetTransactionsPaginatedResponseMessage = "Retrieved transactions in paginated format"
 	NoTransactionsFoundResponseMessage      = "No transactions found for account %s"
 	GetTransactionByHashResponseMessage     = "Retrieved transaction by hash %s"
+
+	// Add these to your existing constants
+	GetAllAccountsResponseMessage  = "Retrieved all accounts"
+	GetAccountByIdxResponseMessage = "Retrieved account with index %s"
+	AccountNotFoundResponseMessage = "Account with index %s not found"
 )
 
-func convertTxToResponse(tx *common.Tx) TxResponse {
+func (a *API) convertTxToResponse(tx *common.Tx) TxResponse {
 	resp := TxResponse{
 		ItemID:      tx.ItemID,
 		BatchNum:    tx.BatchNum,
@@ -57,6 +77,11 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 		ToIdx:       tx.ToIdx,
 		BlockNumber: tx.BlockNumber,
 		Timestamp:   tx.Timestamp,
+	}
+
+	ctx := context.Background()
+	callOpts := &bind.CallOpts{
+		Context: ctx,
 	}
 
 	if tx.Amount != nil {
@@ -83,6 +108,18 @@ func convertTxToResponse(tx *common.Tx) TxResponse {
 		resp.TxHash = ethCommon.Bytes2Hex(tx.TxHash)
 	}
 
+	resp.IsTxForged = false
+	lastForgedTx, err := a.sybilContract.LastForgedTxn(callOpts)
+	if err != nil {
+		fmt.Printf("Error fetching last forged transaction: %v\n", err)
+	} else if lastForgedTx != nil {
+		isPositionForged := tx.Position.Cmp(lastForgedTx) <= 0
+		lastTxExists := lastForgedTx.Cmp(big.NewInt(0)) > 0
+
+		if lastTxExists && isPositionForged {
+			resp.IsTxForged = true
+		}
+	}
 	return resp
 }
 
@@ -95,7 +132,7 @@ func (a *API) GetAllTransactions(c *gin.Context) {
 
 	txResponses := make([]TxResponse, len(txs))
 	for i, tx := range txs {
-		txResponses[i] = convertTxToResponse(tx)
+		txResponses[i] = a.convertTxToResponse(tx)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"transactions": txResponses, "message": GetAllTransactionsResponseMessage})
@@ -123,7 +160,7 @@ func (a *API) GetTransactionsByAccount(c *gin.Context) {
 	// Convert to response format
 	accTxResponses := make([]TxResponse, len(txs))
 	for i, tx := range txs {
-		accTxResponses[i] = convertTxToResponse(tx)
+		accTxResponses[i] = a.convertTxToResponse(tx)
 	}
 
 	c.JSON(http.StatusOK, gin.H{"transactions": accTxResponses, "message": fmt.Sprintf(GetTransactionsByAccountResponseMessage, accountAddress)})
@@ -161,7 +198,7 @@ func (a *API) GetTransactionsPaginated(c *gin.Context) {
 
 	txResponses := make([]TxResponse, len(txs))
 	for i, tx := range txs {
-		txResponses[i] = convertTxToResponse(tx)
+		txResponses[i] = a.convertTxToResponse(tx)
 	}
 
 	totalPages := 0
@@ -196,9 +233,88 @@ func (a *API) GetTransactionByHash(c *gin.Context) {
 		return
 	}
 
-	txResponse := convertTxToResponse(tx)
+	txResponse := a.convertTxToResponse(tx)
 	c.JSON(http.StatusOK, gin.H{
 		"transaction": txResponse,
 		"message":     fmt.Sprintf(GetTransactionByHashResponseMessage, txHash),
+	})
+}
+
+func (a *API) convertAccountToResponse(account *common.Account) AccountResponse {
+	resp := AccountResponse{
+		Idx:     account.Idx.String(),
+		EthAddr: account.EthAddr.Hex(),
+	}
+
+	if account.Balance != nil {
+		resp.Balance = account.Balance.String()
+	} else {
+		resp.Balance = "0"
+	}
+
+	accountScore, err := a.statedb.GetScore(common.ScoreIdx(account.Idx))
+	if err != nil {
+		account.Score = big.NewInt(0)
+	} else {
+		account.Score = accountScore.Score
+	}
+
+	if account.Score != nil {
+		resp.Score = account.Score.String()
+	} else {
+		resp.Score = "0"
+	}
+
+	return resp
+}
+
+func (a *API) GetAllAccounts(c *gin.Context) {
+	accounts, totalItems, err := a.db.GetAllAccounts()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve accounts: " + err.Error()})
+		return
+	}
+
+	accountResponses := make([]AccountResponse, len(accounts))
+	for i, account := range accounts {
+		accountResponses[i] = a.convertAccountToResponse(account)
+	}
+
+	c.JSON(http.StatusOK, PaginatedAccountResponse{
+		Message:       GetAllAccountsResponseMessage,
+		Accounts:      accountResponses,
+		TotalAccounts: totalItems,
+	})
+}
+
+func (a *API) GetAccountByIdx(c *gin.Context) {
+	idxStr := c.Param("idx")
+
+	idx, err := strconv.ParseUint(idxStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account index format"})
+		return
+	}
+
+	accountIdx := common.AccountIdx(idx)
+
+	account, err := a.db.GetAccountByIdx(uint32(accountIdx))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve account: " + err.Error()})
+		return
+	}
+
+	if account == nil {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": fmt.Sprintf(AccountNotFoundResponseMessage, idxStr),
+		})
+		return
+	}
+
+	accountResponse := a.convertAccountToResponse(account)
+
+	c.JSON(http.StatusOK, gin.H{
+		"account": accountResponse,
+		"message": fmt.Sprintf(GetAccountByIdxResponseMessage, idxStr),
 	})
 }

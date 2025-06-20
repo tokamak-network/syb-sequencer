@@ -180,3 +180,7 @@ func GetScoreInTreeDB(sto db.Storage, idx common.ScoreIdx) (*common.Score, error
 func (s *StateDB) GetSTRoot() *big.Int {
 	return s.ST.Root().BigInt()
 }
+
+func (s *StateDB) GetSTRootScore() *merkletree.Hash {
+	return s.ST.Root()
+}
