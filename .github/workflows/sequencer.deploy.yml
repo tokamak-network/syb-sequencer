@@ -54,8 +54,11 @@ jobs:
           APP_MODE: test
           AWS_DB_SECRET_NAME: rds-credentials-test
           AWS_REGION: us-east-2
+          ETHEREUM_RPC: ${{ secrets.ETHEREUM_RPC }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+          CONTRACT_ADDRESS: ${{ vars.CONTRACT_ADDRESS }}
         run: |
-          docker build --build-arg APP_MODE=${APP_MODE} --build-arg AWS_DB_SECRET_NAME=${AWS_DB_SECRET_NAME} --build-arg AWS_REGION=${AWS_REGION} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f sequencer/Dockerfile sequencer
+          docker build --build-arg APP_MODE=${APP_MODE} --build-arg AWS_DB_SECRET_NAME=${AWS_DB_SECRET_NAME} --build-arg AWS_REGION=${AWS_REGION} --build-arg ETHEREUM_RPC=${ETHEREUM_RPC} --build-arg PRIVATE_KEY=${PRIVATE_KEY} --build-arg CONTRACT_ADDRESS=${CONTRACT_ADDRESS} -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest -f sequencer/Dockerfile sequencer
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
           echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:latest" >> $GITHUB_OUTPUT
