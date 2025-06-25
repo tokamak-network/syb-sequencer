@@ -11,7 +11,7 @@ var historyDB *HistoryDB
 
 func TestMain(m *testing.M) {
 	// init DB
-	db, err := InitSQLDB(5432, "localhost", "postgres", "123", "syb")
+	db, err := InitSQLDB(5432, "localhost", "postgres", "123", "syb", "disable")
 	if err != nil {
 		panic(err)
 	}

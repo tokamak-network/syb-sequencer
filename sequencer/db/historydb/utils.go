@@ -55,15 +55,16 @@ func MigrationsDown(db *sql.DB) error {
 }
 
 // ConnectSQLDB connects to the SQL DB
-func InitSQLDB(port int, host, user, password, name string) (*sql.DB, error) {
+func InitSQLDB(port int, host, user, password, name string, sslMode string) (*sql.DB, error) {
 	// Establish Connection
 	psqlConn := fmt.Sprintf(
-		"host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
+		"host=%s port=%d user=%s password=%s dbname=%s sslmode=%s",
 		host,
 		port,
 		user,
 		password,
 		name,
+		sslMode,
 	)
 	db, err := sql.Open("postgres", psqlConn)
 	if err != nil {

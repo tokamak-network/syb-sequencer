@@ -30,7 +30,7 @@ func main() {
 	syncDbPath := filepath.Join(cfg.Path, "synchronizer")
 	forgerDbPath := filepath.Join(cfg.Path, "forger")
 
-	db, err := historydb.InitSQLDB(cfg.DBPort, cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName)
+	db, err := historydb.InitSQLDB(cfg.DBPort, cfg.DBHost, cfg.DBUser, cfg.DBPassword, cfg.DBName, cfg.DBSSLMode)
 	if err != nil {
 		log.Fatalf("Error initializing sql db: %v", err)
 	}
