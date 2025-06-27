@@ -116,6 +116,7 @@ func (s *Synchronizer) ParseTxData(eventData *bindings.SybilTxEvent, sender ethC
 			return "", ethCommon.Address{}, ethCommon.Address{}, nil, 0, 0, fmt.Errorf("ParseTxData: failed to get to account index for %s: %w", toEthAddr.Hex(), err)
 		}
 		toEthAddr = toAccount.EthAddr
+		toIdx = toAccount.Idx
 	}
 	return txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, nil
 }
