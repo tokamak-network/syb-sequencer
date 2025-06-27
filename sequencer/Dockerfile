@@ -26,4 +26,4 @@ COPY . .
 
 EXPOSE 5000
 
-CMD ["go", "run", "main.go", "run", "--cfg", "cfg.toml"]
+CMD ["go", "run", "main.go"]
