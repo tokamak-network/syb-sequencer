@@ -50,6 +50,12 @@ func NewAPI(db *historydb.HistoryDB, ethRPC, contractAddressHex string, statedb 
 func (a *API) setupRoutes() {
 	// API version group
 	v1 := a.router.Group("/api/v1")
+
+	// health
+	v1.GET("/health", func(c *gin.Context) {
+		c.String(200, "OK")
+	})
+
 	{
 		// Transaction endpoint - simple version that returns all transactions
 		v1.GET("/transactions", a.GetAllTransactions)
