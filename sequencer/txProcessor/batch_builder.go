@@ -9,6 +9,7 @@ import (
 	"github.com/iden3/go-merkletree"
 	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
+	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 )
 
@@ -19,18 +20,20 @@ type Config struct {
 	ChainID uint64
 }
 type BatchBuilder struct {
-	statedb *statedb.LocalStateDB
-	config  Config
-	zki     *common.ZKInputs
-	txIndex int
+	statedb   *statedb.LocalStateDB
+	config    Config
+	historydb *historydb.HistoryDB
+	zki       *common.ZKInputs
+	txIndex   int
 }
 
-func NewBatchBuilder(config Config, statedb *statedb.LocalStateDB) *BatchBuilder {
+func NewBatchBuilder(config Config, statedb *statedb.LocalStateDB, historydb *historydb.HistoryDB) *BatchBuilder {
 	return &BatchBuilder{
-		statedb: statedb,
-		config:  config,
-		zki:     nil,
-		txIndex: 0,
+		statedb:   statedb,
+		config:    config,
+		historydb: historydb,
+		zki:       nil,
+		txIndex:   0,
 	}
 }
 
@@ -109,6 +112,9 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 			}
 		}
 	}
+	// Update score after processing all transactions
+	batchBuilder.UpdateScore()
+
 	// Final ZKI parameters
 	globalChainIDVal := uint16(batchBuilder.config.ChainID)
 	batchBuilder.zki.GlobalChainID = &globalChainIDVal
@@ -232,6 +238,39 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 		return fmt.Errorf("applyVouch: unsupported txType for vouch operation: %s", tx.Type)
 	}
 	return nil
+}
+
+func (bb *BatchBuilder) UpdateScore() {
+	accounts, totalAccountNumber, err := bb.historydb.GetAllAccounts()
+	if err != nil {
+		fmt.Printf("Error fetching accounts: %v\n", err)
+		return
+	}
+
+	balances := make([]*big.Int, totalAccountNumber)
+	scores := make([]*big.Int, totalAccountNumber)
+	vouches := make([][]bool, totalAccountNumber)
+
+	for _, account := range accounts {
+		balances[account.Idx] = account.Balance
+		score, err := bb.statedb.GetScore(common.ScoreIdx(account.Idx))
+		if err != nil {
+			fmt.Printf("Error fetching score for account %d: %v\n", account.Idx, err)
+			continue
+		}
+		scores[account.Idx] = score.Score
+		for _, vouchedAccount := range accounts {
+			vouchIdx, err := common.VouchIdxFromAccountIdxs(account.Idx, vouchedAccount.Idx)
+			vouch, err := bb.statedb.GetVouch(vouchIdx)
+			if err != nil {
+				fmt.Printf("Error fetching vouch for account %d: %v\n", account.Idx, err)
+				vouches[account.Idx][vouchedAccount.Idx] = false
+				continue
+			}
+			vouches[account.Idx][vouchedAccount.Idx] = vouch != nil
+		}
+	}
+
 }
 
 // siblingsToZKInputFormat converts Merkle tree siblings to the format expected by ZKInputs.
