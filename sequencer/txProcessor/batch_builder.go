@@ -229,16 +229,16 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 	return nil
 }
 
-func (bb *BatchBuilder) UpdateScore() {
+func (bb *BatchBuilder) UpdateScore() error {
 	accounts, totalAccountNumber, err := bb.historydb.GetAllAccounts()
 	if err != nil {
 		fmt.Printf("Error fetching accounts: %v\n", err)
-		return
+		return err
 	}
 
 	if totalAccountNumber == 0 {
 		fmt.Printf("No accounts found to update scores\n")
-		return
+		return nil
 	}
 
 	balances := make([]*big.Int, totalAccountNumber)
@@ -258,53 +258,65 @@ func (bb *BatchBuilder) UpdateScore() {
 
 	// Populate data from accounts
 	for _, account := range accounts {
-		if int64(account.Idx) >= totalAccountNumber {
+		if int64(account.Idx) > totalAccountNumber {
 			fmt.Printf("Warning: Account index %d exceeds total account number %d\n", account.Idx, totalAccountNumber)
 			continue
 		}
 
-		balances[account.Idx] = account.Balance
+		balances[account.Idx-1] = account.Balance
 
 		score, err := bb.statedb.GetScore(common.ScoreIdx(account.Idx))
 		if err != nil {
 			fmt.Printf("Error fetching score for account %d: %v\n", account.Idx, err)
 			continue
 		}
-		scores[account.Idx] = score.Score
+		scores[account.Idx-1] = score.Score
 
 		// Build vouches matrix
 		for _, vouchedAccount := range accounts {
-			if int64(vouchedAccount.Idx) >= totalAccountNumber {
+			vouchTableKeyStr := fmt.Sprintf("%d%d", account.Idx, vouchedAccount.Idx)
+			vouchTableKeyBigInt, ok := new(big.Int).SetString(vouchTableKeyStr, 10)
+			if !ok {
+				fmt.Printf("VouchTx: failed to create vouch table key from string '%s'", vouchTableKeyStr)
+				vouches[account.Idx-1][vouchedAccount.Idx-1] = 0
 				continue
 			}
-
-			vouchIdx, err := common.VouchIdxFromAccountIdxs(account.Idx, vouchedAccount.Idx)
-			if err != nil {
-				fmt.Printf("Error creating vouch index for accounts %d->%d: %v\n", account.Idx, vouchedAccount.Idx, err)
-				vouches[account.Idx][vouchedAccount.Idx] = 0
-				continue
-			}
-
-			vouch, err := bb.statedb.GetVouch(vouchIdx)
+			vouchTableKeyValue := common.VouchIdx(vouchTableKeyBigInt.Uint64())
+			vouch, err := bb.historydb.GetVouchByIdx(vouchTableKeyValue)
 			if err != nil {
 				fmt.Printf("Error fetching vouch for accounts %d->%d: %v\n", account.Idx, vouchedAccount.Idx, err)
-				vouches[account.Idx][vouchedAccount.Idx] = 0
+				vouches[account.Idx-1][vouchedAccount.Idx-1] = 0
 				continue
 			}
 
 			if vouch != nil {
-				vouches[account.Idx][vouchedAccount.Idx] = 1
+				vouches[account.Idx-1][vouchedAccount.Idx-1] = 1
 			} else {
-				vouches[account.Idx][vouchedAccount.Idx] = 0
+				vouches[account.Idx-1][vouchedAccount.Idx-1] = 0
 			}
 		}
 	}
 
+	fmt.Println("Balances:", balances)
+	fmt.Println("Scores:", scores)
+	fmt.Println("Vouches Matrix:", vouches)
+
 	// Calculate new scores using the scoring algorithm
 	newScores := common.CalculateScore(vouches, balances, scores)
-	for _, score := range newScores {
-		fmt.Printf("New Score: %s\n", score.String())
+	for _, accaccounts := range accounts {
+		fmt.Println(accaccounts.Idx, accaccounts.Balance, accaccounts.EthAddr, "Account Info")
+		score, err := bb.statedb.GetScore(common.ScoreIdx(accaccounts.Idx))
+		if err != nil {
+			fmt.Printf("Error fetching score for account %d: %v\n", accaccounts.Idx, err)
+			return err
+		}
+		bb.statedb.UpdateScore(common.ScoreIdx(accaccounts.Idx), &common.Score{
+			Idx:     common.ScoreIdx(accaccounts.Idx),
+			EthAddr: score.EthAddr,
+			Score:   newScores[accaccounts.Idx-1],
+		})
 	}
+	return nil
 }
 
 // siblingsToZKInputFormat converts Merkle tree siblings to the format expected by ZKInputs.
