@@ -42,10 +42,11 @@ type Pagination struct {
 	TotalPages   int   `json:"totalPages"`
 }
 type AccountResponse struct {
-	Idx     string `json:"idx"`
-	EthAddr string `json:"eth_addr"`
-	Balance string `json:"balance"`
-	Score   string `json:"score"`
+	Idx      string `json:"idx"`
+	EthAddr  string `json:"eth_addr"`
+	Balance  string `json:"balance"`
+	Score    string `json:"score"`
+	ScoreInt string `json:"score_int,omitempty"`
 }
 
 type PaginatedAccountResponse struct {
@@ -261,6 +262,10 @@ func (a *API) convertAccountToResponse(account *common.Account) AccountResponse 
 
 	if account.Score != nil {
 		resp.Score = account.Score.String()
+		if account.Score.IsInt64() {
+			scoreInt := account.Score.Int64()
+			resp.ScoreInt = strconv.FormatInt(scoreInt, 10)
+		}
 	} else {
 		resp.Score = "0"
 	}
