@@ -54,6 +54,13 @@ type PaginatedAccountResponse struct {
 	TotalAccounts int64             `json:"total_accounts"`
 }
 
+type ScoreMerkleProofResponse struct {
+	Idx       string   `json:"idx"`
+	ScoreRoot string   `json:"score_root"`
+	Score     string   `json:"score"`
+	Siblings  [][]byte `json:"siblings"`
+}
+
 const (
 	GetAllTransactionsResponseMessage       = "Retrieved all transactions"
 	GetTransactionsByAccountResponseMessage = "Retrieved transactions for account %s"
@@ -316,5 +323,38 @@ func (a *API) GetAccountByIdx(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"account": accountResponse,
 		"message": fmt.Sprintf(GetAccountByIdxResponseMessage, idxStr),
+	})
+}
+
+func (a *API) GetScoreMerkleProof(c *gin.Context) {
+	idxStr := c.Param("idx")
+
+	idx, err := strconv.ParseUint(idxStr, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid account index format"})
+		return
+	}
+
+	scoreIdx := common.ScoreIdx(idx)
+	score, err := a.statedb.GetScore(scoreIdx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve score: " + err.Error()})
+		return
+	}
+
+	// Get ScoreRoot
+	scoreRoot := a.statedb.GetSTRoot()
+
+	siblings, err := a.statedb.GetSiblings(scoreIdx)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve sibling: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, ScoreMerkleProofResponse{
+		Idx:       scoreIdx.String(),
+		ScoreRoot: scoreRoot.String(),
+		Score:     score.Score.String(),
+		Siblings:  siblings,
 	})
 }
