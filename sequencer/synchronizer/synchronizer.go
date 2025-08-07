@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"sort"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -31,6 +32,8 @@ type Synchronizer struct {
 	logger          *log.Logger
 	forger          *forger.Forger
 	lastBlock       int64
+	// Add persistent tracking for last processed block
+	lastProcessedBlockKey []byte
 }
 
 // NewSynchronizer creates a new synchronizer
@@ -49,28 +52,41 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 	logs := make(chan types.Log)
 
 	return &Synchronizer{
-		client:          client,
-		contractAddress: contractAddress,
-		sybilContract:   sybilContract,
-		historydb:       historydb,
-		statedb:         statedb,
-		logs:            logs,
-		logger:          logger,
-		forger:          forger,
-		lastBlock:       0,
+		client:                client,
+		contractAddress:       contractAddress,
+		sybilContract:         sybilContract,
+		historydb:             historydb,
+		statedb:               statedb,
+		logs:                  logs,
+		logger:                logger,
+		forger:                forger,
+		lastBlock:             0,
+		lastProcessedBlockKey: []byte("last_processed_block"),
 	}, nil
 }
 
 // Start begins the synchronization process
 func (s *Synchronizer) Start(ctx context.Context) {
+	// Load the last processed block from persistent storage
+	s.loadLastProcessedBlock()
+
 	// Get the latest block number to start from
 	header, err := s.client.HeaderByNumber(ctx, nil)
 	if err != nil {
 		s.logger.Fatalf("Failed to get latest block header: %v", err)
 	}
 
-	s.lastBlock = header.Number.Int64()
-	s.logger.Printf("Starting synchronizer from block %d", s.lastBlock)
+	latestBlock := header.Number.Int64()
+
+	// If we have a last processed block, use it; otherwise start from current block
+	if s.lastBlock > 0 {
+		s.logger.Printf("Resuming synchronizer from last processed block %d", s.lastBlock)
+		// Check for missed events since last processed block
+		s.checkForMissedEvents(ctx)
+	} else {
+		s.lastBlock = latestBlock
+		s.logger.Printf("Starting synchronizer from block %d", s.lastBlock)
+	}
 
 	// Create a filter query for the contract events
 	query := ethereum.FilterQuery{
@@ -151,7 +167,53 @@ func (s *Synchronizer) resubscribe(ctx context.Context) {
 	}
 }
 
-// checkForMissedEvents is a safety mechanism to check for any events we might have missed
+// loadLastProcessedBlock loads the last processed block from persistent storage
+func (s *Synchronizer) loadLastProcessedBlock() {
+	// Use StateDB to store the last processed block
+	err := s.statedb.LastRead(func(last *statedb.Last) error {
+		blockBytes, err := last.DB().Get(s.lastProcessedBlockKey)
+		if err != nil {
+			// If not found, start from 0
+			s.lastBlock = 0
+			return nil
+		}
+
+		// Convert bytes to int64
+		blockNum := new(big.Int).SetBytes(blockBytes)
+		s.lastBlock = blockNum.Int64()
+		return nil
+	})
+
+	if err != nil {
+		s.logger.Printf("Error loading last processed block: %v, starting from 0", err)
+		s.lastBlock = 0
+	}
+}
+
+// saveLastProcessedBlock saves the last processed block to persistent storage
+func (s *Synchronizer) saveLastProcessedBlock(blockNum int64) {
+	blockBytes := big.NewInt(blockNum).Bytes()
+
+	// Use StateDB to store the last processed block
+	err := s.statedb.LastRead(func(last *statedb.Last) error {
+		// Use the underlying storage with transaction
+		tx, err := last.DB().NewTx()
+		if err != nil {
+			return err
+		}
+		err = tx.Put(s.lastProcessedBlockKey, blockBytes)
+		if err != nil {
+			return err
+		}
+		return tx.Commit()
+	})
+
+	if err != nil {
+		s.logger.Printf("Error saving last processed block: %v", err)
+	}
+}
+
+// checkForMissedEvents is a comprehensive safety mechanism to check for any events we might have missed
 func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 	// Get the latest block number
 	header, err := s.client.HeaderByNumber(ctx, nil)
@@ -167,28 +229,208 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 
 	s.logger.Printf("Checking for missed events from block %d to %d", s.lastBlock+1, latestBlock)
 
-	// Create a filter query for the contract events
-	query := ethereum.FilterQuery{
-		FromBlock: big.NewInt(s.lastBlock + 1),
-		ToBlock:   big.NewInt(latestBlock),
-		Addresses: []ethCommon.Address{s.contractAddress},
+	// Process missed events in chunks to avoid overwhelming the system
+	const maxBlocksPerChunk = 1000
+	startBlock := s.lastBlock + 1
+
+	for startBlock <= latestBlock {
+		endBlock := startBlock + maxBlocksPerChunk - 1
+		if endBlock > latestBlock {
+			endBlock = latestBlock
+		}
+
+		s.logger.Printf("Processing missed events from block %d to %d", startBlock, endBlock)
+
+		// Create a filter query for the contract events in this chunk
+		query := ethereum.FilterQuery{
+			FromBlock: big.NewInt(startBlock),
+			ToBlock:   big.NewInt(endBlock),
+			Addresses: []ethCommon.Address{s.contractAddress},
+		}
+
+		// Get logs matching the filter
+		logs, err := s.client.FilterLogs(ctx, query)
+		if err != nil {
+			s.logger.Printf("Error filtering logs for blocks %d-%d: %v", startBlock, endBlock, err)
+			// Continue with next chunk instead of failing completely
+			startBlock = endBlock + 1
+			continue
+		}
+
+		// Sort logs by block number and transaction index to maintain order
+		sort.Slice(logs, func(i, j int) bool {
+			if logs[i].BlockNumber != logs[j].BlockNumber {
+				return logs[i].BlockNumber < logs[j].BlockNumber
+			}
+			return logs[i].TxIndex < logs[j].TxIndex
+		})
+
+		// Process missed events in order
+		for _, vLog := range logs {
+			s.logger.Printf("Processing missed event from block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
+			s.processMissedLog(vLog)
+		}
+
+		// Update the last processed block for this chunk
+		s.lastBlock = endBlock
+		s.saveLastProcessedBlock(endBlock)
+
+		startBlock = endBlock + 1
 	}
 
-	// Get logs matching the filter
-	logs, err := s.client.FilterLogs(ctx, query)
+	s.logger.Printf("Completed processing missed events up to block %d", latestBlock)
+}
+
+// processMissedLog processes a single missed log entry with special handling for batch processing
+func (s *Synchronizer) processMissedLog(vLog types.Log) {
+	ctx := context.Background()
+	callOpts := &bind.CallOpts{
+		Context: ctx,
+	}
+
+	s.logger.Printf("Processing missed log: BlockNumber=%d TxHash=%s", vLog.BlockNumber, vLog.TxHash.Hex())
+
+	// Parse the event
+	eventData, eventType, err := ParseEvent(&vLog)
 	if err != nil {
-		s.logger.Printf("Error filtering logs: %v", err)
+		s.logger.Printf("Error parsing missed event: %v", err)
 		return
 	}
 
-	// Process any missed events
-	for _, vLog := range logs {
-		s.logger.Printf("Processing missed event from block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
-		// TODO: Logic to only update the missed events
-		// s.processLog(vLog)
+	// Get current contract state
+	lastForgedTx, err := s.sybilContract.LastForgedTxn(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching last forged transaction: %v", err)
+		return
 	}
 
-	s.lastBlock = latestBlock
+	batchSize, err := s.sybilContract.BatchSize(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching batch size: %v", err)
+		return
+	}
+
+	lastForgedBatch, err := s.sybilContract.LastForgedBatch(callOpts)
+	if err != nil {
+		s.logger.Printf("Error fetching last forged batch: %v", err)
+		return
+	}
+
+	// Handle different event types
+	switch e := eventData.(type) {
+	case *bindings.SybilTxEvent:
+		// Process transaction event
+		s.processMissedTxEvent(e, vLog, lastForgedTx, batchSize, big.NewInt(int64(lastForgedBatch)))
+
+	case *bindings.SybilForgeBatch:
+		// For missed ForgeBatch events, we need to update our state
+		s.logger.Printf("Processing missed ForgeBatch event for batch %d", e.LastForgedBatch)
+		// Update the last forged batch in our tracking TODO
+
+	default:
+		s.logger.Printf("Unknown missed event type: %s", eventType)
+	}
+}
+
+// processMissedTxEvent processes a missed transaction event with proper batch handling
+func (s *Synchronizer) processMissedTxEvent(eventData *bindings.SybilTxEvent, vLog types.Log, lastForgedTx, batchSize, lastForgedBatch *big.Int) {
+	ctx := context.Background()
+
+	// Create transaction object
+	tx := &common.Tx{
+		BatchNum: uint32(lastForgedBatch.Uint64() + 1),
+		Type:     "Unknown", // Will be set below
+		FromIdx:  0,
+		ToIdx:    0,
+		Amount:   big.NewInt(0),
+	}
+
+	// Fetch Block Timestamp
+	header, err := s.client.HeaderByNumber(ctx, new(big.Int).SetUint64(vLog.BlockNumber))
+	if err != nil {
+		s.logger.Printf("Error fetching block header for block %d: %v", vLog.BlockNumber, err)
+	} else {
+		tx.Timestamp = header.Time
+	}
+
+	tx.BlockNumber = vLog.BlockNumber
+
+	// Fetch Transaction Receipt for Gas Fee
+	receipt, err := s.client.TransactionReceipt(ctx, vLog.TxHash)
+	if err != nil {
+		s.logger.Printf("Error fetching transaction receipt for tx %s: %v", vLog.TxHash.Hex(), err)
+	} else {
+		if receipt.EffectiveGasPrice != nil && receipt.GasUsed > 0 {
+			gasFee := new(big.Int).Mul(new(big.Int).SetUint64(receipt.GasUsed), receipt.EffectiveGasPrice)
+			tx.GasFee = gasFee
+		} else {
+			tx.GasFee = big.NewInt(0)
+		}
+	}
+
+	// Get transaction sender
+	var sender ethCommon.Address
+	txDetails, isPending, err := s.client.TransactionByHash(ctx, vLog.TxHash)
+	if err != nil {
+		s.logger.Printf("Error fetching full transaction details for tx %s: %v", vLog.TxHash.Hex(), err)
+	} else if !isPending && txDetails != nil {
+		chainID, err := s.client.ChainID(ctx)
+		if err != nil {
+			s.logger.Printf("Error fetching chain ID for tx %s: %v", vLog.TxHash.Hex(), err)
+		} else {
+			signer := types.LatestSignerForChainID(chainID)
+			sender, err = types.Sender(signer, txDetails)
+			if err != nil {
+				s.logger.Printf("Error deriving sender for transaction %s: %v", vLog.TxHash.Hex(), err)
+			}
+		}
+	}
+
+	// Parse transaction data
+	txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, err := s.ParseTxData(eventData, sender)
+	if err != nil {
+		s.logger.Printf("Error parsing transaction data: %v", err)
+		return
+	}
+
+	tx.FromIdx = fromIdx
+	tx.ToIdx = toIdx
+	tx.FromEthAddr = fromEthAddr.Bytes()
+	tx.ToEthAddr = toEthAddr.Bytes()
+	tx.Amount = amount
+	tx.Type = txType
+	tx.Position = eventData.LastAddedTxn
+	tx.TxHash = vLog.TxHash.Bytes()
+
+	s.logger.Printf("Processing missed transaction: %v", tx)
+
+	// Add transaction to history DB
+	err = s.AddTransactionToHistoryDB(tx)
+	if err != nil {
+		s.logger.Printf("Error adding missed transaction to history DB: %v", err)
+		return
+	}
+
+	// Check if we need to forge a batch for this missed transaction
+	// For missed events, we need to be more careful about batch forging
+	// since the batch might have already been forged on-chain
+	if tx.Position.Cmp(new(big.Int).Add(lastForgedTx, big.NewInt(int64(batchSize.Uint64())))) >= 0 {
+		// Check if this batch was already forged
+		currentLastForgedBatch, err := s.sybilContract.LastForgedBatch(&bind.CallOpts{Context: ctx})
+		if err != nil {
+			s.logger.Printf("Error checking current last forged batch: %v", err)
+		} else if currentLastForgedBatch > uint32(lastForgedBatch.Uint64()) {
+			s.logger.Printf("Batch %d was already forged on-chain, skipping", lastForgedBatch.Uint64()+1)
+		} else {
+			s.logger.Printf("Forging batch %d for missed transaction", lastForgedBatch.Uint64()+1)
+			err = s.forger.ForgeBatch(uint32(lastForgedBatch.Uint64() + 1))
+			if err != nil {
+				s.logger.Printf("Error forging batch for missed transaction: %v", err)
+			}
+		}
+	}
+
+	s.logger.Printf("Successfully processed missed transaction: %v", vLog.TxHash.Hex())
 }
 
 // processLog processes a single log entry
@@ -321,4 +563,8 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	s.logger.Printf("Saved transaction: %v, event: %v, data: %v",
 		vLog.TxHash.Hex(), eventType, eventData)
+
+	// Update the last processed block
+	s.lastBlock = int64(vLog.BlockNumber)
+	s.saveLastProcessedBlock(s.lastBlock)
 }
