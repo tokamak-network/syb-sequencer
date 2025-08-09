@@ -70,7 +70,7 @@ func (a *API) setupRoutes() {
 		v1.GET("/accounts", a.GetAllAccounts)
 		v1.GET("/account/:idx", a.GetAccountByIdx)
 		// Get score merkle proof
-		v1.GET("/scoremerkleproof", a.GetScoreMerkleProof)
+		v1.GET("/scoremerkleproof/:idx", a.GetScoreMerkleProof)
 		// Add other endpoints as needed
 	}
 }
