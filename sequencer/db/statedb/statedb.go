@@ -208,6 +208,11 @@ func (s *StateDB) Reset(batchNum common.BatchNum) error {
 	return nil
 }
 
+// Close closes the StateDB.
+func (s *StateDB) Close() {
+	s.db.Close()
+}
+
 // LocalStateDB represents the local StateDB which allows to make copies from
 // the synchronizer StateDB, and is used by the batch-builder.
 // LocalStateDB is an in-memory storage.

@@ -109,4 +109,10 @@ func main() {
 	<-sigCh
 
 	logger.Println("Shutting down...")
+
+	// Safely close statedbs
+	synchronizerStateDB.Close()
+	forgerStateDB.Close()
+
+	logger.Println("Shutdown complete.")
 }

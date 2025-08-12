@@ -184,3 +184,20 @@ func (s *StateDB) GetSTRoot() *big.Int {
 func (s *StateDB) GetSTRootScore() *merkletree.Hash {
 	return s.ST.Root()
 }
+
+// GetSibling returns the sibiling data of the Score Merkle Tree
+func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([][]byte, error) {
+	k := idx.BigInt()
+	_, _, siblings, err := s.ST.Get(k)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([][]byte, len(siblings))
+	for i, a := range siblings {
+		// Convert each [32]byte to []byte
+		result[i] = a[:]
+	}
+
+	return result, nil
+}

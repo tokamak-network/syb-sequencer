@@ -1,5 +1,8 @@
 FROM golang:1.23.0-alpine
 
+# Create a non-root user and group with UID and GID 1000
+# RUN addgroup -g 1000 appgroup && adduser -D -u 1000 -G appgroup appuser
+
 WORKDIR /app
 
 ARG APP_MODE
@@ -24,6 +27,15 @@ RUN go mod download
 
 COPY . .
 
+# Create Go build cache directory and set ownership
+# RUN mkdir -p /app/.cache/go-build && chown -R appuser:appgroup /app/.cache
+
+# Set Go build cache environment variable
+# ENV GOCACHE=/app/.cache/go-build
+
 EXPOSE 8080
+
+# Switch to non-root user
+# USER appuser:appgroup
 
 CMD ["go", "run", "main.go"]
