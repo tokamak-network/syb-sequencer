@@ -140,11 +140,11 @@ func NewKVDB(cfg Config) (*KVDB, error) {
 		return nil, common.Wrap(err)
 	}
 
-	// make reset (get checkpoint) at currentBatch
-	err = kvdb.reset(kvdb.CurrentBatch, true)
-	if err != nil {
-		return nil, common.Wrap(err)
-	}
+	// // make reset (get checkpoint) at currentBatch
+	// err = kvdb.reset(kvdb.CurrentBatch, true)
+	// if err != nil {
+	// 	return nil, common.Wrap(err)
+	// }
 
 	return kvdb, nil
 }
