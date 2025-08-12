@@ -1,12 +1,6 @@
 name: "SYB sequencer build & deploy"
 
 on:
-  push:
-    branches:
-      - develop
-  pull_request:
-    branches:
-      - develop
   workflow_dispatch:
 
 env:
