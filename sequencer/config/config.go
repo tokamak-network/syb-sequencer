@@ -47,7 +47,7 @@ type DBCredentials struct {
 
 // LoadConfig loads configuration from environment variables
 func LoadConfig() *Config {
-	appMode := getEnv("APP_MODE", "dev")
+	appMode := GetEnv("APP_MODE", "dev")
 
 	if appMode == "test" {
 		var secrets string
@@ -77,17 +77,17 @@ func LoadConfig() *Config {
 			DBSSLMode:  "require",
 
 			// StateDB configuration
-			Path: getEnv("STATEDB_DIR_PATH", "./var/tokamak/statedb"),
-			Keep: getEnvInt("KEEP", 256),
+			Path: GetEnv("STATEDB_DIR_PATH", "./var/tokamak/statedb"),
+			Keep: GetEnvInt("KEEP", 256),
 
 			// Ethereum configuration
-			EthereumRPC:     getEnv("ETHEREUM_RPC", "http://localhost:8545"),
-			ContractAddress: getEnv("CONTRACT_ADDRESS", ""),
+			EthereumRPC:     GetEnv("ETHEREUM_RPC", "http://localhost:8545"),
+			ContractAddress: GetEnv("CONTRACT_ADDRESS", ""),
 
 			// Synchronizer configuration with defaults
-			PollingInterval:     getEnvInt("POLLING_INTERVAL", 15),
-			SafetyCheckInterval: getEnvInt("SAFETY_CHECK_INTERVAL", 300), // 5 minutes
-			MaxBlocksPerBatch:   getEnvInt("MAX_BLOCKS_PER_BATCH", 1000),
+			PollingInterval:     GetEnvInt("POLLING_INTERVAL", 15),
+			SafetyCheckInterval: GetEnvInt("SAFETY_CHECK_INTERVAL", 300), // 5 minutes
+			MaxBlocksPerBatch:   GetEnvInt("MAX_BLOCKS_PER_BATCH", 1000),
 		}
 
 		return config
@@ -101,32 +101,32 @@ func LoadConfig() *Config {
 
 	config := &Config{
 		// HistoryDB configuration
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnvInt("DB_PORT", 5432),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres"),
-		DBName:     getEnv("DB_NAME", "sybil"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
+		DBHost:     GetEnv("DB_HOST", "localhost"),
+		DBPort:     GetEnvInt("DB_PORT", 5432),
+		DBUser:     GetEnv("DB_USER", "postgres"),
+		DBPassword: GetEnv("DB_PASSWORD", "postgres"),
+		DBName:     GetEnv("DB_NAME", "sybil"),
+		DBSSLMode:  GetEnv("DB_SSLMODE", "disable"),
 
 		// StateDB configuration
-		Path: getEnv("STATEDB_DIR_PATH", "./var/tokamak/statedb"),
-		Keep: getEnvInt("KEEP", 256),
+		Path: GetEnv("STATEDB_DIR_PATH", "./var/tokamak/statedb"),
+		Keep: GetEnvInt("KEEP", 256),
 
 		// Ethereum configuration
-		EthereumRPC:     getEnv("ETHEREUM_RPC", "http://localhost:8545"),
-		ContractAddress: getEnv("CONTRACT_ADDRESS", ""),
+		EthereumRPC:     GetEnv("ETHEREUM_RPC", "http://localhost:8545"),
+		ContractAddress: GetEnv("CONTRACT_ADDRESS", ""),
 
 		// Synchronizer configuration with defaults
-		PollingInterval:     getEnvInt("POLLING_INTERVAL", 15),
-		SafetyCheckInterval: getEnvInt("SAFETY_CHECK_INTERVAL", 300), // 5 minutes
-		MaxBlocksPerBatch:   getEnvInt("MAX_BLOCKS_PER_BATCH", 1000),
+		PollingInterval:     GetEnvInt("POLLING_INTERVAL", 15),
+		SafetyCheckInterval: GetEnvInt("SAFETY_CHECK_INTERVAL", 300), // 5 minutes
+		MaxBlocksPerBatch:   GetEnvInt("MAX_BLOCKS_PER_BATCH", 1000),
 	}
 
 	return config
 }
 
 // getEnv gets an environment variable or returns a default value
-func getEnv(key, defaultValue string) string {
+func GetEnv(key, defaultValue string) string {
 	value := os.Getenv(key)
 	if value == "" {
 		return defaultValue
@@ -135,7 +135,7 @@ func getEnv(key, defaultValue string) string {
 }
 
 // getEnvInt gets an environment variable as an integer or returns a default value
-func getEnvInt(key string, defaultValue int) int {
+func GetEnvInt(key string, defaultValue int) int {
 	valueStr := os.Getenv(key)
 	if valueStr == "" {
 		return defaultValue
@@ -146,6 +146,19 @@ func getEnvInt(key string, defaultValue int) int {
 		return defaultValue
 	}
 
+	return value
+}
+
+// getEnvInt64 gets an environment variable as an int64 or returns a default value
+func GetEnvInt64(key string, defaultValue int64) int64 {
+	valueStr := os.Getenv(key)
+	if valueStr == "" {
+		return defaultValue
+	}
+	value, err := strconv.ParseInt(valueStr, 10, 64)
+	if err != nil {
+		return defaultValue
+	}
 	return value
 }
 

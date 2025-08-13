@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
+	"github.com/tokamak-network/syb-sequencer/sequencer/config"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/forger"
@@ -31,6 +32,8 @@ type Synchronizer struct {
 	logger          *log.Logger
 	forger          *forger.Forger
 	lastBlock       int64
+	liveSync        bool
+	batchTxToSync   int64
 }
 
 // NewSynchronizer creates a new synchronizer
@@ -46,6 +49,8 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		return nil, fmt.Errorf("failed to instantiate Sybil contract: %v", err)
 	}
 
+	batchTxToSync := config.GetEnvInt64("BATCH_TO_SYNC", 100)
+
 	logs := make(chan types.Log)
 
 	return &Synchronizer{
@@ -57,21 +62,14 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		logs:            logs,
 		logger:          logger,
 		forger:          forger,
-		lastBlock:       0,
+		lastBlock:       config.GetEnvInt64("LAST_PROCESSED_BLOCK", 0),
+		liveSync:        false,
+		batchTxToSync:   batchTxToSync,
 	}, nil
 }
 
 // Start begins the synchronization process
 func (s *Synchronizer) Start(ctx context.Context) {
-	// Get the latest block number to start from
-	header, err := s.client.HeaderByNumber(ctx, nil)
-	if err != nil {
-		s.logger.Fatalf("Failed to get latest block header: %v", err)
-	}
-
-	s.lastBlock = header.Number.Int64()
-	s.logger.Printf("Starting synchronizer from block %d", s.lastBlock)
-
 	// Create a filter query for the contract events
 	query := ethereum.FilterQuery{
 		Addresses: []ethCommon.Address{s.contractAddress},
@@ -91,7 +89,7 @@ func (s *Synchronizer) Start(ctx context.Context) {
 // watchEvents continuously listens for contract events
 func (s *Synchronizer) watchEvents(ctx context.Context) {
 	// Create a ticker for periodic safety checks
-	ticker := time.NewTicker(5 * time.Minute)
+	ticker := time.NewTicker(1 * time.Minute)
 	defer ticker.Stop()
 
 	s.logger.Println("Started watching for contract events")
@@ -110,13 +108,17 @@ func (s *Synchronizer) watchEvents(ctx context.Context) {
 		case vLog := <-s.logs:
 			// Process the log event in real-time
 			s.logger.Printf("Received event in block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
-			s.processLog(vLog)
+			if s.liveSync {
+				s.processLog(vLog)
+			}
 
 		case <-ticker.C:
 			// Periodic safety check to ensure we haven't missed any events
 			// This is just a backup mechanism and not the primary way of getting events
-			s.logger.Println("Performing periodic safety check for missed events")
-			s.checkForMissedEvents(ctx)
+			if !s.liveSync {
+				s.logger.Println("Performing periodic safety check for missed events")
+				s.checkForMissedEvents(ctx)
+			}
 		}
 	}
 }
@@ -153,6 +155,8 @@ func (s *Synchronizer) resubscribe(ctx context.Context) {
 
 // checkForMissedEvents is a safety mechanism to check for any events we might have missed
 func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
+	var blockNumberToSync int64
+	var startLiveSync bool
 	// Get the latest block number
 	header, err := s.client.HeaderByNumber(ctx, nil)
 	if err != nil {
@@ -161,16 +165,20 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 	}
 
 	latestBlock := header.Number.Int64()
-	if latestBlock <= s.lastBlock {
-		return // No new blocks
+
+	if s.lastBlock+s.batchTxToSync > latestBlock {
+		blockNumberToSync = latestBlock
+		startLiveSync = true
+	} else {
+		blockNumberToSync = s.lastBlock + s.batchTxToSync
 	}
 
-	s.logger.Printf("Checking for missed events from block %d to %d", s.lastBlock+1, latestBlock)
+	s.logger.Printf("Checking for missed events from block %d to %d", s.lastBlock, blockNumberToSync)
 
 	// Create a filter query for the contract events
 	query := ethereum.FilterQuery{
-		FromBlock: big.NewInt(s.lastBlock + 1),
-		ToBlock:   big.NewInt(latestBlock),
+		FromBlock: big.NewInt(s.lastBlock),
+		ToBlock:   big.NewInt(blockNumberToSync),
 		Addresses: []ethCommon.Address{s.contractAddress},
 	}
 
@@ -184,11 +192,18 @@ func (s *Synchronizer) checkForMissedEvents(ctx context.Context) {
 	// Process any missed events
 	for _, vLog := range logs {
 		s.logger.Printf("Processing missed event from block %d, tx: %s", vLog.BlockNumber, vLog.TxHash.Hex())
-		// TODO: Logic to only update the missed events
-		// s.processLog(vLog)
+		s.processLog(vLog)
 	}
 
-	s.lastBlock = latestBlock
+	fmt.Println("Finished processing missed events", latestBlock)
+
+	s.lastBlock = blockNumberToSync + 1
+
+	if latestBlock <= s.lastBlock || startLiveSync {
+		s.liveSync = true
+		s.logger.Printf("Started syncing live events")
+		return // No new blocks
+	}
 }
 
 // processLog processes a single log entry
@@ -202,6 +217,9 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 
 	// // Parse the event
 	eventData, eventType, err := ParseEvent(&vLog)
+	if eventType == "Initialized" {
+		return
+	}
 	if err != nil {
 		s.logger.Printf("Error parsing event: %v", err)
 		return
