@@ -33,6 +33,11 @@ var (
 		"ExplodeAmountUpdated(uint256)"))
 	logSybilScoringRequiredBalanceUpdated = crypto.Keccak256Hash([]byte(
 		"ScoringRequiredBalanceUpdated(uint256)"))
+	// Add the Initialized event
+	logSybilInitialized = crypto.Keccak256Hash([]byte(
+		"Initialized(uint64)"))
+	logRoleGranted = crypto.Keccak256Hash([]byte(
+		"RoleGranted(bytes32,address,address)"))
 )
 
 // ParseEvent parses data of events found on blockchain.
@@ -81,6 +86,9 @@ func ParseEvent(log *types.Log) (interface{}, string, error) {
 			return nil, "", fmt.Errorf("ParseEvent: failed to unpack SybilScoringRequiredBalanceUpdated: %w", err)
 		}
 		return &parsedEvent, "SybilScoringRequiredBalanceUpdated", nil
+
+	case logSybilInitialized.Hex(), logRoleGranted.Hex():
+		return nil, "Initialized", nil
 	}
 
 	// If we get here, it's an unknown event
