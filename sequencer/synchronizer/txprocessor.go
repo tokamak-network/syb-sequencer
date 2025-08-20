@@ -103,6 +103,22 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		if err != nil {
 			return nil, common.Wrap(err)
 		}
+
+		// get score for vouched from stateDB
+		toIdx := common.ScoreIdx(tx.ToIdx)
+
+		vouched, err := txProcessor.state.GetScore(toIdx)
+		if err != nil {
+			return nil, common.Wrap(err)
+		}
+
+		// TODO: Update vouched's score
+		// vouched.Score = score
+
+		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
+		if err != nil {
+			return nil, common.Wrap(err)
+		}
 	case common.TxTypeUnvouch:
 		// Create vouchIdx from from & to Idx
 		vouchIdx, err := common.VouchIdxFromAccountIdxs(tx.FromIdx, tx.ToIdx)
@@ -111,6 +127,22 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 
 		_, err = txProcessor.state.UnVouch(vouchIdx)
+		if err != nil {
+			return nil, common.Wrap(err)
+		}
+
+		// get score for vouched from stateDB
+		toIdx := common.ScoreIdx(tx.ToIdx)
+
+		vouched, err := txProcessor.state.GetScore(toIdx)
+		if err != nil {
+			return nil, common.Wrap(err)
+		}
+
+		// TODO: Update vouched's score
+		// vouched.Score = score
+
+		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
 		if err != nil {
 			return nil, common.Wrap(err)
 		}
