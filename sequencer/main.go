@@ -86,7 +86,7 @@ func main() {
 	}()
 
 	// Initialize and start API server
-	apiServer, err := api.NewAPI(historyDB, cfg.EthereumRPC, cfg.ContractAddress, forgerStateDB)
+	apiServer, err := api.NewAPI(historyDB, cfg.EthereumRPC, cfg.ContractAddress, synchronizerStateDB)
 	if err != nil {
 		logger.Fatalf("Failed to create API server: %v", err)
 	}

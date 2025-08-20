@@ -32,7 +32,7 @@ func NewTxProcessor(state *statedb.StateDB) *TxProcessor {
 	}
 }
 
-func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput, err error) {
+func (txProcessor *TxProcessor) ProcessTx(tx common.Tx) (ptOut *ProcessTxOutput, err error) {
 	defer func() {
 		if err == nil {
 			err = txProcessor.state.MakeCheckpoint()
@@ -113,7 +113,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 
 		// TODO: Update vouched's score
-		// vouched.Score = score
+		// Increment score by 1 for vouching
+		vouched.Score.Add(vouched.Score, big.NewInt(1))
 
 		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
 		if err != nil {
@@ -140,7 +141,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 
 		// TODO: Update vouched's score
-		// vouched.Score = score
+		// Decrement score by 1 for vouching
+		vouched.Score.Sub(vouched.Score, big.NewInt(1))
 
 		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
 		if err != nil {

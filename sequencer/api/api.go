@@ -16,11 +16,11 @@ type API struct {
 	router        *gin.Engine
 	db            *historydb.HistoryDB
 	sybilContract *bindings.Sybil
-	statedb       *statedb.LocalStateDB
+	statedb       *statedb.StateDB
 }
 
 // NewAPI creates a new API server
-func NewAPI(db *historydb.HistoryDB, ethRPC, contractAddressHex string, statedb *statedb.LocalStateDB) (*API, error) {
+func NewAPI(db *historydb.HistoryDB, ethRPC, contractAddressHex string, statedb *statedb.StateDB) (*API, error) {
 	client, err := ethclient.Dial(ethRPC)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to Ethereum client: %v", err)

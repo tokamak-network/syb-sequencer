@@ -13,17 +13,6 @@ import (
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 
-// Event types
-type L1UserTxEvent struct {
-	QueueIndex uint32
-	Position   uint8
-	L1UserTx   []byte
-}
-
-type Transaction struct {
-	L1UserTx []byte
-}
-
 var (
 	logSybilTxEvent = crypto.Keccak256Hash([]byte(
 		"TxEvent(uint256,uint8,uint24,uint24,uint256)"))
@@ -87,13 +76,13 @@ func ParseEvent(log *types.Log) (interface{}, string, error) {
 	return nil, fmt.Sprintf("UnknownEvent(%s)", log.Topics[0].Hex()[:10]), nil
 }
 
-// ParseTxData parses the transaction data from L1UserTx
+// ParseL1UserTxData parses the transaction data from L1UserTx
 // The data format is:
 // - txnType (1 byte)
 // - fromEthAddress (20 bytes)
 // - toEthAddress (20 bytes)
 // - amount (32 bytes)
-func (s *Synchronizer) ParseTxData(eventData *bindings.SybilTxEvent, sender ethCommon.Address) (string, ethCommon.Address, ethCommon.Address, *big.Int, common.AccountIdx, common.AccountIdx, error) {
+func (s *Synchronizer) ParseL1UserTxData(eventData *bindings.SybilTxEvent, sender ethCommon.Address) (string, ethCommon.Address, ethCommon.Address, *big.Int, common.AccountIdx, common.AccountIdx, error) {
 	var fromIdx common.AccountIdx
 	var toIdx common.AccountIdx
 	var toEthAddr ethCommon.Address
@@ -121,6 +110,66 @@ func (s *Synchronizer) ParseTxData(eventData *bindings.SybilTxEvent, sender ethC
 	return txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, nil
 }
 
+// ParseForgeBatchTxData parses the transaction data from ForgeBatchTx
+// The data format is:
+// - lastForgedBatch (4 byte)
+// - lastForgedTxn (32 bytes)
+// - batchSize (32 bytes)
+// - txnData
+func (s *Synchronizer) ParseForgeBatchTxData(eventData *bindings.SybilForgeBatch) (uint32, *big.Int, *big.Int, []common.Tx, error) {
+
+	out, err := decodeTxnData(eventData.TxnData)
+	if err != nil {
+		return 0, nil, nil, nil, err
+	}
+
+	s.logger.Println("Parsed Transaction Data: ", out)
+
+	txnData := make([]common.Tx, eventData.BatchSize.Uint64())
+
+	for i, tx := range out {
+		var txType string
+		switch tx.Identifier {
+		case 0:
+			txType = common.TxTypeCreateAccountDeposit
+		case 1:
+			txType = common.TxTypeDeposit
+		case 2:
+			txType = common.TxTypeWithdraw
+		case 3:
+			txType = common.TxTypeVouch
+		case 4:
+			txType = common.TxTypeUnvouch
+		case 5:
+			txType = common.TxTypeExplode
+		default:
+			txType = common.TxTypeUnknown
+		}
+		txnData[i].Type = txType
+		txnData[i].BatchNum = eventData.LastForgedBatch + 1
+		txnData[i].FromIdx = common.AccountIdx(tx.From)
+		fromAcc, err := s.historydb.GetAccountByIdx(uint32(tx.From))
+		if err != nil {
+			return 0, nil, nil, nil, err
+		}
+		txnData[i].FromEthAddr = fromAcc.EthAddr[:]
+
+		if txType == common.TxTypeVouch ||
+			txType == common.TxTypeUnvouch ||
+			txType == common.TxTypeExplode {
+			txnData[i].ToIdx = common.AccountIdx(tx.To)
+			toAcc, err := s.historydb.GetAccountByIdx(uint32(tx.To))
+			if err != nil {
+				return 0, nil, nil, nil, err
+			}
+			txnData[i].ToEthAddr = toAcc.EthAddr[:]
+		}
+		txnData[i].Amount = tx.Amount
+	}
+
+	return eventData.LastForgedBatch, eventData.LastForgedTxn, eventData.BatchSize, txnData, nil
+}
+
 // SetType determines the transaction type based on the first byte
 func SetType(firstByte byte) (string, error) {
 	switch firstByte {
@@ -142,10 +191,65 @@ func SetType(firstByte byte) (string, error) {
 	}
 }
 
-func (s *Synchronizer) GetAccountIdx(address ethCommon.Address) (common.AccountIdx, error) {
-	account, err := s.historydb.GetAccountByEthAddress(address)
+type Transaction struct {
+	Identifier uint8
+	From       uint32
+	To         uint32
+	Amount     *big.Int
+}
+
+func decodeTxnData(txnData []byte) ([]Transaction, error) {
+	const abiJSON = `[
+		{
+			"name": "dummy",
+			"type": "function",
+			"inputs": [],
+			"outputs": [
+				{
+					"name": "transactions",
+					"type": "tuple[]",
+					"components": [
+						{"name": "identifier", "type": "uint8"},
+						{"name": "from", "type": "uint24"},
+						{"name": "to", "type": "uint24"},
+						{"name": "amount", "type": "uint128"}
+					]
+				}
+			],
+			"stateMutability": "view"
+		}
+	]`
+
+	parsedABI, err := abi.JSON(strings.NewReader(abiJSON))
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return account.Idx, nil
+
+	var out []struct {
+		Identifier uint8
+		From       *big.Int
+		To         *big.Int
+		Amount     *big.Int
+	}
+
+	err = parsedABI.UnpackIntoInterface(&out, "dummy", txnData)
+	if err != nil {
+		return nil, err
+	}
+
+	txns := make([]Transaction, len(out))
+	for i, d := range out {
+		id := d.Identifier
+		from := uint32(d.From.Uint64()) // fits uint24 < 2^24
+		to := uint32(d.To.Uint64())
+		amount := d.Amount
+
+		txns[i] = Transaction{
+			Identifier: id,
+			From:       from,
+			To:         to,
+			Amount:     amount,
+		}
+	}
+	return txns, nil
 }
