@@ -42,11 +42,12 @@ type Pagination struct {
 	TotalPages   int   `json:"totalPages"`
 }
 type AccountResponse struct {
-	Idx      string `json:"idx"`
-	EthAddr  string `json:"eth_addr"`
-	Balance  string `json:"balance"`
-	Score    string `json:"score"`
-	ScoreInt string `json:"score_int,omitempty"`
+	Idx      string              `json:"idx"`
+	EthAddr  string              `json:"eth_addr"`
+	Balance  string              `json:"balance"`
+	Score    string              `json:"score"`
+	Vouchers []common.AccountIdx `json:"vouchers"`
+	ScoreInt string              `json:"score_int,omitempty"`
 }
 
 type PaginatedAccountResponse struct {
@@ -248,7 +249,7 @@ func (a *API) GetTransactionByHash(c *gin.Context) {
 	})
 }
 
-func (a *API) convertAccountToResponse(account *common.Account) AccountResponse {
+func (a *API) convertAccountToResponse(account *common.Account, vouchers []common.AccountIdx) AccountResponse {
 	resp := AccountResponse{
 		Idx:     account.Idx.String(),
 		EthAddr: account.EthAddr.Hex(),
@@ -277,6 +278,8 @@ func (a *API) convertAccountToResponse(account *common.Account) AccountResponse 
 		resp.Score = "0"
 	}
 
+	resp.Vouchers = vouchers
+
 	return resp
 }
 
@@ -289,7 +292,12 @@ func (a *API) GetAllAccounts(c *gin.Context) {
 
 	accountResponses := make([]AccountResponse, len(accounts))
 	for i, account := range accounts {
-		accountResponses[i] = a.convertAccountToResponse(account)
+		vouchers, err := a.db.GetVouchersByIdx(account.Idx)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve vouchers: " + err.Error()})
+			return
+		}
+		accountResponses[i] = a.convertAccountToResponse(account, vouchers)
 	}
 
 	c.JSON(http.StatusOK, PaginatedAccountResponse{
@@ -323,7 +331,9 @@ func (a *API) GetAccountByIdx(c *gin.Context) {
 		return
 	}
 
-	accountResponse := a.convertAccountToResponse(account)
+	vouchers, err := a.db.GetVouchersByIdx(account.Idx)
+
+	accountResponse := a.convertAccountToResponse(account, vouchers)
 
 	c.JSON(http.StatusOK, gin.H{
 		"account": accountResponse,

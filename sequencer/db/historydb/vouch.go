@@ -98,6 +98,37 @@ func (hdb *HistoryDB) GetVouchesByEthAddress(ethAddr ethCommon.Address) ([]*comm
 	return vouches, nil
 }
 
+func (hdb *HistoryDB) GetVouchersByIdx(toIdx common.AccountIdx) ([]common.AccountIdx, error) {
+	query := `
+        SELECT DISTINCT from_idx 
+        FROM vouch 
+        WHERE to_idx = $1
+        ORDER BY from_idx;
+    `
+
+	rows, err := hdb.dbRead.Query(query, toIdx)
+	if err != nil {
+		return nil, fmt.Errorf("GetVouchersByToIdx: failed to query vouchers: %w", err)
+	}
+	defer rows.Close()
+
+	var vouchers []common.AccountIdx
+	for rows.Next() {
+		var fromIdx common.AccountIdx
+		err := rows.Scan(&fromIdx)
+		if err != nil {
+			return nil, fmt.Errorf("GetVouchersByToIdx: failed to scan from_idx: %w", err)
+		}
+		vouchers = append(vouchers, fromIdx)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, fmt.Errorf("GetVouchersByToIdx: error iterating rows: %w", err)
+	}
+
+	return vouchers, nil
+}
+
 func (hdb *HistoryDB) DeleteVouchByIdx(idx common.VouchIdx) error {
 	query := `DELETE FROM vouch WHERE idx = $1;`
 	result, err := hdb.dbWrite.Exec(query, idx)
