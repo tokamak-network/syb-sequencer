@@ -57,10 +57,10 @@ type PaginatedAccountResponse struct {
 }
 
 type ScoreMerkleProofResponse struct {
-	Idx          string   `json:"idx"`
-	NumScoreRoot uint32   `json:"num_score_root"`
-	Score        uint64   `json:"score"`
-	Siblings     [][]byte `json:"siblings"`
+	Idx          string          `json:"idx"`
+	NumScoreRoot common.BatchNum `json:"num_score_root"`
+	Score        uint64          `json:"score"`
+	Siblings     [][]byte        `json:"siblings"`
 }
 
 const (
@@ -357,12 +357,8 @@ func (a *API) GetScoreMerkleProof(c *gin.Context) {
 		return
 	}
 
-	ctx := context.Background()
-	callOpts := &bind.CallOpts{
-		Context: ctx,
-	}
 	// Get Last Forged Batch Num
-	numScoreRoot, err := a.sybilContract.LastForgedBatch(callOpts)
+	numScoreRoot, err := a.db.GetLastBatchItemID()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve last forged batch num: " + err.Error()})
 		return
