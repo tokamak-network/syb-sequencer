@@ -54,6 +54,7 @@ func NewForger(ethRPC, contractAddressHex string, historydb *historydb.HistoryDB
 	if err != nil {
 		return nil, fmt.Errorf("failed to create transactor: %v", err)
 	}
+	transactOpts.GasLimit = uint64(1000000)
 
 	contractAddress := ethCommon.HexToAddress(contractAddressHex)
 	sybilContract, err := bindings.NewSybil(contractAddress, client)
