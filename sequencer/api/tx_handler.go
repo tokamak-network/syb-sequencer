@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -60,7 +61,7 @@ type ScoreMerkleProofResponse struct {
 	Idx          string          `json:"idx"`
 	NumScoreRoot common.BatchNum `json:"num_score_root"`
 	Score        uint64          `json:"score"`
-	Siblings     [][]byte        `json:"siblings"`
+	Siblings     []string        `json:"siblings"`
 }
 
 const (
@@ -370,10 +371,16 @@ func (a *API) GetScoreMerkleProof(c *gin.Context) {
 		return
 	}
 
+	siblingData := make([]string, len(siblings))
+
+	for i, sibling := range siblings {
+		siblingData[i] = "0x" + hex.EncodeToString(sibling)
+	}
+
 	c.JSON(http.StatusOK, ScoreMerkleProofResponse{
 		Idx:          scoreIdx.String(),
 		NumScoreRoot: numScoreRoot,
 		Score:        score.Score.Uint64(),
-		Siblings:     siblings,
+		Siblings:     siblingData,
 	})
 }
