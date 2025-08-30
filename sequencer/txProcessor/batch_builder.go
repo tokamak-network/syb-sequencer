@@ -195,14 +195,12 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 	toAccountIdx := tx.ToIdx
 	fromEthAddr := ethCommon.Address(tx.FromEthAddr)
 	toEthAddr := ethCommon.Address(tx.ToEthAddr)
-	vouchTableKeyStr := fmt.Sprintf("%d%d", tx.FromIdx, tx.ToIdx)
-	vouchTableKeyBigInt, ok := new(big.Int).SetString(vouchTableKeyStr, 10)
-	if !ok {
-		return fmt.Errorf("VouchTx: failed to create vouch table key from string '%s'", vouchTableKeyStr)
-	}
 	var err error
 
-	vouchIdx := common.VouchIdx(vouchTableKeyBigInt.Uint64())
+	vouchIdx, err := common.VouchIdxFromAccountIdxs(tx.FromIdx, tx.ToIdx)
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyVouch: failed to get vouch index from account indices: %w", err))
+	}
 	score, err := sdb.GetScore(common.ScoreIdx(toAccountIdx))
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyVouch: failed to get score for account idx %d: %w", toAccountIdx, err))
@@ -239,30 +237,40 @@ func (batchBuilder *BatchBuilder) applyVouch(sdb *statedb.LocalStateDB, tx commo
 func (batchBuilder *BatchBuilder) applyExplode(sdb *statedb.LocalStateDB, tx common.Tx) error {
 	penalty := tx.Amount
 
-	vouchTableKeyStr := fmt.Sprintf("%d%d", tx.ToIdx, tx.FromIdx)
-	vouchTableKeyBigInt, ok := new(big.Int).SetString(vouchTableKeyStr, 10)
-	if !ok {
-		return fmt.Errorf("VouchTx: failed to create vouch table key from string '%s'", vouchTableKeyStr)
+	// Get VouchIdx exploder to caller
+	vouchIdxExpToCaller, err := common.VouchIdxFromAccountIdxs(tx.ToIdx, tx.FromIdx)
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyExplode: failed to get VouchIdx from account idxs: %w", err))
 	}
 
-	vouchIdx := common.VouchIdx(vouchTableKeyBigInt.Uint64())
-	score, err := sdb.GetScore(common.ScoreIdx(tx.FromIdx))
+	// Get VouchIdx caller to exploder
+	vouchIdxCallerToExp, err := common.VouchIdxFromAccountIdxs(tx.FromIdx, tx.ToIdx)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyExplode: failed to get score for account idx %d: %w", tx.FromIdx, err))
+		return common.Wrap(fmt.Errorf("applyExplode: failed to get VouchIdx from account idxs: %w", err))
 	}
 
 	callerAccount, err := sdb.GetAccount(tx.FromIdx)
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyExplode: failed to get caller account %d: %w", tx.FromIdx, err))
 	}
-	explodedAccount, err := sdb.GetAccount(tx.FromIdx)
+	explodedAccount, err := sdb.GetAccount(tx.ToIdx)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyExplode: failed to get exploded account %d: %w", tx.FromIdx, err))
+		return common.Wrap(fmt.Errorf("applyExplode: failed to get exploded account %d: %w", tx.ToIdx, err))
 	}
 
 	if explodedAccount.Balance.Cmp(tx.Amount) < 0 {
 		return fmt.Errorf("ExplodeTx: insufficient balance for account idx %d. Has: %s, Wants: %s",
 			explodedAccount.Idx, explodedAccount.Balance.String(), tx.Amount.String())
+	}
+
+	scoreCallerAcc, err := sdb.GetScore(common.ScoreIdx(tx.FromIdx))
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyExplode: failed to get score for account idx %d: %w", tx.FromIdx, err))
+	}
+
+	scoreExpAcc, err := sdb.GetScore(common.ScoreIdx(tx.ToIdx))
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyExplode: failed to get score for account idx %d: %w", tx.ToIdx, err))
 	}
 
 	callerAccount.Balance.Add(callerAccount.Balance, penalty)
@@ -272,18 +280,29 @@ func (batchBuilder *BatchBuilder) applyExplode(sdb *statedb.LocalStateDB, tx com
 	if err != nil {
 		return common.Wrap(fmt.Errorf("applyExplode: failed to update caller account %d: %w", tx.FromIdx, err))
 	}
-	_, err = sdb.UpdateAccount(tx.FromIdx, explodedAccount)
+	_, err = sdb.UpdateAccount(tx.ToIdx, explodedAccount)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyExplode: failed to update exploded account %d: %w", tx.FromIdx, err))
+		return common.Wrap(fmt.Errorf("applyExplode: failed to update exploded account %d: %w", tx.ToIdx, err))
 	}
 
 	// Unvouch the caller from the exploded account
-	_, err = sdb.UnVouch(vouchIdx)
+	_, err = sdb.UnVouch(vouchIdxExpToCaller)
 	if err != nil {
-		return common.Wrap(fmt.Errorf("applyExplode: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(vouchIdx).String(), err))
+		return common.Wrap(fmt.Errorf("applyExplode: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(vouchIdxExpToCaller).String(), err))
 	}
-	score.Score.Sub(score.Score, big.NewInt(1)) // Decrement score by 1 for exploding
-	_, err = sdb.UpdateScore(score.Idx, score)
+	scoreCallerAcc.Score.Sub(scoreCallerAcc.Score, big.NewInt(1)) // Decrement score by 1 for exploding
+	_, err = sdb.UpdateScore(scoreCallerAcc.Idx, scoreCallerAcc)
+	if err != nil {
+		return common.Wrap(err)
+	}
+
+	// Unvouch the exploded account from the caller
+	_, err = sdb.UnVouch(vouchIdxCallerToExp)
+	if err != nil {
+		return common.Wrap(fmt.Errorf("applyExplode: failed to delete vouch for VouchIdx %s: %w", common.VouchIdx(vouchIdxCallerToExp).String(), err))
+	}
+	scoreExpAcc.Score.Sub(scoreExpAcc.Score, big.NewInt(1)) // Decrement score by 1 for exploding
+	_, err = sdb.UpdateScore(scoreExpAcc.Idx, scoreExpAcc)
 	if err != nil {
 		return common.Wrap(err)
 	}
