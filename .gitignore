@@ -1,3 +1,6 @@
 .env
 sequencer/sequencer
 var
+
+coverage.html
+coverage.out
