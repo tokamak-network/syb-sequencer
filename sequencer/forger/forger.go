@@ -96,7 +96,7 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 		ChainID: 0,
 	}
 
-	newBatchBuilder := txprocessor.NewBatchBuilder(config, f.Statedb)
+	newBatchBuilder := txprocessor.NewBatchBuilder(config, f.Statedb, f.historydb)
 
 	zki, err := newBatchBuilder.ForgeTransactions(txs)
 	if err != nil {
