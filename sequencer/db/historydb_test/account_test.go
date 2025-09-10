@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"math/big"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	ethCommon "github.com/ethereum/go-ethereum/common"
@@ -25,7 +26,7 @@ func TestAddAccount(t *testing.T) {
 		errMsg    string
 	}{
 		{
-			name: "successful account addition",
+			name: "Successful account addition",
 			account: &common.Account{
 				Idx:           3,
 				EthAddr:       ethCommon.HexToAddress("0x3333333333333333333333333333333333333333"),
@@ -47,7 +48,7 @@ func TestAddAccount(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "account with nil score siblings",
+			name: "Account with nil score siblings",
 			account: &common.Account{
 				Idx:           4,
 				EthAddr:       ethCommon.HexToAddress("0x4444444444444444444444444444444444444444"),
@@ -69,7 +70,7 @@ func TestAddAccount(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "database error",
+			name: "Database error",
 			account: &common.Account{
 				Idx:           5,
 				EthAddr:       ethCommon.HexToAddress("0x5555555555555555555555555555555555555555"),
@@ -100,7 +101,9 @@ func TestAddAccount(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			hdb := historydb.NewHistoryDB(db, db, nil)
+			apiConnCon := historydb.NewAPIConnectionController(1, 1*time.Second)
+
+			hdb := historydb.NewHistoryDB(db, db, apiConnCon)
 			tt.setupMock(mock)
 
 			// Execute
@@ -131,7 +134,7 @@ func TestGetAccountByIdx(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "successful retrieval",
+			name: "Successful retrieval of account by idx",
 			idx:  1,
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT eth_addr, balance, score, score_siblings FROM account WHERE idx = \\$1").
@@ -156,7 +159,7 @@ func TestGetAccountByIdx(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "account not found",
+			name: "Account not found",
 			idx:  999,
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT eth_addr, balance, score, score_siblings FROM account WHERE idx = \\$1").
@@ -167,7 +170,7 @@ func TestGetAccountByIdx(t *testing.T) {
 			wantErr: false, // GetAccountByIdx returns nil, nil for not found
 		},
 		{
-			name: "invalid balance format",
+			name: "Invalid balance format",
 			idx:  2,
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT eth_addr, balance, score, score_siblings FROM account WHERE idx = \\$1").
@@ -194,7 +197,9 @@ func TestGetAccountByIdx(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			hdb := historydb.NewHistoryDB(db, db, nil)
+			apiConnCon := historydb.NewAPIConnectionController(1, 1*time.Second)
+
+			hdb := historydb.NewHistoryDB(db, db, apiConnCon)
 			tt.setupMock(mock)
 
 			// Execute
@@ -223,9 +228,8 @@ func TestGetAllAccounts(t *testing.T) {
 		wantErr   bool
 	}{
 		{
-			name: "successful retrieval of multiple accounts",
+			name: "Successful retrieval of multiple accounts",
 			setupMock: func(mock sqlmock.Sqlmock) {
-				// First: expect the SELECT query (this runs first in your implementation)
 				mock.ExpectQuery("SELECT idx, eth_addr, balance, score, score_siblings FROM account ORDER BY idx").
 					WillReturnRows(
 						sqlmock.NewRows([]string{"idx", "eth_addr", "balance", "score", "score_siblings"}).
@@ -245,7 +249,6 @@ func TestGetAllAccounts(t *testing.T) {
 							),
 					)
 
-				// Second: expect the COUNT query (this runs after in your implementation)
 				mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM account").
 					WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(2))
 			},
@@ -269,9 +272,8 @@ func TestGetAllAccounts(t *testing.T) {
 			wantErr:   false,
 		},
 		{
-			name: "select query error",
+			name: "Select query error",
 			setupMock: func(mock sqlmock.Sqlmock) {
-				// SELECT query fails
 				mock.ExpectQuery("SELECT idx, eth_addr, balance, score, score_siblings FROM account ORDER BY idx").
 					WillReturnError(sql.ErrConnDone)
 			},
@@ -288,7 +290,9 @@ func TestGetAllAccounts(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			hdb := historydb.NewHistoryDB(db, db, nil)
+			apiConnCon := historydb.NewAPIConnectionController(1, 1*time.Second)
+
+			hdb := historydb.NewHistoryDB(db, db, apiConnCon)
 			tt.setupMock(mock)
 
 			// Execute
@@ -320,7 +324,7 @@ func TestUpdateAccountBalance(t *testing.T) {
 		errMsg     string
 	}{
 		{
-			name:       "successful balance update",
+			name:       "Successful balance update",
 			idx:        1,
 			newBalance: big.NewInt(5000),
 			setupMock: func(mock sqlmock.Sqlmock) {
@@ -331,7 +335,7 @@ func TestUpdateAccountBalance(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "account not found",
+			name:       "Account not found",
 			idx:        999,
 			newBalance: big.NewInt(5000),
 			setupMock: func(mock sqlmock.Sqlmock) {
@@ -343,7 +347,7 @@ func TestUpdateAccountBalance(t *testing.T) {
 			errMsg:  "no account found",
 		},
 		{
-			name:       "database error",
+			name:       "Database error",
 			idx:        1,
 			newBalance: big.NewInt(5000),
 			setupMock: func(mock sqlmock.Sqlmock) {
@@ -363,7 +367,9 @@ func TestUpdateAccountBalance(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			hdb := historydb.NewHistoryDB(db, db, nil)
+			apiConnCon := historydb.NewAPIConnectionController(1, 1*time.Second)
+
+			hdb := historydb.NewHistoryDB(db, db, apiConnCon)
 			tt.setupMock(mock)
 
 			// Execute
@@ -395,7 +401,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 		errMsg    string
 	}{
 		{
-			name:    "successful retrieval by eth address",
+			name:    "Successful retrieval by eth address",
 			ethAddr: ethCommon.HexToAddress("0x1111111111111111111111111111111111111111"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -420,7 +426,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "account not found by eth address",
+			name:    "Account not found by eth address",
 			ethAddr: ethCommon.HexToAddress("0x9999999999999999999999999999999999999999"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -431,7 +437,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			wantErr: false, // GetAccountByEthAddress returns nil, nil for not found
 		},
 		{
-			name:    "invalid balance format",
+			name:    "Invalid balance format",
 			ethAddr: ethCommon.HexToAddress("0x2222222222222222222222222222222222222222"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -451,7 +457,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			errMsg:  "failed to parse balance string",
 		},
 		{
-			name:    "invalid score format",
+			name:    "Invalid score format",
 			ethAddr: ethCommon.HexToAddress("0x3333333333333333333333333333333333333333"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -471,7 +477,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			errMsg:  "failed to parse score string",
 		},
 		{
-			name:    "account with nil score siblings",
+			name:    "Account with nil score siblings",
 			ethAddr: ethCommon.HexToAddress("0x4444444444444444444444444444444444444444"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -496,7 +502,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "database connection error",
+			name:    "Database connection error",
 			ethAddr: ethCommon.HexToAddress("0x5555555555555555555555555555555555555555"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -508,7 +514,7 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			errMsg:  "failed to get account with eth_addr",
 		},
 		{
-			name:    "empty score siblings array",
+			name:    "Empty score siblings array",
 			ethAddr: ethCommon.HexToAddress("0x6666666666666666666666666666666666666666"),
 			setupMock: func(mock sqlmock.Sqlmock) {
 				mock.ExpectQuery("SELECT idx, balance, score, score_siblings FROM account WHERE eth_addr = \\$1").
@@ -541,7 +547,9 @@ func TestGetAccountByEthAddress(t *testing.T) {
 			require.NoError(t, err)
 			defer db.Close()
 
-			hdb := historydb.NewHistoryDB(db, db, nil)
+			apiConnCon := historydb.NewAPIConnectionController(1, 1*time.Second)
+
+			hdb := historydb.NewHistoryDB(db, db, apiConnCon)
 			tt.setupMock(mock)
 
 			// Execute
