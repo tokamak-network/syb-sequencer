@@ -7,7 +7,6 @@ import (
 	"math/big"
 	"strconv"
 
-	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/iden3/go-iden3-crypto/poseidon"
 	cryptoUtils "github.com/iden3/go-iden3-crypto/utils"
 )
@@ -69,15 +68,13 @@ func ScoreIdxFromBytes(b []byte) (ScoreIdx, error) {
 // Is the data structure that generates the Value stored in
 // the leaf of the MerkleTree
 type Score struct {
-	Idx     ScoreIdx          `json:"idx"`
-	EthAddr ethCommon.Address `json:"eth_addr"`
-	Score   *big.Int          `json:"score,bigint"`
+	Idx   ScoreIdx `json:"idx"`
+	Score *big.Int `json:"score,bigint"`
 }
 
 func (s *Score) String() string {
 	buf := bytes.NewBufferString("")
 	fmt.Fprintf(buf, "Idx: %v, ", s.Idx)
-	fmt.Fprintf(buf, "EthAddr: %s..., ", s.EthAddr.String()[:10])
 	fmt.Fprintf(buf, "Score: %s, ", s.Score.String())
 	return buf.String()
 }
@@ -136,12 +133,10 @@ func ScoreFromBigInts(e [1]*big.Int) (*Score, error) {
 
 // ScoreFromBytes returns a Score from a byte array
 func ScoreFromBytes(b [32]byte) (*Score, error) {
-	ethAddr := ethCommon.BytesToAddress(b[8:28])
 	score := new(big.Int).SetBytes(b[28:32])
 
 	a := Score{
-		Score:   score,
-		EthAddr: ethAddr,
+		Score: score,
 	}
 	return &a, nil
 }
