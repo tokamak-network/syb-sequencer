@@ -43,7 +43,7 @@ func (txProcessor *TxProcessor) ProcessTx(tx common.Tx) (ptOut *ProcessTxOutput,
 
 	switch tx.Type {
 	case common.TxTypeCreateAccountDeposit:
-		fmt.Printf("Creating account... EthAddr: %s \n", tx.FromEthAddr)
+		fmt.Printf("Creating account... EthAddr: %s \n", string(tx.FromEthAddr))
 		// Create Account
 		account := &common.Account{
 			Idx:     tx.FromIdx,

@@ -89,8 +89,6 @@ func (s *Score) String() string {
 func (s *Score) Bytes() ([32]byte, error) {
 	var b [32]byte
 
-	copy(b[8:28], s.EthAddr.Bytes())
-	// Right-align the score within the last 4 bytes to preserve big-endian semantics
 	scoreBytes := s.Score.Bytes()
 	if len(scoreBytes) > 4 {
 		return b, Wrap(fmt.Errorf("score overflow: needs <= 4 bytes"))

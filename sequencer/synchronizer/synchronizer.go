@@ -67,7 +67,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		logger:          logger,
 		forger:          forger,
 		lastBlock:       config.GetEnvInt64("LAST_PROCESSED_BLOCK", 0),
-		liveSync:        false,
+		liveSync:        true,
 		batchTxToSync:   batchTxToSync,
 	}, nil
 }
