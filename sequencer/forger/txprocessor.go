@@ -59,9 +59,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 
 		// Create Score for newly created account
 		score := &common.Score{
-			Idx:     common.ScoreIdx(tx.FromIdx),
-			EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
-			Score:   big.NewInt(0),
+			Idx:   common.ScoreIdx(tx.FromIdx),
+			Score: big.NewInt(0),
 		}
 		_, err = txProcessor.state.CreateScore(score.Idx, score)
 		if err != nil {
