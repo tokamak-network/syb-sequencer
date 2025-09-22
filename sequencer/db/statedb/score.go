@@ -2,6 +2,7 @@ package statedb
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/iden3/go-merkletree"
@@ -188,13 +189,17 @@ func (s *StateDB) GetSTRootScore() *merkletree.Hash {
 // GetSibling returns the sibiling data of the Score Merkle Tree
 func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([][]byte, error) {
 	k := idx.BigInt()
-	_, _, siblings, err := s.ST.Get(k)
-	if err != nil {
-		return nil, err
-	}
+	// key, value, siblings, err := s.ST.Get(k)
+	// if err != nil {
+	// 	return nil, err
+	// }
+	p, _ := s.ST.GenerateCircomVerifierProof(k, s.ST.Root())
 
-	result := make([][]byte, len(siblings))
-	for i, a := range siblings {
+	fmt.Printf("key: %d", s.ST.Root().BigInt())
+	// fmt.Printf("key: %d, value: %d \n", key, value)
+
+	result := make([][]byte, len(p.Siblings))
+	for i, a := range p.Siblings {
 		// Convert each [32]byte to []byte
 		result[i] = a[:]
 	}

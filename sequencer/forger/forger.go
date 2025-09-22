@@ -91,8 +91,8 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
 
 	config := txprocessor.Config{
-		NLevels: 5,
-		MaxTx:   5,
+		NLevels: 24,
+		MaxTx:   1,
 		MaxL1Tx: 5,
 		ChainID: 0,
 	}
