@@ -192,7 +192,7 @@ func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([]string, error) {
 
 	cp, err := s.ST.GenerateSCVerifierProof(k, nil)
 	if err != nil {
-		fmt.Printf("Failed to generate SCVerifer Proof: %d", err)
+		return nil, fmt.Errorf("Failed to generate SCVerifer Proof: %d", err)
 	}
 
 	result := make([]string, len(cp.Siblings))
