@@ -2,7 +2,6 @@ package api
 
 import (
 	"context"
-	"encoding/hex"
 	"fmt"
 	"math/big"
 	"net/http"
@@ -374,7 +373,7 @@ func (a *API) GetScoreMerkleProof(c *gin.Context) {
 	siblingData := make([]string, len(siblings))
 
 	for i, sibling := range siblings {
-		siblingData[i] = "0x" + hex.EncodeToString(sibling)
+		siblingData[i] = "0x" + sibling
 	}
 
 	c.JSON(http.StatusOK, ScoreMerkleProofResponse{

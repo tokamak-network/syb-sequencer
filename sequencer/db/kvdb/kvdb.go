@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/tokamak-network/syb-sequencer/go-merkletree/db"
-	"github.com/tokamak-network/syb-sequencer/go-merkletree/db/pebble"
+	"github.com/iden3/go-merkletree/db"
+	"github.com/iden3/go-merkletree/db/pebble"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
 )
 

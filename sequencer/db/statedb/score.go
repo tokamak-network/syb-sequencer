@@ -187,21 +187,17 @@ func (s *StateDB) GetSTRootScore() *merkletree.Hash {
 }
 
 // GetSibling returns the sibiling data of the Score Merkle Tree
-func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([][]byte, error) {
+func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([]string, error) {
 	k := idx.BigInt()
-	// key, value, siblings, err := s.ST.Get(k)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	p, _ := s.ST.GenerateCircomVerifierProof(k, s.ST.Root())
 
-	fmt.Printf("key: %d", s.ST.Root().BigInt())
-	// fmt.Printf("key: %d, value: %d \n", key, value)
+	cp, err := s.ST.GenerateSCVerifierProof(k, nil)
+	if err != nil {
+		fmt.Printf("Failed to generate SCVerifer Proof: %d", err)
+	}
 
-	result := make([][]byte, len(p.Siblings))
-	for i, a := range p.Siblings {
-		// Convert each [32]byte to []byte
-		result[i] = a[:]
+	result := make([]string, len(cp.Siblings))
+	for i, s := range cp.Siblings {
+		result[i] = new(big.Int).Set(s.BigInt()).Text(16)
 	}
 
 	return result, nil
