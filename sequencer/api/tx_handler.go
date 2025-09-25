@@ -57,10 +57,10 @@ type PaginatedAccountResponse struct {
 }
 
 type ScoreMerkleProofResponse struct {
-	Idx       string   `json:"idx"`
-	ScoreRoot string   `json:"score_root"`
-	Score     string   `json:"score"`
-	Siblings  [][]byte `json:"siblings"`
+	Idx          string          `json:"idx"`
+	NumScoreRoot common.BatchNum `json:"num_score_root"`
+	Score        uint64          `json:"score"`
+	Siblings     []string        `json:"siblings"`
 }
 
 const (
@@ -357,8 +357,12 @@ func (a *API) GetScoreMerkleProof(c *gin.Context) {
 		return
 	}
 
-	// Get ScoreRoot
-	scoreRoot := a.statedb.GetSTRoot()
+	// Get Last Forged Batch Num
+	numScoreRoot, err := a.db.GetLastBatchItemID()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve last forged batch num: " + err.Error()})
+		return
+	}
 
 	siblings, err := a.statedb.GetSiblings(scoreIdx)
 	if err != nil {
@@ -366,10 +370,16 @@ func (a *API) GetScoreMerkleProof(c *gin.Context) {
 		return
 	}
 
+	siblingData := make([]string, len(siblings))
+
+	for i, sibling := range siblings {
+		siblingData[i] = "0x" + sibling
+	}
+
 	c.JSON(http.StatusOK, ScoreMerkleProofResponse{
-		Idx:       scoreIdx.String(),
-		ScoreRoot: scoreRoot.String(),
-		Score:     score.Score.String(),
-		Siblings:  siblings,
+		Idx:          scoreIdx.String(),
+		NumScoreRoot: numScoreRoot,
+		Score:        score.Score.Uint64(),
+		Siblings:     siblingData,
 	})
 }

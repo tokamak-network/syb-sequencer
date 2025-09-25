@@ -32,7 +32,7 @@ func NewTxProcessor(state *statedb.StateDB) *TxProcessor {
 	}
 }
 
-func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput, err error) {
+func (txProcessor *TxProcessor) ProcessTx(tx common.Tx) (ptOut *ProcessTxOutput, err error) {
 	defer func() {
 		if err == nil {
 			err = txProcessor.state.MakeCheckpoint()
@@ -43,7 +43,7 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 
 	switch tx.Type {
 	case common.TxTypeCreateAccountDeposit:
-		fmt.Printf("Creating account... EthAddr: %s \n", tx.FromEthAddr)
+		fmt.Printf("Creating account... EthAddr: %s \n", string(tx.FromEthAddr))
 		// Create Account
 		account := &common.Account{
 			Idx:     tx.FromIdx,
@@ -59,9 +59,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 
 		// Create Score for newly created account
 		score := &common.Score{
-			Idx:     common.ScoreIdx(tx.FromIdx),
-			EthAddr: ethCommon.BytesToAddress(tx.FromEthAddr),
-			Score:   big.NewInt(0),
+			Idx:   common.ScoreIdx(tx.FromIdx),
+			Score: big.NewInt(0),
 		}
 		_, err = txProcessor.state.CreateScore(score.Idx, score)
 		if err != nil {
@@ -113,7 +112,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 
 		// TODO: Update vouched's score
-		// vouched.Score = score
+		// Increment score by 1 for vouching
+		vouched.Score.Add(vouched.Score, big.NewInt(1))
 
 		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
 		if err != nil {
@@ -140,7 +140,8 @@ func (txProcessor *TxProcessor) ProcessTxs(tx common.Tx) (ptOut *ProcessTxOutput
 		}
 
 		// TODO: Update vouched's score
-		// vouched.Score = score
+		// Decrement score by 1 for vouching
+		vouched.Score.Sub(vouched.Score, big.NewInt(1))
 
 		_, err = txProcessor.state.UpdateScore(toIdx, vouched)
 		if err != nil {

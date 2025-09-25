@@ -27,6 +27,7 @@ type Synchronizer struct {
 	sybilContract   *bindings.Sybil
 	historydb       *historydb.HistoryDB
 	statedb         *statedb.StateDB
+	txProcessor     *TxProcessor
 	logs            chan types.Log
 	sub             ethereum.Subscription
 	logger          *log.Logger
@@ -51,6 +52,8 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 
 	batchTxToSync := config.GetEnvInt64("BATCH_TO_SYNC", 100)
 
+	txProcessor := NewTxProcessor(statedb)
+
 	logs := make(chan types.Log)
 
 	return &Synchronizer{
@@ -59,11 +62,12 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		sybilContract:   sybilContract,
 		historydb:       historydb,
 		statedb:         statedb,
+		txProcessor:     txProcessor,
 		logs:            logs,
 		logger:          logger,
 		forger:          forger,
 		lastBlock:       config.GetEnvInt64("LAST_PROCESSED_BLOCK", 0),
-		liveSync:        false,
+		liveSync:        true,
 		batchTxToSync:   batchTxToSync,
 	}, nil
 }
@@ -299,7 +303,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	switch e := eventData.(type) {
 	case *bindings.SybilTxEvent:
 		eventDetails = fmt.Sprintf(", Position: %d", e.LastAddedTxn)
-		txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, err := s.ParseTxData(e, sender)
+		txType, fromEthAddr, toEthAddr, amount, fromIdx, toIdx, err := s.ParseL1UserTxData(e, sender)
 		if err != nil {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
@@ -315,7 +319,16 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		s.logger.Println("Transaction", tx)
 
 	case *bindings.SybilForgeBatch:
-		s.logger.Printf("Received SybilForgeBatch event, skipping transaction processing")
+		eventDetails = fmt.Sprintf(", Position: %d", e.LastForgedTxn)
+		_, _, _, txs, err := s.ParseForgeBatchTxData(e)
+		if err != nil {
+			s.logger.Printf("Error parsing transaction data: %v", err)
+		}
+
+		for _, tx := range txs {
+			s.txProcessor.ProcessTx(tx)
+		}
+
 		return
 
 	default:

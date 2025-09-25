@@ -2,6 +2,7 @@ package statedb
 
 import (
 	"errors"
+	"fmt"
 	"math/big"
 
 	"github.com/iden3/go-merkletree"
@@ -186,17 +187,17 @@ func (s *StateDB) GetSTRootScore() *merkletree.Hash {
 }
 
 // GetSibling returns the sibiling data of the Score Merkle Tree
-func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([][]byte, error) {
+func (s *StateDB) GetSiblings(idx common.ScoreIdx) ([]string, error) {
 	k := idx.BigInt()
-	_, _, siblings, err := s.ST.Get(k)
+
+	cp, err := s.ST.GenerateSCVerifierProof(k, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("Failed to generate SCVerifer Proof: %d", err)
 	}
 
-	result := make([][]byte, len(siblings))
-	for i, a := range siblings {
-		// Convert each [32]byte to []byte
-		result[i] = a[:]
+	result := make([]string, len(cp.Siblings))
+	for i, s := range cp.Siblings {
+		result[i] = new(big.Int).Set(s.BigInt()).Text(16)
 	}
 
 	return result, nil
