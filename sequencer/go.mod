@@ -3,12 +3,14 @@ module github.com/tokamak-network/syb-sequencer/sequencer
 go 1.23.0
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/aws/aws-sdk-go v1.25.48
 	github.com/go-pg/pg/v10 v10.14.0
 	github.com/gobuffalo/packr/v2 v2.8.3
 	github.com/iden3/go-merkletree v0.0.0-20210308143313-8b63ca866189
 	github.com/lib/pq v1.10.9
 	github.com/rubenv/sql-migrate v1.8.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/sync v0.14.0
 )
 
@@ -22,6 +24,7 @@ require (
 	github.com/cockroachdb/pebble v1.1.2 // indirect
 	github.com/cockroachdb/redact v1.1.5 // indirect
 	github.com/crate-crypto/go-eth-kzg v1.3.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ethereum/c-kzg-4844/v2 v2.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/getsentry/sentry-go v0.27.0 // indirect
@@ -43,7 +46,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rogpeppe/go-internal v1.12.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	golang.org/x/arch v0.8.0 // indirect
