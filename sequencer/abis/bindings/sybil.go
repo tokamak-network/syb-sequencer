@@ -31,7 +31,7 @@ var (
 
 // SybilMetaData contains all meta data concerning the Sybil contract.
 var SybilMetaData = &bind.MetaData{
-	ABI: "[{\"type\":\"function\",\"name\":\"ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_MIN_BALANCE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_hashFinalNode\",\"inputs\":[{\"name\":\"key\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"value\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_hashNode\",\"inputs\":[{\"name\":\"left\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"right\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"accountInfo\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"balance\",\"type\":\"uint192\",\"internalType\":\"uint192\"},{\"name\":\"idx\",\"type\":\"uint24\",\"internalType\":\"uint24\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"accountRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"batchSize\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"deposit\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"exitRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"explodeAmount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"explodeMultiple\",\"inputs\":[{\"name\":\"toEthAddrs\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"forgeBatch\",\"inputs\":[{\"name\":\"newAccountRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"newVouchRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"newScoreRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"proofA\",\"type\":\"uint256[2]\",\"internalType\":\"uint256[2]\"},{\"name\":\"proofB\",\"type\":\"uint256[2][2]\",\"internalType\":\"uint256[2][2]\"},{\"name\":\"proofC\",\"type\":\"uint256[2]\",\"internalType\":\"uint256[2]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getQueueLength\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getScore\",\"inputs\":[{\"name\":\"user\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"initialize\",\"inputs\":[{\"name\":\"_verifier\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"maxTx\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"nLevel\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"_poseidon2Elements\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_poseidon3Elements\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_adminRole\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"lastAddedTxn\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastForgedBatch\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastForgedTxn\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastIdx\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint24\",\"internalType\":\"uint24\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"proveScoreMerkleProof\",\"inputs\":[{\"name\":\"numScoreRoot\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"idx\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"siblings\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"scoreRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"scoreSnapshots\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"batchNum\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"scoringRequiredBalance\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"unprocessedBatchesMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"identifier\",\"type\":\"uint8\",\"internalType\":\"uint8\"},{\"name\":\"from\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"to\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"amount\",\"type\":\"uint128\",\"internalType\":\"uint128\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"unvouch\",\"inputs\":[{\"name\":\"toEthAddr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateExplodeAmount\",\"inputs\":[{\"name\":\"_explodeAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateScore\",\"inputs\":[{\"name\":\"user\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateScoringRequiredBalance\",\"inputs\":[{\"name\":\"_scoringRequiredBalance\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"verifier\",\"inputs\":[],\"outputs\":[{\"name\":\"verifierInterface\",\"type\":\"address\",\"internalType\":\"contractIVerifier\"},{\"name\":\"maxTx\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"nLevel\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"vouch\",\"inputs\":[{\"name\":\"toEthAddr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"vouchRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"vouches\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"withdraw\",\"inputs\":[{\"name\":\"amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"event\",\"name\":\"ExplodeAmountUpdated\",\"inputs\":[{\"name\":\"explodeAmount\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ForgeBatch\",\"inputs\":[{\"name\":\"lastForgedBatch\",\"type\":\"uint32\",\"indexed\":true,\"internalType\":\"uint32\"},{\"name\":\"lastForgedTxn\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"batchSize\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"txnData\",\"type\":\"bytes\",\"indexed\":false,\"internalType\":\"bytes\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"Initialized\",\"inputs\":[{\"name\":\"version\",\"type\":\"uint64\",\"indexed\":false,\"internalType\":\"uint64\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ScoringRequiredBalanceUpdated\",\"inputs\":[{\"name\":\"newBalance\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"TxEvent\",\"inputs\":[{\"name\":\"lastAddedTxn\",\"type\":\"uint256\",\"indexed\":true,\"internalType\":\"uint256\"},{\"name\":\"identifier\",\"type\":\"uint8\",\"indexed\":true,\"internalType\":\"uint8\"},{\"name\":\"from\",\"type\":\"uint24\",\"indexed\":false,\"internalType\":\"uint24\"},{\"name\":\"to\",\"type\":\"uint24\",\"indexed\":false,\"internalType\":\"uint24\"},{\"name\":\"amount\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"AlreadyVouched\",\"inputs\":[{\"name\":\"from\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"to\",\"type\":\"address\",\"internalType\":\"address\"}]},{\"type\":\"error\",\"name\":\"BatchNotFull\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EthTransferFailed\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientETH\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidInitialization\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidPoseidon2Address\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidPoseidon3Address\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidProof\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidVerifierAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"LimitAmountExceeded\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"NotInitializing\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"NotVouched\",\"inputs\":[{\"name\":\"from\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"to\",\"type\":\"address\",\"internalType\":\"address\"}]},{\"type\":\"error\",\"name\":\"ReceiverHasZeroBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SelfVouch\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SenderHasZeroBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SmtProofInvalid\",\"inputs\":[]}]",
+	ABI: "[{\"type\":\"function\",\"name\":\"ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"DEFAULT_ADMIN_ROLE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_MIN_BALANCE\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_hashFinalNode\",\"inputs\":[{\"name\":\"key\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"value\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"_hashNode\",\"inputs\":[{\"name\":\"left\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"right\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"accountInfo\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"balance\",\"type\":\"uint192\",\"internalType\":\"uint192\"},{\"name\":\"idx\",\"type\":\"uint24\",\"internalType\":\"uint24\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"accountRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"batchSize\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"debugCounter\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"debugHashArrays\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"demoSmTVerifier\",\"inputs\":[{\"name\":\"scoreRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"siblings\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"},{\"name\":\"targetIdx\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"stateHash\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"deposit\",\"inputs\":[],\"outputs\":[],\"stateMutability\":\"payable\"},{\"type\":\"function\",\"name\":\"explodeAmount\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"explodeMultiple\",\"inputs\":[{\"name\":\"toEthAddrs\",\"type\":\"address[]\",\"internalType\":\"address[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"forgeBatch\",\"inputs\":[{\"name\":\"newAccountRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"newVouchRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"newScoreRoot\",\"type\":\"uint256\",\"internalType\":\"uint256\"},{\"name\":\"proofA\",\"type\":\"uint256[2]\",\"internalType\":\"uint256[2]\"},{\"name\":\"proofB\",\"type\":\"uint256[2][2]\",\"internalType\":\"uint256[2][2]\"},{\"name\":\"proofC\",\"type\":\"uint256[2]\",\"internalType\":\"uint256[2]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"getCurrentDebugCounter\",\"inputs\":[],\"outputs\":[{\"name\":\"counter\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getDebugHashes\",\"inputs\":[{\"name\":\"sessionId\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"hashes\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getQueueLength\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getRoleAdmin\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"getScore\",\"inputs\":[{\"name\":\"user\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"grantRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"hasRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"initialize\",\"inputs\":[{\"name\":\"_verifier\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_poseidon1Elements\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_poseidon2Elements\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_poseidon3Elements\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"_adminRole\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"lastAddedTxn\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastForgedBatch\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastForgedTxn\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"lastIdx\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint24\",\"internalType\":\"uint24\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"proveScoreMerkleProof\",\"inputs\":[{\"name\":\"batchNum\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"targetIdx\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"siblings\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"proveScoreMerkleProofDebug\",\"inputs\":[{\"name\":\"numScoreRoot\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"targetIdx\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"siblings\",\"type\":\"uint256[]\",\"internalType\":\"uint256[]\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"renounceRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"callerConfirmation\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"revokeRole\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"scoreRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"scoreSnapshots\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"},{\"name\":\"batchNum\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"scoringRequiredBalance\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"supportsInterface\",\"inputs\":[{\"name\":\"interfaceId\",\"type\":\"bytes4\",\"internalType\":\"bytes4\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"unprocessedBatchesMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[{\"name\":\"identifier\",\"type\":\"uint8\",\"internalType\":\"uint8\"},{\"name\":\"from\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"to\",\"type\":\"uint24\",\"internalType\":\"uint24\"},{\"name\":\"amount\",\"type\":\"uint128\",\"internalType\":\"uint128\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"unvouch\",\"inputs\":[{\"name\":\"toEthAddr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateExplodeAmount\",\"inputs\":[{\"name\":\"_explodeAmount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateScore\",\"inputs\":[{\"name\":\"user\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"score\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"updateScoringRequiredBalance\",\"inputs\":[{\"name\":\"_scoringRequiredBalance\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"verifier\",\"inputs\":[],\"outputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"contractIVerifier\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"vouch\",\"inputs\":[{\"name\":\"toEthAddr\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"function\",\"name\":\"vouchRootMap\",\"inputs\":[{\"name\":\"\",\"type\":\"uint32\",\"internalType\":\"uint32\"}],\"outputs\":[{\"name\":\"\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"vouches\",\"inputs\":[{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"\",\"type\":\"address\",\"internalType\":\"address\"}],\"outputs\":[{\"name\":\"\",\"type\":\"bool\",\"internalType\":\"bool\"}],\"stateMutability\":\"view\"},{\"type\":\"function\",\"name\":\"withdraw\",\"inputs\":[{\"name\":\"amount\",\"type\":\"uint256\",\"internalType\":\"uint256\"}],\"outputs\":[],\"stateMutability\":\"nonpayable\"},{\"type\":\"event\",\"name\":\"ExplodeAmountUpdated\",\"inputs\":[{\"name\":\"explodeAmount\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ForgeBatch\",\"inputs\":[{\"name\":\"lastForgedBatch\",\"type\":\"uint32\",\"indexed\":true,\"internalType\":\"uint32\"},{\"name\":\"lastForgedTxn\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"batchSize\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"},{\"name\":\"txnData\",\"type\":\"bytes\",\"indexed\":false,\"internalType\":\"bytes\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"Initialized\",\"inputs\":[{\"name\":\"version\",\"type\":\"uint64\",\"indexed\":false,\"internalType\":\"uint64\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ProveScore\",\"inputs\":[{\"name\":\"user\",\"type\":\"address\",\"indexed\":false,\"internalType\":\"address\"},{\"name\":\"score\",\"type\":\"uint32\",\"indexed\":false,\"internalType\":\"uint32\"},{\"name\":\"batchNum\",\"type\":\"uint32\",\"indexed\":false,\"internalType\":\"uint32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleAdminChanged\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"previousAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"newAdminRole\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleGranted\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"RoleRevoked\",\"inputs\":[{\"name\":\"role\",\"type\":\"bytes32\",\"indexed\":true,\"internalType\":\"bytes32\"},{\"name\":\"account\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"},{\"name\":\"sender\",\"type\":\"address\",\"indexed\":true,\"internalType\":\"address\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"ScoringRequiredBalanceUpdated\",\"inputs\":[{\"name\":\"newBalance\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"event\",\"name\":\"TxEvent\",\"inputs\":[{\"name\":\"lastAddedTxn\",\"type\":\"uint256\",\"indexed\":true,\"internalType\":\"uint256\"},{\"name\":\"identifier\",\"type\":\"uint8\",\"indexed\":true,\"internalType\":\"uint8\"},{\"name\":\"from\",\"type\":\"uint24\",\"indexed\":false,\"internalType\":\"uint24\"},{\"name\":\"to\",\"type\":\"uint24\",\"indexed\":false,\"internalType\":\"uint24\"},{\"name\":\"amount\",\"type\":\"uint256\",\"indexed\":false,\"internalType\":\"uint256\"}],\"anonymous\":false},{\"type\":\"error\",\"name\":\"AccessControlBadConfirmation\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"AccessControlUnauthorizedAccount\",\"inputs\":[{\"name\":\"account\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"neededRole\",\"type\":\"bytes32\",\"internalType\":\"bytes32\"}]},{\"type\":\"error\",\"name\":\"AlreadyVouched\",\"inputs\":[{\"name\":\"from\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"to\",\"type\":\"address\",\"internalType\":\"address\"}]},{\"type\":\"error\",\"name\":\"BatchNotFull\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"EthTransferFailed\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"IncorrectAccountIndex\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InsufficientETH\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidInitialization\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidPoseidon1Address\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidPoseidon2Address\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidPoseidon3Address\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidProof\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"InvalidVerifierAddress\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"LimitAmountExceeded\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"NotInitializing\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"NotVouched\",\"inputs\":[{\"name\":\"from\",\"type\":\"address\",\"internalType\":\"address\"},{\"name\":\"to\",\"type\":\"address\",\"internalType\":\"address\"}]},{\"type\":\"error\",\"name\":\"ReceiverHasZeroBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SelfVouch\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SenderHasZeroBalance\",\"inputs\":[]},{\"type\":\"error\",\"name\":\"SmtProofInvalid\",\"inputs\":[]}]",
 }
 
 // SybilABI is the input ABI used to generate the binding from.
@@ -442,12 +442,12 @@ func (_Sybil *SybilCallerSession) BatchSize() (*big.Int, error) {
 	return _Sybil.Contract.BatchSize(&_Sybil.CallOpts)
 }
 
-// ExitRootMap is a free data retrieval call binding the contract method 0xa5e2ec5b.
+// DebugCounter is a free data retrieval call binding the contract method 0x458604ee.
 //
-// Solidity: function exitRootMap(uint32 ) view returns(uint256)
-func (_Sybil *SybilCaller) ExitRootMap(opts *bind.CallOpts, arg0 uint32) (*big.Int, error) {
+// Solidity: function debugCounter() view returns(uint256)
+func (_Sybil *SybilCaller) DebugCounter(opts *bind.CallOpts) (*big.Int, error) {
 	var out []interface{}
-	err := _Sybil.contract.Call(opts, &out, "exitRootMap", arg0)
+	err := _Sybil.contract.Call(opts, &out, "debugCounter")
 
 	if err != nil {
 		return *new(*big.Int), err
@@ -459,18 +459,80 @@ func (_Sybil *SybilCaller) ExitRootMap(opts *bind.CallOpts, arg0 uint32) (*big.I
 
 }
 
-// ExitRootMap is a free data retrieval call binding the contract method 0xa5e2ec5b.
+// DebugCounter is a free data retrieval call binding the contract method 0x458604ee.
 //
-// Solidity: function exitRootMap(uint32 ) view returns(uint256)
-func (_Sybil *SybilSession) ExitRootMap(arg0 uint32) (*big.Int, error) {
-	return _Sybil.Contract.ExitRootMap(&_Sybil.CallOpts, arg0)
+// Solidity: function debugCounter() view returns(uint256)
+func (_Sybil *SybilSession) DebugCounter() (*big.Int, error) {
+	return _Sybil.Contract.DebugCounter(&_Sybil.CallOpts)
 }
 
-// ExitRootMap is a free data retrieval call binding the contract method 0xa5e2ec5b.
+// DebugCounter is a free data retrieval call binding the contract method 0x458604ee.
 //
-// Solidity: function exitRootMap(uint32 ) view returns(uint256)
-func (_Sybil *SybilCallerSession) ExitRootMap(arg0 uint32) (*big.Int, error) {
-	return _Sybil.Contract.ExitRootMap(&_Sybil.CallOpts, arg0)
+// Solidity: function debugCounter() view returns(uint256)
+func (_Sybil *SybilCallerSession) DebugCounter() (*big.Int, error) {
+	return _Sybil.Contract.DebugCounter(&_Sybil.CallOpts)
+}
+
+// DebugHashArrays is a free data retrieval call binding the contract method 0x0f612ad5.
+//
+// Solidity: function debugHashArrays(uint256 , uint256 ) view returns(uint256)
+func (_Sybil *SybilCaller) DebugHashArrays(opts *bind.CallOpts, arg0 *big.Int, arg1 *big.Int) (*big.Int, error) {
+	var out []interface{}
+	err := _Sybil.contract.Call(opts, &out, "debugHashArrays", arg0, arg1)
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// DebugHashArrays is a free data retrieval call binding the contract method 0x0f612ad5.
+//
+// Solidity: function debugHashArrays(uint256 , uint256 ) view returns(uint256)
+func (_Sybil *SybilSession) DebugHashArrays(arg0 *big.Int, arg1 *big.Int) (*big.Int, error) {
+	return _Sybil.Contract.DebugHashArrays(&_Sybil.CallOpts, arg0, arg1)
+}
+
+// DebugHashArrays is a free data retrieval call binding the contract method 0x0f612ad5.
+//
+// Solidity: function debugHashArrays(uint256 , uint256 ) view returns(uint256)
+func (_Sybil *SybilCallerSession) DebugHashArrays(arg0 *big.Int, arg1 *big.Int) (*big.Int, error) {
+	return _Sybil.Contract.DebugHashArrays(&_Sybil.CallOpts, arg0, arg1)
+}
+
+// DemoSmTVerifier is a free data retrieval call binding the contract method 0xef98a641.
+//
+// Solidity: function demoSmTVerifier(uint256 scoreRoot, uint256[] siblings, uint256 targetIdx, uint256 stateHash) view returns(bool)
+func (_Sybil *SybilCaller) DemoSmTVerifier(opts *bind.CallOpts, scoreRoot *big.Int, siblings []*big.Int, targetIdx *big.Int, stateHash *big.Int) (bool, error) {
+	var out []interface{}
+	err := _Sybil.contract.Call(opts, &out, "demoSmTVerifier", scoreRoot, siblings, targetIdx, stateHash)
+
+	if err != nil {
+		return *new(bool), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(bool)).(*bool)
+
+	return out0, err
+
+}
+
+// DemoSmTVerifier is a free data retrieval call binding the contract method 0xef98a641.
+//
+// Solidity: function demoSmTVerifier(uint256 scoreRoot, uint256[] siblings, uint256 targetIdx, uint256 stateHash) view returns(bool)
+func (_Sybil *SybilSession) DemoSmTVerifier(scoreRoot *big.Int, siblings []*big.Int, targetIdx *big.Int, stateHash *big.Int) (bool, error) {
+	return _Sybil.Contract.DemoSmTVerifier(&_Sybil.CallOpts, scoreRoot, siblings, targetIdx, stateHash)
+}
+
+// DemoSmTVerifier is a free data retrieval call binding the contract method 0xef98a641.
+//
+// Solidity: function demoSmTVerifier(uint256 scoreRoot, uint256[] siblings, uint256 targetIdx, uint256 stateHash) view returns(bool)
+func (_Sybil *SybilCallerSession) DemoSmTVerifier(scoreRoot *big.Int, siblings []*big.Int, targetIdx *big.Int, stateHash *big.Int) (bool, error) {
+	return _Sybil.Contract.DemoSmTVerifier(&_Sybil.CallOpts, scoreRoot, siblings, targetIdx, stateHash)
 }
 
 // ExplodeAmount is a free data retrieval call binding the contract method 0x1dbceceb.
@@ -502,6 +564,68 @@ func (_Sybil *SybilSession) ExplodeAmount() (*big.Int, error) {
 // Solidity: function explodeAmount() view returns(uint256)
 func (_Sybil *SybilCallerSession) ExplodeAmount() (*big.Int, error) {
 	return _Sybil.Contract.ExplodeAmount(&_Sybil.CallOpts)
+}
+
+// GetCurrentDebugCounter is a free data retrieval call binding the contract method 0x753b7f75.
+//
+// Solidity: function getCurrentDebugCounter() view returns(uint256 counter)
+func (_Sybil *SybilCaller) GetCurrentDebugCounter(opts *bind.CallOpts) (*big.Int, error) {
+	var out []interface{}
+	err := _Sybil.contract.Call(opts, &out, "getCurrentDebugCounter")
+
+	if err != nil {
+		return *new(*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new(*big.Int)).(**big.Int)
+
+	return out0, err
+
+}
+
+// GetCurrentDebugCounter is a free data retrieval call binding the contract method 0x753b7f75.
+//
+// Solidity: function getCurrentDebugCounter() view returns(uint256 counter)
+func (_Sybil *SybilSession) GetCurrentDebugCounter() (*big.Int, error) {
+	return _Sybil.Contract.GetCurrentDebugCounter(&_Sybil.CallOpts)
+}
+
+// GetCurrentDebugCounter is a free data retrieval call binding the contract method 0x753b7f75.
+//
+// Solidity: function getCurrentDebugCounter() view returns(uint256 counter)
+func (_Sybil *SybilCallerSession) GetCurrentDebugCounter() (*big.Int, error) {
+	return _Sybil.Contract.GetCurrentDebugCounter(&_Sybil.CallOpts)
+}
+
+// GetDebugHashes is a free data retrieval call binding the contract method 0x72e5f56a.
+//
+// Solidity: function getDebugHashes(uint256 sessionId) view returns(uint256[] hashes)
+func (_Sybil *SybilCaller) GetDebugHashes(opts *bind.CallOpts, sessionId *big.Int) ([]*big.Int, error) {
+	var out []interface{}
+	err := _Sybil.contract.Call(opts, &out, "getDebugHashes", sessionId)
+
+	if err != nil {
+		return *new([]*big.Int), err
+	}
+
+	out0 := *abi.ConvertType(out[0], new([]*big.Int)).(*[]*big.Int)
+
+	return out0, err
+
+}
+
+// GetDebugHashes is a free data retrieval call binding the contract method 0x72e5f56a.
+//
+// Solidity: function getDebugHashes(uint256 sessionId) view returns(uint256[] hashes)
+func (_Sybil *SybilSession) GetDebugHashes(sessionId *big.Int) ([]*big.Int, error) {
+	return _Sybil.Contract.GetDebugHashes(&_Sybil.CallOpts, sessionId)
+}
+
+// GetDebugHashes is a free data retrieval call binding the contract method 0x72e5f56a.
+//
+// Solidity: function getDebugHashes(uint256 sessionId) view returns(uint256[] hashes)
+func (_Sybil *SybilCallerSession) GetDebugHashes(sessionId *big.Int) ([]*big.Int, error) {
+	return _Sybil.Contract.GetDebugHashes(&_Sybil.CallOpts, sessionId)
 }
 
 // GetQueueLength is a free data retrieval call binding the contract method 0xb8f77005.
@@ -947,51 +1071,32 @@ func (_Sybil *SybilCallerSession) UnprocessedBatchesMap(arg0 *big.Int) (struct {
 
 // Verifier is a free data retrieval call binding the contract method 0x2b7ac3f3.
 //
-// Solidity: function verifier() view returns(address verifierInterface, uint256 maxTx, uint256 nLevel)
-func (_Sybil *SybilCaller) Verifier(opts *bind.CallOpts) (struct {
-	VerifierInterface common.Address
-	MaxTx             *big.Int
-	NLevel            *big.Int
-}, error) {
+// Solidity: function verifier() view returns(address)
+func (_Sybil *SybilCaller) Verifier(opts *bind.CallOpts) (common.Address, error) {
 	var out []interface{}
 	err := _Sybil.contract.Call(opts, &out, "verifier")
 
-	outstruct := new(struct {
-		VerifierInterface common.Address
-		MaxTx             *big.Int
-		NLevel            *big.Int
-	})
 	if err != nil {
-		return *outstruct, err
+		return *new(common.Address), err
 	}
 
-	outstruct.VerifierInterface = *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
-	outstruct.MaxTx = *abi.ConvertType(out[1], new(*big.Int)).(**big.Int)
-	outstruct.NLevel = *abi.ConvertType(out[2], new(*big.Int)).(**big.Int)
+	out0 := *abi.ConvertType(out[0], new(common.Address)).(*common.Address)
 
-	return *outstruct, err
+	return out0, err
 
 }
 
 // Verifier is a free data retrieval call binding the contract method 0x2b7ac3f3.
 //
-// Solidity: function verifier() view returns(address verifierInterface, uint256 maxTx, uint256 nLevel)
-func (_Sybil *SybilSession) Verifier() (struct {
-	VerifierInterface common.Address
-	MaxTx             *big.Int
-	NLevel            *big.Int
-}, error) {
+// Solidity: function verifier() view returns(address)
+func (_Sybil *SybilSession) Verifier() (common.Address, error) {
 	return _Sybil.Contract.Verifier(&_Sybil.CallOpts)
 }
 
 // Verifier is a free data retrieval call binding the contract method 0x2b7ac3f3.
 //
-// Solidity: function verifier() view returns(address verifierInterface, uint256 maxTx, uint256 nLevel)
-func (_Sybil *SybilCallerSession) Verifier() (struct {
-	VerifierInterface common.Address
-	MaxTx             *big.Int
-	NLevel            *big.Int
-}, error) {
+// Solidity: function verifier() view returns(address)
+func (_Sybil *SybilCallerSession) Verifier() (common.Address, error) {
 	return _Sybil.Contract.Verifier(&_Sybil.CallOpts)
 }
 
@@ -1141,46 +1246,67 @@ func (_Sybil *SybilTransactorSession) GrantRole(role [32]byte, account common.Ad
 	return _Sybil.Contract.GrantRole(&_Sybil.TransactOpts, role, account)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0x11917b1d.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function initialize(address _verifier, uint256 maxTx, uint256 nLevel, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
-func (_Sybil *SybilTransactor) Initialize(opts *bind.TransactOpts, _verifier common.Address, maxTx *big.Int, nLevel *big.Int, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
-	return _Sybil.contract.Transact(opts, "initialize", _verifier, maxTx, nLevel, _poseidon2Elements, _poseidon3Elements, _adminRole)
+// Solidity: function initialize(address _verifier, address _poseidon1Elements, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
+func (_Sybil *SybilTransactor) Initialize(opts *bind.TransactOpts, _verifier common.Address, _poseidon1Elements common.Address, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
+	return _Sybil.contract.Transact(opts, "initialize", _verifier, _poseidon1Elements, _poseidon2Elements, _poseidon3Elements, _adminRole)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0x11917b1d.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function initialize(address _verifier, uint256 maxTx, uint256 nLevel, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
-func (_Sybil *SybilSession) Initialize(_verifier common.Address, maxTx *big.Int, nLevel *big.Int, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
-	return _Sybil.Contract.Initialize(&_Sybil.TransactOpts, _verifier, maxTx, nLevel, _poseidon2Elements, _poseidon3Elements, _adminRole)
+// Solidity: function initialize(address _verifier, address _poseidon1Elements, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
+func (_Sybil *SybilSession) Initialize(_verifier common.Address, _poseidon1Elements common.Address, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
+	return _Sybil.Contract.Initialize(&_Sybil.TransactOpts, _verifier, _poseidon1Elements, _poseidon2Elements, _poseidon3Elements, _adminRole)
 }
 
-// Initialize is a paid mutator transaction binding the contract method 0x11917b1d.
+// Initialize is a paid mutator transaction binding the contract method 0x1459457a.
 //
-// Solidity: function initialize(address _verifier, uint256 maxTx, uint256 nLevel, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
-func (_Sybil *SybilTransactorSession) Initialize(_verifier common.Address, maxTx *big.Int, nLevel *big.Int, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
-	return _Sybil.Contract.Initialize(&_Sybil.TransactOpts, _verifier, maxTx, nLevel, _poseidon2Elements, _poseidon3Elements, _adminRole)
-}
-
-// ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
-//
-// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
-func (_Sybil *SybilTransactor) ProveScoreMerkleProof(opts *bind.TransactOpts, numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
-	return _Sybil.contract.Transact(opts, "proveScoreMerkleProof", numScoreRoot, idx, score, siblings)
+// Solidity: function initialize(address _verifier, address _poseidon1Elements, address _poseidon2Elements, address _poseidon3Elements, address _adminRole) returns()
+func (_Sybil *SybilTransactorSession) Initialize(_verifier common.Address, _poseidon1Elements common.Address, _poseidon2Elements common.Address, _poseidon3Elements common.Address, _adminRole common.Address) (*types.Transaction, error) {
+	return _Sybil.Contract.Initialize(&_Sybil.TransactOpts, _verifier, _poseidon1Elements, _poseidon2Elements, _poseidon3Elements, _adminRole)
 }
 
 // ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
 //
-// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
-func (_Sybil *SybilSession) ProveScoreMerkleProof(numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
-	return _Sybil.Contract.ProveScoreMerkleProof(&_Sybil.TransactOpts, numScoreRoot, idx, score, siblings)
+// Solidity: function proveScoreMerkleProof(uint32 batchNum, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilTransactor) ProveScoreMerkleProof(opts *bind.TransactOpts, batchNum uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.contract.Transact(opts, "proveScoreMerkleProof", batchNum, targetIdx, score, siblings)
 }
 
 // ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
 //
-// Solidity: function proveScoreMerkleProof(uint32 numScoreRoot, uint24 idx, uint32 score, uint256[] siblings) returns()
-func (_Sybil *SybilTransactorSession) ProveScoreMerkleProof(numScoreRoot uint32, idx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
-	return _Sybil.Contract.ProveScoreMerkleProof(&_Sybil.TransactOpts, numScoreRoot, idx, score, siblings)
+// Solidity: function proveScoreMerkleProof(uint32 batchNum, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilSession) ProveScoreMerkleProof(batchNum uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.Contract.ProveScoreMerkleProof(&_Sybil.TransactOpts, batchNum, targetIdx, score, siblings)
+}
+
+// ProveScoreMerkleProof is a paid mutator transaction binding the contract method 0x23add439.
+//
+// Solidity: function proveScoreMerkleProof(uint32 batchNum, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilTransactorSession) ProveScoreMerkleProof(batchNum uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.Contract.ProveScoreMerkleProof(&_Sybil.TransactOpts, batchNum, targetIdx, score, siblings)
+}
+
+// ProveScoreMerkleProofDebug is a paid mutator transaction binding the contract method 0x7b005abd.
+//
+// Solidity: function proveScoreMerkleProofDebug(uint32 numScoreRoot, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilTransactor) ProveScoreMerkleProofDebug(opts *bind.TransactOpts, numScoreRoot uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.contract.Transact(opts, "proveScoreMerkleProofDebug", numScoreRoot, targetIdx, score, siblings)
+}
+
+// ProveScoreMerkleProofDebug is a paid mutator transaction binding the contract method 0x7b005abd.
+//
+// Solidity: function proveScoreMerkleProofDebug(uint32 numScoreRoot, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilSession) ProveScoreMerkleProofDebug(numScoreRoot uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.Contract.ProveScoreMerkleProofDebug(&_Sybil.TransactOpts, numScoreRoot, targetIdx, score, siblings)
+}
+
+// ProveScoreMerkleProofDebug is a paid mutator transaction binding the contract method 0x7b005abd.
+//
+// Solidity: function proveScoreMerkleProofDebug(uint32 numScoreRoot, uint24 targetIdx, uint32 score, uint256[] siblings) returns()
+func (_Sybil *SybilTransactorSession) ProveScoreMerkleProofDebug(numScoreRoot uint32, targetIdx *big.Int, score uint32, siblings []*big.Int) (*types.Transaction, error) {
+	return _Sybil.Contract.ProveScoreMerkleProofDebug(&_Sybil.TransactOpts, numScoreRoot, targetIdx, score, siblings)
 }
 
 // RenounceRole is a paid mutator transaction binding the contract method 0x36568abe.
@@ -1760,6 +1886,142 @@ func (_Sybil *SybilFilterer) WatchInitialized(opts *bind.WatchOpts, sink chan<- 
 func (_Sybil *SybilFilterer) ParseInitialized(log types.Log) (*SybilInitialized, error) {
 	event := new(SybilInitialized)
 	if err := _Sybil.contract.UnpackLog(event, "Initialized", log); err != nil {
+		return nil, err
+	}
+	event.Raw = log
+	return event, nil
+}
+
+// SybilProveScoreIterator is returned from FilterProveScore and is used to iterate over the raw logs and unpacked data for ProveScore events raised by the Sybil contract.
+type SybilProveScoreIterator struct {
+	Event *SybilProveScore // Event containing the contract specifics and raw log
+
+	contract *bind.BoundContract // Generic contract to use for unpacking event data
+	event    string              // Event name to use for unpacking event data
+
+	logs chan types.Log        // Log channel receiving the found contract events
+	sub  ethereum.Subscription // Subscription for errors, completion and termination
+	done bool                  // Whether the subscription completed delivering logs
+	fail error                 // Occurred error to stop iteration
+}
+
+// Next advances the iterator to the subsequent event, returning whether there
+// are any more events found. In case of a retrieval or parsing error, false is
+// returned and Error() can be queried for the exact failure.
+func (it *SybilProveScoreIterator) Next() bool {
+	// If the iterator failed, stop iterating
+	if it.fail != nil {
+		return false
+	}
+	// If the iterator completed, deliver directly whatever's available
+	if it.done {
+		select {
+		case log := <-it.logs:
+			it.Event = new(SybilProveScore)
+			if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+				it.fail = err
+				return false
+			}
+			it.Event.Raw = log
+			return true
+
+		default:
+			return false
+		}
+	}
+	// Iterator still in progress, wait for either a data or an error event
+	select {
+	case log := <-it.logs:
+		it.Event = new(SybilProveScore)
+		if err := it.contract.UnpackLog(it.Event, it.event, log); err != nil {
+			it.fail = err
+			return false
+		}
+		it.Event.Raw = log
+		return true
+
+	case err := <-it.sub.Err():
+		it.done = true
+		it.fail = err
+		return it.Next()
+	}
+}
+
+// Error returns any retrieval or parsing error occurred during filtering.
+func (it *SybilProveScoreIterator) Error() error {
+	return it.fail
+}
+
+// Close terminates the iteration process, releasing any pending underlying
+// resources.
+func (it *SybilProveScoreIterator) Close() error {
+	it.sub.Unsubscribe()
+	return nil
+}
+
+// SybilProveScore represents a ProveScore event raised by the Sybil contract.
+type SybilProveScore struct {
+	User     common.Address
+	Score    uint32
+	BatchNum uint32
+	Raw      types.Log // Blockchain specific contextual infos
+}
+
+// FilterProveScore is a free log retrieval operation binding the contract event 0x96e5cf4b7b5976bd3829828a583cee19be75b954f3c4f4cffbe950dee111c2ba.
+//
+// Solidity: event ProveScore(address user, uint32 score, uint32 batchNum)
+func (_Sybil *SybilFilterer) FilterProveScore(opts *bind.FilterOpts) (*SybilProveScoreIterator, error) {
+
+	logs, sub, err := _Sybil.contract.FilterLogs(opts, "ProveScore")
+	if err != nil {
+		return nil, err
+	}
+	return &SybilProveScoreIterator{contract: _Sybil.contract, event: "ProveScore", logs: logs, sub: sub}, nil
+}
+
+// WatchProveScore is a free log subscription operation binding the contract event 0x96e5cf4b7b5976bd3829828a583cee19be75b954f3c4f4cffbe950dee111c2ba.
+//
+// Solidity: event ProveScore(address user, uint32 score, uint32 batchNum)
+func (_Sybil *SybilFilterer) WatchProveScore(opts *bind.WatchOpts, sink chan<- *SybilProveScore) (event.Subscription, error) {
+
+	logs, sub, err := _Sybil.contract.WatchLogs(opts, "ProveScore")
+	if err != nil {
+		return nil, err
+	}
+	return event.NewSubscription(func(quit <-chan struct{}) error {
+		defer sub.Unsubscribe()
+		for {
+			select {
+			case log := <-logs:
+				// New log arrived, parse the event and forward to the user
+				event := new(SybilProveScore)
+				if err := _Sybil.contract.UnpackLog(event, "ProveScore", log); err != nil {
+					return err
+				}
+				event.Raw = log
+
+				select {
+				case sink <- event:
+				case err := <-sub.Err():
+					return err
+				case <-quit:
+					return nil
+				}
+			case err := <-sub.Err():
+				return err
+			case <-quit:
+				return nil
+			}
+		}
+	}), nil
+}
+
+// ParseProveScore is a log parse operation binding the contract event 0x96e5cf4b7b5976bd3829828a583cee19be75b954f3c4f4cffbe950dee111c2ba.
+//
+// Solidity: event ProveScore(address user, uint32 score, uint32 batchNum)
+func (_Sybil *SybilFilterer) ParseProveScore(log types.Log) (*SybilProveScore, error) {
+	event := new(SybilProveScore)
+	if err := _Sybil.contract.UnpackLog(event, "ProveScore", log); err != nil {
 		return nil, err
 	}
 	event.Raw = log
