@@ -14,6 +14,7 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/tokamak-network/syb-sequencer/sequencer/abis/bindings"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
+	"github.com/tokamak-network/syb-sequencer/sequencer/config"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/historydb"
 	"github.com/tokamak-network/syb-sequencer/sequencer/db/statedb"
 	txprocessor "github.com/tokamak-network/syb-sequencer/sequencer/txProcessor"
@@ -91,10 +92,10 @@ func (f *Forger) ForgeBatch(batchNum uint32) error {
 	f.logger.Printf("Sorted transactions for batch %d:", batchNum)
 
 	config := txprocessor.Config{
-		NLevels: 24,
-		MaxTx:   1,
-		MaxL1Tx: 5,
-		ChainID: 0,
+		NLevels: uint32(config.GetEnvInt("NLEVELS",24)),
+		MaxTx:   uint32(config.GetEnvInt("MAX_TX",1)),
+		MaxL1Tx: uint32(config.GetEnvInt("MAX_L1_TX",5)),
+		ChainID: uint64(config.GetEnvInt("CHAIN_ID",0)),
 	}
 
 	newBatchBuilder := txprocessor.NewBatchBuilder(config, f.Statedb)

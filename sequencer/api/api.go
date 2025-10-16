@@ -2,7 +2,15 @@ package api
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strconv"
 
+	"time"
+
+	"github.com/didip/tollbooth/v7"
+	"github.com/didip/tollbooth/v7/limiter"
+	"github.com/didip/tollbooth_gin"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
@@ -48,8 +56,23 @@ func NewAPI(db *historydb.HistoryDB, ethRPC, contractAddressHex string, statedb 
 
 // setupRoutes configures the API routes
 func (a *API) setupRoutes() {
+
+	// create limiter
+	req_per_sec ,err :=strconv.ParseFloat(os.Getenv("REQ_PER_SEC"),64)
+	if err != nil{
+		log.Printf("invalid request per second value %v",err)
+	}
+	limiter := tollbooth.NewLimiter(req_per_sec, &limiter.ExpirableOptions{
+		DefaultExpirationTTL: time.Hour,
+	})
+
+	// limiter custom message
+	limiter.SetMessage("Too many requests. Please try again later")	
+	limiter.SetMessageContentType("application/json; charset=utf-8")
+
 	// API version group
 	v1 := a.router.Group("/api/v1")
+	v1.Use(tollbooth_gin.LimitHandler(limiter))
 
 	// health
 	v1.GET("/health", func(c *gin.Context) {
