@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"strconv"
-
 	"time"
 
 	"github.com/didip/tollbooth/v7"
@@ -57,17 +56,18 @@ func NewAPI(db *historydb.HistoryDB, ethRPC, contractAddressHex string, statedb 
 // setupRoutes configures the API routes
 func (a *API) setupRoutes() {
 
-	// create limiter
-	req_per_sec ,err :=strconv.ParseFloat(os.Getenv("REQ_PER_SEC"),64)
-	if err != nil{
-		log.Printf("invalid request per second value %v",err)
+	req_per_sec, err := strconv.ParseFloat(os.Getenv("REQ_PER_SEC"), 64)
+	if err != nil {
+		log.Printf("invalid request per second value %v, using default 10 req/s", err)
+		req_per_sec = 10.0 // default fallback
 	}
+
 	limiter := tollbooth.NewLimiter(req_per_sec, &limiter.ExpirableOptions{
-		DefaultExpirationTTL: time.Hour,
+		DefaultExpirationTTL: time.Minute * 10, // Track IPs for 10 minutes
 	})
 
 	// limiter custom message
-	limiter.SetMessage("Too many requests. Please try again later")	
+	limiter.SetMessage("Too many requests. Please try again later")
 	limiter.SetMessageContentType("application/json; charset=utf-8")
 
 	// API version group
