@@ -29,7 +29,15 @@ func (s *Synchronizer) AddTransactionToHistoryDB(tx *common.Tx) error {
 		return s.VouchTx(tx)
 	case common.TxTypeUnvouch:
 		return s.VouchTx(tx)
-	case common.TxTypeForgeBatch, common.TxTypeExplode, common.TxTypeProveScore:
+	case common.TxTypeForgeBatch:
+		affected, err := s.historydb.MarkTxsForgedByBatch(tx.BatchNum)
+		if err != nil {
+			s.logger.Fatalf("Error marking transactions as forged: %v", err)
+		}
+		fmt.Printf("Marked transactions as forged: %d\n", tx.BatchNum)
+		fmt.Printf("Affected rows: %d\n", affected)
+		return nil
+	case common.TxTypeExplode, common.TxTypeProveScore:
 		return nil
 	default:
 		return fmt.Errorf("AddTransactionToHistoryDB: Unhandled transaction type '%s'", tx.Type)

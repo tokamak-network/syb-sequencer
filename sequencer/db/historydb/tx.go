@@ -26,7 +26,7 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 		err := rows.Scan(
 			&tx.ItemID, &tx.BatchNum, &positionText, &tx.Type, &fromIdxVal, &tx.FromEthAddr,
 			&toIdxVal, &tx.ToEthAddr, &amountText,
-			&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash,
+			&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash, &tx.IsTxForged,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
@@ -141,7 +141,8 @@ func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, 
+			is_tx_forged
 		FROM tx
 		ORDER BY item_id DESC
 	`)
@@ -157,7 +158,7 @@ func (db *HistoryDB) GetTxsByBatchNum(batchNum uint32) ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE batch_num = $1
 		ORDER BY position
@@ -179,7 +180,7 @@ func (db *HistoryDB) GetTxsByAccountAddress(accountAddress string) ([]*common.Tx
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE from_eth_addr = $1
 		ORDER BY item_id DESC
@@ -217,7 +218,7 @@ func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string
 		SELECT
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		ORDER BY %s %s
 		LIMIT $1 OFFSET $2
@@ -247,7 +248,7 @@ func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE tx_hash = $1
 	`
@@ -263,7 +264,7 @@ func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
 	err := row.Scan(
 		&tx.ItemID, &tx.BatchNum, &positionText, &tx.Type, &fromIdxVal, &tx.FromEthAddr,
 		&toIdxVal, &tx.ToEthAddr, &amountText,
-		&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash,
+		&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash, &tx.IsTxForged,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -307,4 +308,23 @@ func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
 	}
 
 	return &tx, nil
+}
+
+// MarkTxsForgedByBatch sets is_tx_forged = TRUE for all transactions in a batch.
+// It returns the number of rows updated.
+func (db *HistoryDB) MarkTxsForgedByBatch(batchNum uint32) (int64, error) {
+	res, err := db.dbWrite.Exec(`
+        UPDATE tx
+        SET is_tx_forged = TRUE
+        WHERE batch_num = $1 AND is_tx_forged = FALSE
+    `, batchNum)
+	if err != nil {
+		return 0, fmt.Errorf("failed to mark batch txs as forged: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to read rows affected: %w", err)
+	}
+	return affected, nil
 }

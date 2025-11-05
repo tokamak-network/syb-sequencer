@@ -1,13 +1,11 @@
 package api
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 	"net/http"
 	"strconv"
 
-	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	ethCommon "github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
 	"github.com/tokamak-network/syb-sequencer/sequencer/common"
@@ -86,11 +84,7 @@ func (a *API) convertTxToResponse(tx *common.Tx) TxResponse {
 		ToIdx:       tx.ToIdx,
 		BlockNumber: tx.BlockNumber,
 		Timestamp:   tx.Timestamp,
-	}
-
-	ctx := context.Background()
-	callOpts := &bind.CallOpts{
-		Context: ctx,
+		IsTxForged:  tx.IsTxForged,
 	}
 
 	if tx.Amount != nil {
@@ -117,18 +111,7 @@ func (a *API) convertTxToResponse(tx *common.Tx) TxResponse {
 		resp.TxHash = ethCommon.Bytes2Hex(tx.TxHash)
 	}
 
-	resp.IsTxForged = false
-	lastForgedTx, err := a.sybilContract.LastForgedTxn(callOpts)
-	if err != nil {
-		fmt.Printf("Error fetching last forged transaction: %v\n", err)
-	} else if lastForgedTx != nil {
-		isPositionForged := tx.Position.Cmp(lastForgedTx) <= 0
-		lastTxExists := lastForgedTx.Cmp(big.NewInt(0)) > 0
-
-		if lastTxExists && isPositionForged {
-			resp.IsTxForged = true
-		}
-	}
+	resp.IsTxForged = tx.IsTxForged
 	return resp
 }
 

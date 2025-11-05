@@ -328,7 +328,7 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 			s.txProcessor.ProcessTx(txn)
 		}
 		tx.Type = common.TxTypeForgeBatch
-		tx.BatchNum = e.LastForgedBatch
+		tx.BatchNum = lastForgedBatch
 		tx.TxHash = vLog.TxHash.Bytes()
 		privateKeyHex := os.Getenv("PRIVATE_KEY")
 		fromEthAddr, err := common.AddressFromPrivKeyHex(privateKeyHex)

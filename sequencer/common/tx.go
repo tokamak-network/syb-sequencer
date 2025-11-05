@@ -32,4 +32,5 @@ type Tx struct {
 	Timestamp   uint64     `json:"timestamp"`
 	GasFee      *big.Int   `json:"gas_fee,omitempty"`
 	TxHash      []byte     `json:"tx_hash,omitempty"`
+	IsTxForged  bool       `json:"is_tx_forged,omitempty"`
 }
