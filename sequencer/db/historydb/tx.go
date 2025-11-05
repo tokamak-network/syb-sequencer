@@ -16,41 +16,55 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 	var txs []*common.Tx
 	for rows.Next() {
 		var tx common.Tx
-		var amountStr string
-		var gasFeeStr string
-		var position string
+		var amountText sql.NullString
+		var gasFeeText sql.NullString
+		var positionText sql.NullString
+		var fromIdxVal sql.NullInt64
+		var toIdxVal sql.NullInt64
 
 		// Ensure the order of scanned fields matches the SELECT statements in calling functions
 		err := rows.Scan(
-			&tx.ItemID, &tx.BatchNum, &position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
-			&tx.ToIdx, &tx.ToEthAddr, &amountStr,
-			&tx.BlockNumber, &tx.Timestamp, &gasFeeStr, &tx.TxHash,
+			&tx.ItemID, &tx.BatchNum, &positionText, &tx.Type, &fromIdxVal, &tx.FromEthAddr,
+			&toIdxVal, &tx.ToEthAddr, &amountText,
+			&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash, &tx.IsTxForged,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan transaction row: %w", err)
 		}
 
-		tx.Amount = new(big.Int)
-		if amountStr != "" {
-			_, success := tx.Amount.SetString(amountStr, 10)
-			if !success {
-				return nil, fmt.Errorf("failed to parse amount string '%s' for transaction item_id %d: %w", amountStr, tx.ItemID, err)
+		// Nullable from_idx / to_idx
+		if fromIdxVal.Valid {
+			tx.FromIdx = common.AccountIdx(uint32(fromIdxVal.Int64))
+		}
+		if toIdxVal.Valid {
+			tx.ToIdx = common.AccountIdx(uint32(toIdxVal.Int64))
+		}
+
+		// Nullable numeric big.Ints: amount, gas_fee, position
+		if amountText.Valid && amountText.String != "" {
+			amount := new(big.Int)
+			if _, ok := amount.SetString(amountText.String, 10); ok {
+				tx.Amount = amount
+			} else {
+				return nil, fmt.Errorf("failed to parse amount string '%s' for transaction item_id %d", amountText.String, tx.ItemID)
 			}
 		}
 
-		tx.GasFee = new(big.Int)
-		if gasFeeStr != "" {
-			_, success := tx.GasFee.SetString(gasFeeStr, 10)
-			if !success {
-				return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction item_id %d: %w", gasFeeStr, tx.ItemID, err)
+		if gasFeeText.Valid && gasFeeText.String != "" {
+			gas := new(big.Int)
+			if _, ok := gas.SetString(gasFeeText.String, 10); ok {
+				tx.GasFee = gas
+			} else {
+				return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction item_id %d", gasFeeText.String, tx.ItemID)
 			}
 		}
 
-		tx.Position = new(big.Int)
-		if position != "" {
-			_, success := tx.Position.SetString(position, 10)
-			if !success {
-				return nil, fmt.Errorf("failed to parse position string '%s' for transaction item_id %d: %w", position, tx.ItemID, err)
+		if positionText.Valid && positionText.String != "" {
+			pos := new(big.Int)
+			if _, ok := pos.SetString(positionText.String, 10); ok {
+				tx.Position = pos
+			} else {
+				return nil, fmt.Errorf("failed to parse position string '%s' for transaction item_id %d", positionText.String, tx.ItemID)
 			}
 		}
 
@@ -66,15 +80,26 @@ func scanTxs(rows *sql.Rows) ([]*common.Tx, error) {
 
 // SaveTx saves a transaction to the database
 func (db *HistoryDB) SaveTx(tx *common.Tx) error {
-	positionStr := tx.Position.String()
-	amountStr := "0"
-	if tx.Amount != nil {
-		amountStr = tx.Amount.String()
+	// Prepare nullable numeric fields as proper SQL NULLs when absent
+	var positionVal interface{}
+	if tx.Position != nil {
+		positionVal = tx.Position.String()
+	} else {
+		positionVal = nil
 	}
 
-	gasFeeStr := "0"
+	var amountVal interface{}
+	if tx.Amount != nil {
+		amountVal = tx.Amount.String()
+	} else {
+		amountVal = nil
+	}
+
+	var gasFeeVal interface{}
 	if tx.GasFee != nil {
-		gasFeeStr = tx.GasFee.String()
+		gasFeeVal = tx.GasFee.String()
+	} else {
+		gasFeeVal = nil
 	}
 
 	var err error // Declare error variable once
@@ -90,16 +115,16 @@ func (db *HistoryDB) SaveTx(tx *common.Tx) error {
 			$9, $10, $11, $12
 		)`,
 		tx.BatchNum,
-		positionStr,
+		positionVal,
 		tx.Type,
 		tx.FromIdx,
 		tx.FromEthAddr,
 		tx.ToIdx,
 		tx.ToEthAddr,
-		amountStr,
+		amountVal,
 		tx.BlockNumber,
 		tx.Timestamp,
-		gasFeeStr,
+		gasFeeVal,
 		tx.TxHash,
 	)
 
@@ -116,7 +141,8 @@ func (db *HistoryDB) GetAllTxs() ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, 
+			is_tx_forged
 		FROM tx
 		ORDER BY item_id DESC
 	`)
@@ -132,7 +158,7 @@ func (db *HistoryDB) GetTxsByBatchNum(batchNum uint32) ([]*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE batch_num = $1
 		ORDER BY position
@@ -154,7 +180,7 @@ func (db *HistoryDB) GetTxsByAccountAddress(accountAddress string) ([]*common.Tx
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE from_eth_addr = $1
 		ORDER BY item_id DESC
@@ -192,7 +218,7 @@ func (db *HistoryDB) GetTxsPaginated(limit, offset int, sortBy, sortOrder string
 		SELECT
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		ORDER BY %s %s
 		LIMIT $1 OFFSET $2
@@ -222,21 +248,23 @@ func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
 		SELECT 
 			item_id, batch_num, position, type, from_idx, from_eth_addr,
 			to_idx, to_eth_addr, amount,
-			block_number, tx_timestamp, gas_fee, tx_hash
+			block_number, tx_timestamp, gas_fee, tx_hash, is_tx_forged
 		FROM tx
 		WHERE tx_hash = $1
 	`
 	row := db.dbRead.QueryRow(query, txHash)
 
 	var tx common.Tx
-	var amountStr string
-	var gasFeeStr string
-	var position string
+	var amountText sql.NullString
+	var gasFeeText sql.NullString
+	var positionText sql.NullString
+	var fromIdxVal sql.NullInt64
+	var toIdxVal sql.NullInt64
 
 	err := row.Scan(
-		&tx.ItemID, &tx.BatchNum, &position, &tx.Type, &tx.FromIdx, &tx.FromEthAddr,
-		&tx.ToIdx, &tx.ToEthAddr, &amountStr,
-		&tx.BlockNumber, &tx.Timestamp, &gasFeeStr, &tx.TxHash,
+		&tx.ItemID, &tx.BatchNum, &positionText, &tx.Type, &fromIdxVal, &tx.FromEthAddr,
+		&toIdxVal, &tx.ToEthAddr, &amountText,
+		&tx.BlockNumber, &tx.Timestamp, &gasFeeText, &tx.TxHash, &tx.IsTxForged,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -245,29 +273,58 @@ func (db *HistoryDB) GetTxByHash(txHash []byte) (*common.Tx, error) {
 		return nil, fmt.Errorf("failed to get transaction by hash: %w", err)
 	}
 
-	tx.Amount = new(big.Int)
-	if amountStr != "" {
-		_, success := tx.Amount.SetString(amountStr, 10)
-		if !success {
-			return nil, fmt.Errorf("failed to parse amount string '%s' for transaction hash %x", amountStr, txHash)
+	if fromIdxVal.Valid {
+		tx.FromIdx = common.AccountIdx(uint32(fromIdxVal.Int64))
+	}
+	if toIdxVal.Valid {
+		tx.ToIdx = common.AccountIdx(uint32(toIdxVal.Int64))
+	}
+
+	if amountText.Valid && amountText.String != "" {
+		amount := new(big.Int)
+		if _, ok := amount.SetString(amountText.String, 10); ok {
+			tx.Amount = amount
+		} else {
+			return nil, fmt.Errorf("failed to parse amount string '%s' for transaction hash %x", amountText.String, txHash)
 		}
 	}
 
-	tx.GasFee = new(big.Int)
-	if gasFeeStr != "" {
-		_, success := tx.GasFee.SetString(gasFeeStr, 10)
-		if !success {
-			return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction hash %x", gasFeeStr, txHash)
+	if gasFeeText.Valid && gasFeeText.String != "" {
+		gas := new(big.Int)
+		if _, ok := gas.SetString(gasFeeText.String, 10); ok {
+			tx.GasFee = gas
+		} else {
+			return nil, fmt.Errorf("failed to parse gas_fee string '%s' for transaction hash %x", gasFeeText.String, txHash)
 		}
 	}
 
-	tx.Position = new(big.Int)
-	if position != "" {
-		_, success := tx.Position.SetString(position, 10)
-		if !success {
-			return nil, fmt.Errorf("failed to parse position string '%s' for transaction hash %x", position, txHash)
+	if positionText.Valid && positionText.String != "" {
+		pos := new(big.Int)
+		if _, ok := pos.SetString(positionText.String, 10); ok {
+			tx.Position = pos
+		} else {
+			return nil, fmt.Errorf("failed to parse position string '%s' for transaction hash %x", positionText.String, txHash)
 		}
 	}
 
 	return &tx, nil
+}
+
+// MarkTxsForgedByBatch sets is_tx_forged = TRUE for all transactions in a batch.
+// It returns the number of rows updated.
+func (db *HistoryDB) MarkTxsForgedByBatch(batchNum uint32) (int64, error) {
+	res, err := db.dbWrite.Exec(`
+        UPDATE tx
+        SET is_tx_forged = TRUE
+        WHERE batch_num = $1 AND is_tx_forged = FALSE
+    `, batchNum)
+	if err != nil {
+		return 0, fmt.Errorf("failed to mark batch txs as forged: %w", err)
+	}
+
+	affected, err := res.RowsAffected()
+	if err != nil {
+		return 0, fmt.Errorf("failed to read rows affected: %w", err)
+	}
+	return affected, nil
 }

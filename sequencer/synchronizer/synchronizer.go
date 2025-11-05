@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"math/big"
+	"os"
 	"time"
 
 	"github.com/ethereum/go-ethereum"
@@ -67,7 +68,7 @@ func NewSynchronizer(ethRPC, contractAddressHex string, historydb *historydb.His
 		logger:          logger,
 		forger:          forger,
 		lastBlock:       config.GetEnvInt64("LAST_PROCESSED_BLOCK", 0),
-		liveSync:        true,
+		liveSync:        false,
 		batchTxToSync:   batchTxToSync,
 	}, nil
 }
@@ -93,10 +94,11 @@ func (s *Synchronizer) Start(ctx context.Context) {
 // watchEvents continuously listens for contract events
 func (s *Synchronizer) watchEvents(ctx context.Context) {
 	// Create a ticker for periodic safety checks
-	ticker := time.NewTicker(1 * time.Minute)
+	ticker := time.NewTicker(10 * time.Second)
 	defer ticker.Stop()
 
 	s.logger.Println("Started watching for contract events")
+	fmt.Println(s.liveSync)
 
 	for {
 		select {
@@ -249,9 +251,6 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 	tx := &common.Tx{
 		BatchNum: uint32(lastForgedBatch + 1),
 		Type:     eventType,
-		FromIdx:  0,
-		ToIdx:    0,
-		Amount:   big.NewInt(0),
 	}
 
 	// Fetch Block Timestamp
@@ -325,11 +324,25 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 			s.logger.Printf("Error parsing transaction data: %v", err)
 		}
 
-		for _, tx := range txs {
-			s.txProcessor.ProcessTx(tx)
+		for _, txn := range txs {
+			s.txProcessor.ProcessTx(txn)
 		}
+		tx.Type = common.TxTypeForgeBatch
+		tx.BatchNum = lastForgedBatch
+		tx.TxHash = vLog.TxHash.Bytes()
+		privateKeyHex := os.Getenv("PRIVATE_KEY")
+		fromEthAddr, err := common.AddressFromPrivKeyHex(privateKeyHex)
+		if err != nil {
+			s.logger.Printf("Error getting address from private key: %v", err)
+		}
+		tx.FromEthAddr = fromEthAddr.Bytes()
 
-		return
+	case *bindings.SybilProveScore:
+		eventDetails = fmt.Sprintf(", Score: %d, BatchNum: %d", e.Score, e.BatchNum)
+		tx.Type = common.TxTypeProveScore
+		tx.FromEthAddr = e.User.Bytes()
+		tx.BatchNum = e.BatchNum
+		tx.TxHash = vLog.TxHash.Bytes()
 
 	default:
 		eventDetails = "Unknown event data"
@@ -343,10 +356,14 @@ func (s *Synchronizer) processLog(vLog types.Log) {
 		return
 	}
 
-	if tx.Position.Cmp(new(big.Int).Add(lastForgedTx, big.NewInt(int64(batchSize.Uint64())))) >= 0 {
-		err = s.forger.ForgeBatch(lastForgedBatch + 1)
-		if err != nil {
-			s.logger.Fatalf("Error forging batch: %v", err)
+	// Check if eventData is of type SybilTxEvent
+	if _, ok := eventData.(*bindings.SybilTxEvent); ok {
+		// Check if we need to forge a new batch
+		if tx.Position.Cmp(new(big.Int).Add(lastForgedTx, big.NewInt(int64(batchSize.Uint64())))) >= 0 {
+			err = s.forger.ForgeBatch(lastForgedBatch + 1)
+			if err != nil {
+				s.logger.Fatalf("Error forging batch: %v", err)
+			}
 		}
 	}
 

@@ -103,6 +103,8 @@ func (batchBuilder *BatchBuilder) ForgeTransactions(l1UserTxs []*common.Tx) (*co
 			err = batchBuilder.applyVouch(sdb, *currentTx)
 		case common.TxTypeExplode:
 			err = batchBuilder.applyExplode(sdb, *currentTx)
+		case common.TxTypeProveScore, common.TxTypeForgeBatch:
+			err = nil
 		default:
 			err = fmt.Errorf("unknown L1 transaction type: %s for txID: %s", currentTx.Type, currentTx.ItemID)
 

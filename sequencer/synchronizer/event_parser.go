@@ -27,6 +27,8 @@ var (
 		"Initialized(uint64)"))
 	logRoleGranted = crypto.Keccak256Hash([]byte(
 		"RoleGranted(bytes32,address,address)"))
+	logProveScore = crypto.Keccak256Hash([]byte(
+		"ProveScore(address,uint32,uint32)"))
 )
 
 // ParseEvent parses data of events found on blockchain.
@@ -78,6 +80,14 @@ func ParseEvent(log *types.Log) (interface{}, string, error) {
 
 	case logSybilInitialized.Hex(), logRoleGranted.Hex():
 		return nil, "Initialized", nil
+
+	case logProveScore.Hex():
+		var parsedEvent bindings.SybilProveScore
+		err := sybilABI.UnpackIntoInterface(&parsedEvent, "ProveScore", log.Data)
+		if err != nil {
+			return nil, "", fmt.Errorf("ParseEvent: failed to unpack SybilProveScore: %w", err)
+		}
+		return &parsedEvent, "SybilProveScore", nil
 	}
 
 	// If we get here, it's an unknown event
